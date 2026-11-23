@@ -105,6 +105,15 @@ export const adoptionInsightsMessages = {
       executions: 'Executions',
       trend: 'Trend',
       entity: 'Entity',
+      totalEstimatedTimeSaved: 'Total Est. Time Saved',
+    },
+    timeSaved: {
+      minute_one: '{{count}} minute',
+      minute_other: '{{count}} minutes',
+      hour_one: '{{count}} hour',
+      hour_other: '{{count}} hours',
+      day_one: '{{count}} day',
+      day_other: '{{count}} days',
     },
     pagination: {
       topN: 'Top {{count}}',

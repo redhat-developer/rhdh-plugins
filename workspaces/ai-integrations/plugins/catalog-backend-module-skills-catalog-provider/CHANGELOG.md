@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider
 
+## 1.2.0
+
+### Minor Changes
+
+- a73f884: Render verified npx skill Markdown in the catalog Docs tab using the configured npx connector and the imported artifact digest. Publish the registry base URL and original index key for the Boost install command.
+
+### Patch Changes
+
+- 9d252f1: Reconcile changed `defaultOwner` and `defaultLifecycle` values for existing skill entities. An accepted `ready` or `partial` snapshot now updates entities whose effective `spec.owner` or `spec.lifecycle` changed, even when the skill digest and connector observation are unchanged, while valid source hints continue to take precedence per field.
+
 ## 1.1.0
 
 ### Minor Changes

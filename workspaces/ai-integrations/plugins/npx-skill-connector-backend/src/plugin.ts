@@ -59,7 +59,7 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
           );
         }
 
-        httpRouter.use(createRouter(snapshots));
+        httpRouter.use(createRouter(snapshots, sources));
 
         // Schedule periodic refresh for each source
         for (const source of sources) {

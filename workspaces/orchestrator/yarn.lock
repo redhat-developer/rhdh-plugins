@@ -6173,7 +6173,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
-    "@playwright/test": "npm:1.64.1"
+    "@playwright/test": "npm:1.65.0"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
     enquirer: "npm:^2.4.1"
@@ -6181,7 +6181,7 @@ __metadata:
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.40.0"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     typescript: "npm:~5.8.0"
   languageName: unknown
   linkType: soft
@@ -8538,34 +8538,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.42.1":
-  version: 2.42.1
-  resolution: "@openapitools/openapi-generator-cli@npm:2.42.1"
-  dependencies:
-    "@inquirer/select": "npm:1.3.3"
-    "@nestjs/axios": "npm:4.0.1"
-    "@nestjs/common": "npm:11.2.3"
-    "@nestjs/core": "npm:11.2.3"
-    "@nuxtjs/opencollective": "npm:0.3.2"
-    axios: "npm:^1.20.0"
-    chalk: "npm:4.1.2"
-    commander: "npm:8.3.0"
-    compare-versions: "npm:6.1.1"
-    concurrently: "npm:^10.0.5"
-    console.table: "npm:0.10.0"
-    fs-extra: "npm:11.4.0"
-    glob: "npm:13.0.6"
-    proxy-agent: "npm:8.0.2"
-    reflect-metadata: "npm:0.2.2"
-    rxjs: "npm:7.8.2"
-    tslib: "npm:2.8.1"
-  bin:
-    openapi-generator-cli: main.js
-  checksum: 10c0/fb1935f7b3ce859a86cda38f86e0efd485af1acb72aad2b60137a3d6cec8cc34adf954c120b6a7bcfd8c5eb2b73616494080a117ceb6c9110ad2822ff4a752d2
-  languageName: node
-  linkType: hard
-
-"@openapitools/openapi-generator-cli@npm:^2.41.0":
+"@openapitools/openapi-generator-cli@npm:2.42.2, @openapitools/openapi-generator-cli@npm:^2.41.0":
   version: 2.42.2
   resolution: "@openapitools/openapi-generator-cli@npm:2.42.2"
   dependencies:
@@ -8767,14 +8740,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.64.1":
-  version: 1.64.1
-  resolution: "@playwright/test@npm:1.64.1"
+"@playwright/test@npm:1.65.0":
+  version: 1.65.0
+  resolution: "@playwright/test@npm:1.65.0"
   dependencies:
-    playwright: "npm:1.64.1"
+    playwright: "npm:1.65.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/0a1a853d76d6c532cafaf0366a5448584b766737ebd39bbd23dc0580f3d3b6ef4c833082af47a792e7fc2501f444debdfaad37a87a76cc5b195f3803fc80ea3c
+  checksum: 10c0/137a641e1be8035686a165e69d86d242ee7ed5cbe71e5230f9195cb6e65be37a66ba697f16919b508d04c4d682fd4e167d1a755b64ceb545afac780de72b594b
   languageName: node
   linkType: hard
 
@@ -9677,7 +9650,7 @@ __metadata:
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
     openapi-backend: "npm:^5.10.5"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     supertest: "npm:^7.2.2"
     zod: "npm:^4.3.6"
   peerDependencies:
@@ -9692,7 +9665,7 @@ __metadata:
     "@backstage/cli": "npm:^0.36.7"
     "@backstage/plugin-permission-common": "npm:^0.9.12"
     "@backstage/types": "npm:^1.2.2"
-    "@openapitools/openapi-generator-cli": "npm:2.42.1"
+    "@openapitools/openapi-generator-cli": "npm:2.42.2"
     "@serverlessworkflow/sdk-typescript": "npm:^0.8.4"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
@@ -9718,7 +9691,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/react": "npm:^18.2.58"
     json-schema: "npm:^0.4.0"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
@@ -9748,7 +9721,7 @@ __metadata:
     json-schema: "npm:^0.4.0"
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -9848,7 +9821,7 @@ __metadata:
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     react: "npm:^18.0.0"
     react-dom: "npm:^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -15114,7 +15087,7 @@ __metadata:
     "@backstage/ui": "npm:^0.19.0"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
-    "@playwright/test": "npm:1.64.1"
+    "@playwright/test": "npm:1.65.0"
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
@@ -18121,7 +18094,7 @@ __metadata:
     "@backstage/plugin-auth-node": "npm:^0.7.7"
     "@backstage/types": "npm:^1.2.2"
     express: "npm:^4.17.1"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     typescript: "npm:5.6.3"
   languageName: unknown
   linkType: soft
@@ -18137,7 +18110,7 @@ __metadata:
     "@backstage/integration-react": "npm:^1.2.23"
     "@mui/material": "npm:^5.17.1"
     "@types/react": "npm:^18.0.0"
-    prettier: "npm:3.9.10"
+    prettier: "npm:3.10.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router: "npm:^6.30.4"
@@ -21308,17 +21281,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:13.0.6, glob@npm:^13.0.0, glob@npm:^13.0.6":
-  version: 13.0.6
-  resolution: "glob@npm:13.0.6"
-  dependencies:
-    minimatch: "npm:^10.2.2"
-    minipass: "npm:^7.1.3"
-    path-scurry: "npm:^2.0.2"
-  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
-  languageName: node
-  linkType: hard
-
 "glob@npm:14.0.4":
   version: 14.0.4
   resolution: "glob@npm:14.0.4"
@@ -21343,6 +21305,17 @@ __metadata:
   bin:
     glob: dist/esm/bin.mjs
   checksum: 10c0/100705eddbde6323e7b35e1d1ac28bcb58322095bd8e63a7d0bef1a2cdafe0d0f7922a981b2b48369a4f8c1b077be5c171804534c3509dfe950dde15fbe6d828
+  languageName: node
+  linkType: hard
+
+"glob@npm:^13.0.0, glob@npm:^13.0.6":
+  version: 13.0.6
+  resolution: "glob@npm:13.0.6"
+  dependencies:
+    minimatch: "npm:^10.2.2"
+    minipass: "npm:^7.1.3"
+    path-scurry: "npm:^2.0.2"
+  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
   languageName: node
   linkType: hard
 
@@ -28420,23 +28393,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright-core@npm:1.64.1"
+"playwright-core@npm:1.65.0":
+  version: 1.65.0
+  resolution: "playwright-core@npm:1.65.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/91c4f5ed1cff4b0e18b6ac62f66770f5f1b6c204d4aebd6a321c07466dca18a70822ac692597c6059705a703f9768097ac551df179fb49294d639509148e04f3
+  checksum: 10c0/ed905c6fc2457a725c3fdb3ad4500f43c7a1bb2c6e4e8c708e1e314930c7dce446a5756ad073425bf3c6e3ca975e5a35fb0221118e2d51ef7b4b6c6d13d0644c
   languageName: node
   linkType: hard
 
-"playwright@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright@npm:1.64.1"
+"playwright@npm:1.65.0":
+  version: 1.65.0
+  resolution: "playwright@npm:1.65.0"
   dependencies:
-    playwright-core: "npm:1.64.1"
+    playwright-core: "npm:1.65.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/edf52d0a79feca37bf383e841a467aa68750684128218eac560063991c9e4b615a94901f580cd8a088bb05fd53008ab4a0e5e8d976067698b60ae5d1de2459f3
+  checksum: 10c0/a7d71f3ca5bcad0531b5f3c39ae1a9be0da8e74be6fee8510d99b9f5fc07fd5b3d889aa4ca487c70ca29aba8625f74e3c2c7473b4c8a784dc14fefff80474ac3
   languageName: node
   linkType: hard
 
@@ -28976,12 +28949,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.9.10":
-  version: 3.9.10
-  resolution: "prettier@npm:3.9.10"
+"prettier@npm:3.10.1":
+  version: 3.10.1
+  resolution: "prettier@npm:3.10.1"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/0b3531593aa6fb36ac6baf629cb058bda472c59a6938774f931fe55283a07c62e6f56e621b043a82d8a3e21fc284c08c34f9e539fc70072635f79b7bae1a1067
+  checksum: 10c0/e8c03ea575a30e15afa75a3700e94609050502980d7c906374aea4cf623eef4dce0816100126207e675cc1ed54b7dfce60f02dbee8d61ec27dc69ce5df6c3723
   languageName: node
   linkType: hard
 

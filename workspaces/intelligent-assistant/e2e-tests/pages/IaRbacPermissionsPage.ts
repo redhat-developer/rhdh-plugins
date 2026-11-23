@@ -54,9 +54,16 @@ export class IaRbacPermissionsPage {
     return this.page.getByText(this.t['notebooks.empty.title']);
   }
 
-  mcpSettingsMenuItem(): Locator {
+  settingsMenuItem(): Locator {
     return this.page.getByRole('menuitem', {
-      name: this.t['settings.mcp.label'],
+      name: this.t['settings.menu.label'],
+    });
+  }
+
+  mcpServersTab(): Locator {
+    return this.page.getByRole('button', {
+      name: this.t['mcp.settings.title'],
+      exact: true,
     });
   }
 
@@ -97,11 +104,21 @@ export class IaRbacPermissionsPage {
   }
 
   async expectMcpSettingsVisible(): Promise<void> {
-    await expect(this.mcpSettingsMenuItem()).toBeVisible();
+    await expect(this.settingsMenuItem()).toBeVisible();
+    await this.settingsMenuItem().click();
+    await expect(this.mcpServersTab()).toBeVisible();
   }
 
   async expectMcpSettingsHidden(): Promise<void> {
-    await expect(this.mcpSettingsMenuItem()).toHaveCount(0);
+    await expect(this.settingsMenuItem()).toBeVisible();
+    await this.settingsMenuItem().click();
+    await expect(this.mcpServersTab()).toHaveCount(0);
+    await expect(
+      this.page.getByRole('button', {
+        name: this.t['settings.preferences.tab.title'],
+        exact: true,
+      }),
+    ).toBeVisible();
   }
 
   async expectMcpMenuVisible(): Promise<void> {

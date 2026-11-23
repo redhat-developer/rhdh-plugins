@@ -75,7 +75,9 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      # Needed for Playwright e2e (and CI) where NODE_ENV is not development.
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

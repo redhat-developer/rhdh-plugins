@@ -37,6 +37,7 @@ import { useAllModels } from '../../hooks/useAllModels';
 import { useIaChatPermission } from '../../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
+import { useSettingsPanelUrlState } from '../../hooks/useSettingsPanelUrlState';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
@@ -244,6 +245,10 @@ const mockUseNotebookSessions = useNotebookSessions as jest.Mock;
 const mockUseLightspeedDrawerContext =
   useLightspeedDrawerContext as jest.MockedFunction<
     typeof useLightspeedDrawerContext
+  >;
+const mockUseSettingsPanelUrlState =
+  useSettingsPanelUrlState as jest.MockedFunction<
+    typeof useSettingsPanelUrlState
   >;
 
 const configApi = mockApis.config({
@@ -574,7 +579,15 @@ describe('IA RBAC permission gating scenarios', () => {
       mockPermissions(SCENARIOS['5-mcp-settings']);
     });
 
-    it('shows MCP settings in the header menu', async () => {
+    it('shows Settings in the header menu and MCP tab in the settings panel', async () => {
+      mockUseSettingsPanelUrlState.mockReturnValue({
+        isOpen: true,
+        activeTab: 'preferences',
+        openSettings: jest.fn(),
+        closeSettings: jest.fn(),
+        setActiveTab: jest.fn(),
+      });
+
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -584,7 +597,12 @@ describe('IA RBAC permission gating scenarios', () => {
       });
 
       await userEvent.click(screen.getByLabelText('Options'));
-      expect(screen.getByText('MCP and Prompt Settings')).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: /Settings/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'MCP servers' }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -593,7 +611,15 @@ describe('IA RBAC permission gating scenarios', () => {
       mockPermissions(SCENARIOS['6-mcp-denied']);
     });
 
-    it('shows prompt-only settings in the header menu', async () => {
+    it('shows Settings in the header menu without the MCP tab', async () => {
+      mockUseSettingsPanelUrlState.mockReturnValue({
+        isOpen: true,
+        activeTab: 'preferences',
+        openSettings: jest.fn(),
+        closeSettings: jest.fn(),
+        setActiveTab: jest.fn(),
+      });
+
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -603,9 +629,14 @@ describe('IA RBAC permission gating scenarios', () => {
       });
 
       await userEvent.click(screen.getByLabelText('Options'));
-      expect(screen.getByText('Prompt Settings')).toBeInTheDocument();
       expect(
-        screen.queryByText('MCP and Prompt Settings'),
+        screen.getByRole('menuitem', { name: /Settings/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Preferences' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'MCP servers' }),
       ).not.toBeInTheDocument();
     });
   });
