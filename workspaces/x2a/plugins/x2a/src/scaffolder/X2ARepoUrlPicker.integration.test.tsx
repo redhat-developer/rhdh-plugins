@@ -379,7 +379,7 @@ describe('X2ARepoUrlPicker (real RepoUrlPicker)', () => {
 
     expect(
       await screen.findByText(
-        /: The popup was closed\. Check that the "gitlab" auth provider/,
+        /a GitLab access token: The popup was closed\. Check that the "GitLab" auth provider/,
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/closed\.\./)).not.toBeInTheDocument();

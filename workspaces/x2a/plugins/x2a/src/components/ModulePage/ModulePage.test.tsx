@@ -37,15 +37,13 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 jest.mock('../../hooks/useScmHostMap', () => ({
-  useScmHostMap: () => ({}),
+  useScmHostMap: () => new Map(),
 }));
 
+const mockAuthenticate = jest.fn();
 jest.mock('../../repoAuth', () => ({
-  useRepoAuthentication: () => ({
-    authenticate: jest.fn(async (requests: unknown[]) =>
-      requests.map(() => ({ token: 'mock-token' })),
-    ),
-  }),
+  ...jest.requireActual('../../repoAuth'),
+  useRepoAuthentication: () => ({ authenticate: mockAuthenticate }),
 }));
 
 jest.mock('./ModulePageBreadcrumb', () => ({
@@ -62,12 +60,15 @@ jest.mock('./PhasesCard', () => ({
   PhasesCard: ({
     project,
     module,
+    onRunPhase,
   }: {
     project?: { name: string };
     module?: { name: string };
+    onRunPhase?: (phase: string) => void;
   }) => (
     <div data-testid="phases-card">
       {project?.name} / {module?.name}
+      <button onClick={() => onRunPhase?.('analyze')}>run phase</button>
     </div>
   ),
 }));
@@ -86,9 +87,16 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, waitFor, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  act,
+  fireEvent,
+} from '@testing-library/react';
 import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ModulePage } from './ModulePage';
+import { AuthHostNotAllowedError } from '../../repoAuth';
 
 const mockProject = {
   id: 'proj-1',
@@ -113,6 +121,11 @@ describe('ModulePage', () => {
     jest.useFakeTimers();
     mockProjectGet.mockReset();
     mockModuleGet.mockReset();
+    clientServiceMock.projectsProjectIdModulesModuleIdRunPost.mockReset();
+    mockAuthenticate.mockReset();
+    mockAuthenticate.mockImplementation(async (requests: unknown[]) =>
+      requests.map(() => ({ token: 'mock-token' })),
+    );
   });
 
   afterEach(() => {
@@ -140,6 +153,30 @@ describe('ModulePage', () => {
 
     expect(screen.getByText('module-a')).toBeInTheDocument();
     expect(screen.getByText('Test Project / module-a')).toBeInTheDocument();
+  });
+
+  it('shows the auth host refusal and starts no run', async () => {
+    mockProjectGet.mockResolvedValue({ json: async () => mockProject });
+    mockModuleGet.mockResolvedValue({ json: async () => mockModule });
+    mockAuthenticate.mockRejectedValue(
+      new AuthHostNotAllowedError(
+        'No host is configured for the GitHub auth provider.',
+        'github',
+        'github.com',
+      ),
+    );
+
+    render(<ModulePage />);
+    fireEvent.click(await screen.findByText('run phase'));
+
+    expect(
+      await screen.findByText(
+        'No host is configured for the GitHub auth provider.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      clientServiceMock.projectsProjectIdModulesModuleIdRunPost,
+    ).not.toHaveBeenCalled();
   });
 
   it('shows error panel when fetch fails', async () => {

@@ -32,3 +32,42 @@ export function extractHost(repoUrl: string): string | undefined {
     return undefined;
   }
 }
+
+/**
+ * Like {@link extractHost}, but only for plain HTTPS repository URLs that every
+ * URL parser reads the same way. Use it where the host decides whether an
+ * access token may be sent along.
+ *
+ * Returns `undefined` when the URL contains a backslash, whitespace or a
+ * control character, uses a scheme other than `https`, carries credentials, or
+ * has an authority that does not match the parsed host (for example a
+ * percent-encoded or non-ASCII host). A URL without a scheme is treated as
+ * HTTPS.
+ *
+ * @public
+ */
+export function extractAuthHost(repoUrl: string): string | undefined {
+  const trimmed = repoUrl.trim();
+  if (
+    !trimmed ||
+    /[\\\s]/.test(trimmed) ||
+    // eslint-disable-next-line no-control-regex
+    /[\u0000-\u001f\u007f]/.test(trimmed)
+  ) {
+    return undefined;
+  }
+  const schemeEnd = trimmed.indexOf('://');
+  if (
+    schemeEnd !== -1 &&
+    trimmed.slice(0, schemeEnd).toLocaleLowerCase('en-US') !== 'https'
+  ) {
+    return undefined;
+  }
+  const rest = schemeEnd === -1 ? trimmed : trimmed.slice(schemeEnd + 3);
+  const authority = rest.split(/[/?#]/, 1)[0].toLocaleLowerCase('en-US');
+  const host = extractHost(trimmed);
+  if (!host || (authority !== host && authority !== `${host}:443`)) {
+    return undefined;
+  }
+  return host;
+}

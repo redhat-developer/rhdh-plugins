@@ -67,6 +67,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { canRunNextPhase, getNextPhase } from '../components/tools';
 import { useBulkRun } from './useBulkRun';
+import { AuthHostNotAllowedError } from '../repoAuth';
 
 const mockCanRunNextPhase = canRunNextPhase as jest.Mock;
 const mockGetNextPhase = getNextPhase as jest.Mock;
@@ -214,6 +215,29 @@ describe('useBulkRun', () => {
           host: 'github.com',
         },
       ]);
+    });
+
+    it('starts no run when the auth host guard refuses the repository', async () => {
+      const project = makeProject({
+        sourceRepoUrl: 'https://gitlab.other.example.com/org/src',
+        targetRepoUrl: 'https://gitlab.other.example.com/org/tgt',
+      });
+      mockAuthenticate.mockRejectedValueOnce(
+        new AuthHostNotAllowedError(
+          'The GitLab auth provider is configured for gitlab.com, not gitlab.other.example.com.',
+          'gitlab',
+          'gitlab.other.example.com',
+        ),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await expect(
+        result.current.runAllForProject(project, [makeModule()]),
+      ).rejects.toThrow('not gitlab.other.example.com');
+      expect(
+        mockProjectsProjectIdModulesModuleIdRunPost,
+      ).not.toHaveBeenCalled();
     });
 
     it('authenticates cross-provider repos (Bitbucket source, GitHub target)', async () => {

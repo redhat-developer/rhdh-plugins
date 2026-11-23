@@ -129,6 +129,24 @@ describe('useRepoAuthentication host guard', () => {
     ).rejects.toBeInstanceOf(AuthHostNotAllowedError);
     expect(mockGitlabAccessToken).not.toHaveBeenCalled();
   });
+
+  it('refuses a stored URL that git would read as another host', async () => {
+    mockIsAuthHost.mockImplementation(
+      (host: string) => host === 'gitlab.corp.example.com',
+    );
+    const { result } = renderHook(() => useRepoAuthentication());
+
+    await expect(
+      result.current.authenticate([
+        repoTokenRequest(
+          'https://gitlab.corp.example.com\\@evil.test/o/r',
+          new Map([['gitlab.corp.example.com', 'gitlab']]),
+          false,
+        ),
+      ]),
+    ).rejects.toThrow('not a plain HTTPS URL');
+    expect(mockGitlabAccessToken).not.toHaveBeenCalled();
+  });
 });
 
 describe('repoTokenRequest', () => {

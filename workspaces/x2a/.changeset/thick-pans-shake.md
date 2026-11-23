@@ -38,7 +38,10 @@ which configured hosts it left out and why. The value may be a bare host or a UR
 `audience` can be copied as is. Keep `x2a.scm.authHosts` in sync with the auth provider config;
 it cannot be verified from the frontend.
 
-`extractHost` is now exported from the common package.
+Repository URLs (CSV rows, stored projects) must be plain `https://` URLs without credentials,
+backslashes or whitespace; others are refused before any token is requested. `extractHost` and
+the stricter `extractAuthHost` are now exported from the common package.
+`normalizeRepoUrl` no longer rewrites a full URL that carries `owner`/`repo` query parameters.
 
 Azure, Gerrit, Gitea and Bitbucket Server hosts are deliberately not offered; x2a has no
 provider implementation for them.

@@ -24,7 +24,7 @@ import {
 } from '@backstage/core-plugin-api';
 import { useScmAuthHosts } from '../hooks/useScmAuthHosts';
 import {
-  extractHost,
+  extractAuthHost,
   resolveScmProvider,
   resolveScmProviderByName,
   AuthToken,
@@ -70,8 +70,8 @@ export type HostBoundTokenRequest = {
 
 /**
  * Builds the token request for a repository: the descriptor of the SCM
- * provider that owns `repoUrl`, bound to the repository's host. An
- * unparseable URL yields an empty host, which the guard rejects.
+ * provider that owns `repoUrl`, bound to the repository's host. A URL that
+ * is not a plain HTTPS URL yields an empty host, which the guard rejects.
  */
 export const repoTokenRequest = (
   repoUrl: string,
@@ -81,7 +81,7 @@ export const repoTokenRequest = (
   descriptor: resolveScmProvider(repoUrl, hostMap).getAuthTokenDescriptor(
     readOnly,
   ),
-  host: extractHost(repoUrl) ?? '',
+  host: extractAuthHost(repoUrl) ?? '',
 });
 
 /**
@@ -145,13 +145,15 @@ export const useRepoAuthentication = () => {
       if (isAuthHost(host, providerName)) return;
       const label = providerLabels[providerName] ?? providerName;
       const expected = authHostFor(providerName);
-      throw new AuthHostNotAllowedError(
-        expected
-          ? `The ${label} auth provider is configured for ${expected}, not ${host}. Its access token is not sent to other hosts.`
-          : `No host is configured for the ${label} auth provider, so no ${label} access token can be used for ${host}. Set x2a.scm.authHosts.${providerName} to the host the provider is registered against.`,
-        providerName,
-        host,
-      );
+      let message: string;
+      if (!host) {
+        message = `The repository URL is not a plain HTTPS URL, so no ${label} access token is sent.`;
+      } else if (expected) {
+        message = `The ${label} auth provider is configured for ${expected}, not ${host}. Its access token is not sent to other hosts.`;
+      } else {
+        message = `No host is configured for the ${label} auth provider, so no ${label} access token can be used for ${host}. Set x2a.scm.authHosts.${providerName} to the host the provider is registered against.`;
+      }
+      throw new AuthHostNotAllowedError(message, providerName, host);
     },
     [authHostFor, isAuthHost],
   );

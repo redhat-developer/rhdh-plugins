@@ -108,10 +108,10 @@ import {
 
 import {
   X2ARepoUrlPicker,
-  resetStockRepoUrlPickerForTests,
   x2aRepoUrlPickerValidation,
   type X2ARepoUrlPickerUiOptions,
 } from './X2ARepoUrlPicker';
+import { resetStockRepoUrlPickerForTests } from './X2ARepoUrlPickerImpl';
 
 const scmIntegrationsApi = ScmIntegrationsApi.fromConfig(
   new ConfigReader({
