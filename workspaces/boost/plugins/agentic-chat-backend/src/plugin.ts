@@ -37,6 +37,10 @@ export const agenticChatPlugin = createBackendPlugin({
       },
       async init({ httpRouter, ...options }) {
         httpRouter.use(await createRouter(options));
+        httpRouter.addAuthPolicy({
+          path: '/health',
+          allow: 'unauthenticated',
+        });
       },
     });
   },

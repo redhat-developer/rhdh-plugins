@@ -79,6 +79,11 @@ export async function createRouter(options: RouterOptions) {
     logger,
   );
   const router = Router();
+
+  router.get('/health', express.json(), (_req, res) => {
+    res.json({ status: 'ok' });
+  });
+
   router.use(
     createPermissionIntegrationRouter({ permissions: [agenticChatPermission] }),
   );

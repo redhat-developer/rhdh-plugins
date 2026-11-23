@@ -17,7 +17,7 @@ agentic-chat:
   servicePort: 8090
 ```
 
-All routes use `agentic-chat.chat` with RBAC action `use`:
+Chat routes use `agentic-chat.chat` with RBAC action `use`:
 
 ```csv
 p, role:default/agentic-chat-user, agentic-chat.chat, use, allow
@@ -31,8 +31,9 @@ g, group:default/APPROVED_GROUP, role:default/agentic-chat-user
 
 ### Successful responses
 
-The backend passes through LCORE's success status and JSON body. The routes below are relative to `/api/agentic-chat`.
+The routes below are relative to `/api/agentic-chat`. For proxied routes, the backend passes through LCORE's success status and JSON body.
 
+- GET `/health` returns `200 OK` with `{ "status": "ok" }` for unauthenticated callers. It checks the plugin backend independently of LCORE.
 - POST `/v1/agent/run` returns `202 Accepted` with `{ "workflow_id": "wf-1", "status": "running" }` when LCORE accepts the run.
 - GET `/v2/conversations` returns `200 OK` with a `conversations` array. Each entry contains `conversation_id`, `topic_summary` (which can be null), and `last_message_timestamp` (Unix seconds). An empty list is `{ "conversations": [] }`.
 - GET `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id` and a `chat_history` array of turns.

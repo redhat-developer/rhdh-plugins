@@ -430,6 +430,35 @@ it('returns a sanitized 502 when LCORE returns malformed JSON', async () => {
   expect(response.body).toEqual({ error: 'Chat runtime unavailable' });
 });
 
+it('returns plugin health to an unauthenticated caller without contacting LCORE', async () => {
+  const { server: backendServer } = await startTestBackend({
+    features: [
+      agenticChatPlugin,
+      mockServices.rootConfig.factory({
+        data: { 'agentic-chat': { servicePort: port } },
+      }),
+      mockServices.httpAuth.factory({
+        defaultCredentials: mockCredentials.none(),
+      }),
+      mockServices.permissions.factory({ result: AuthorizeResult.DENY }),
+      createServiceFactory({
+        service: catalogServiceRef,
+        deps: {},
+        factory: async () =>
+          ({
+            getEntityByRef: async () => undefined,
+          }) as unknown as CatalogService,
+      }),
+    ],
+  });
+
+  const response = await request(backendServer).get('/api/agentic-chat/health');
+
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual({ status: 'ok' });
+  expect(calls).toHaveLength(0);
+});
+
 it('captures the supplied Legal agent request at the new upstream agent endpoint', async () => {
   const { server: backendServer } = await startTestBackend({
     features: [
