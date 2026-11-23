@@ -24,7 +24,7 @@ p, role:default/agentic-chat-user, agentic-chat.chat, use, allow
 g, group:default/APPROVED_GROUP, role:default/agentic-chat-user
 ```
 
-- POST `/v1/agent/run`: `{ "query": "Hello", "provider": "openai", "model": "gpt-4o", "agentRef": "airesource:default/support", "conversation_id": "optional-conversation-id" }`. `agentRef`, `query`, `provider` and `model` are required nonblank strings. Missing or invalid selections return 400 without calling LCORE. The requested agent is resolved through Catalog using the caller's credentials. Each request selects one accessible agent from any number of Catalog agents. Missing agents return 404; Catalog access denials prevent dispatch. Caller-supplied identity, definitions and capability overrides are rejected.
+- POST `/v1/agent/run`: `{ "query": "Hello", "provider": "openai", "model": "gpt-4o", "agentRef": "airesource:default/support", "conversation_id": "550e8400-e29b-41d4-a716-446655440000" }`. `agentRef`, `query`, `provider` and `model` are required nonblank strings. Missing or invalid selections return 400 without calling LCORE. The requested agent is resolved through Catalog using the caller's credentials. Each request selects one accessible agent from any number of Catalog agents. Missing agents return 404; Catalog access denials prevent dispatch. Caller-supplied identity, definitions and capability overrides are rejected.
 - GET `/v2/conversations`: proxy the authenticated caller's history request.
 - GET `/v2/conversations/:conversationId`: proxy one conversation.
 - DELETE `/v2/conversations/:conversationId`: proxy deletion and preserve the runtime's status/body, including no-content responses.
@@ -37,6 +37,8 @@ The backend passes through LCORE's success status and JSON body. The routes belo
 - GET `/v2/conversations` returns `200 OK` with a `conversations` array. Each entry contains `conversation_id`, `topic_summary` (which can be null), and `last_message_timestamp` (Unix seconds). An empty list is `{ "conversations": [] }`.
 - GET `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id` and a `chat_history` array of turns.
 - DELETE `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id`, a boolean `deleted`, and a human-readable `response` when LCORE returns JSON. If the runtime returns `204 No Content`, the response has an empty body.
+
+The backend forwards conversation IDs to LCORE for format validation. The `conversation_id` field in an agent run request is optional.
 
 See the [LCORE conversation response models](https://github.com/lightspeed-core/lightspeed-stack/blob/main/src/models/api/responses/successful/conversations.py) for details on the conversation payloads.
 

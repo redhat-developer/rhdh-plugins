@@ -53,9 +53,6 @@ interface RouterOptions {
 const configSchema = z.object({
   servicePort: z.number().int().min(1).max(65535),
 });
-const conversationIdSchema = z
-  .string()
-  .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/);
 
 function canonicalAgentRef(value: string): string {
   try {
@@ -118,22 +115,27 @@ export async function createRouter(options: RouterOptions) {
   router.get('/v2/conversations', async (_req, res) => {
     await forward('/v2/conversations', 'GET', res);
   });
+
+  router.param('conversationId', (_req, _res, next, id: string) => {
+    // The upstream URL builder resolves dot segments before sending the request.
+    if (id === '.' || id === '..') {
+      return next(new InputError('Invalid conversation identifier'));
+    }
+    return next();
+  });
+
   router
     .route('/v2/conversations/:conversationId')
     .get(async (req, res) => {
-      const id = conversationIdSchema.safeParse(req.params.conversationId);
-      if (!id.success) throw new InputError('Invalid conversation identifier');
       await forward(
-        `/v2/conversations/${encodeURIComponent(id.data)}`,
+        `/v2/conversations/${encodeURIComponent(req.params.conversationId)}`,
         'GET',
         res,
       );
     })
     .delete(async (req, res) => {
-      const id = conversationIdSchema.safeParse(req.params.conversationId);
-      if (!id.success) throw new InputError('Invalid conversation identifier');
       await forward(
-        `/v2/conversations/${encodeURIComponent(id.data)}`,
+        `/v2/conversations/${encodeURIComponent(req.params.conversationId)}`,
         'DELETE',
         res,
       );
