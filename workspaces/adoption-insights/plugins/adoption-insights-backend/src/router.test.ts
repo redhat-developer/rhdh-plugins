@@ -22,7 +22,7 @@ import {
 } from '@backstage/backend-test-utils';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import EventApiController from './controllers/EventApiController';
-import { NotificationPreferenceController } from './controllers/NotificationPreferenceController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
 import { createRouter } from './router';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 

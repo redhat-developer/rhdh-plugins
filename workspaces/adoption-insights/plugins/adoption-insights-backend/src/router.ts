@@ -24,7 +24,7 @@ import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 
 import EventApiController from './controllers/EventApiController';
-import { NotificationPreferenceController } from './controllers/NotificationPreferenceController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
 import { QueryParams } from './types/event-request';
 
 export async function createRouter({

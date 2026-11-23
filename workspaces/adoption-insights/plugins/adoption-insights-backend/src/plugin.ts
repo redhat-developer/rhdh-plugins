@@ -24,7 +24,7 @@ import { migrate } from './database/migration';
 import { DatabaseFactory } from './database/DatabaseFactory';
 import { EventBatchProcessor } from './domain/EventBatchProcessor';
 import EventApiController from './controllers/EventApiController';
-import { NotificationPreferenceController } from './controllers/NotificationPreferenceController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
 import { NotificationPreferenceStore } from './database/NotificationPreferenceStore';
 import { schedulePartition } from './database/partition';
 import { getConfigurationOptions } from './utils/config';

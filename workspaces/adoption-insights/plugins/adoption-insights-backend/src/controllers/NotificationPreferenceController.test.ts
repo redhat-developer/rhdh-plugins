@@ -17,7 +17,7 @@
 import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import type { Request, Response } from 'express';
 import { NotificationPreferenceStore } from '../database/NotificationPreferenceStore';
-import { NotificationPreferenceController } from './NotificationPreferenceController';
+import NotificationPreferenceController from './NotificationPreferenceController';
 
 describe('NotificationPreferenceController', () => {
   const store = {

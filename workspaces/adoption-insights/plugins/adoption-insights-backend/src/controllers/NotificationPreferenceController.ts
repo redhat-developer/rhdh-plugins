@@ -21,7 +21,7 @@ import { Request, Response } from 'express';
 import { NotificationPreferenceStore } from '../database/NotificationPreferenceStore';
 import { NotificationPreferenceSchema } from '../validation/notification-preference';
 
-export class NotificationPreferenceController {
+class NotificationPreferenceController {
   constructor(
     private readonly store: NotificationPreferenceStore,
     private readonly auditor: AuditorService,
@@ -88,3 +88,5 @@ export class NotificationPreferenceController {
     }
   }
 }
+
+export default NotificationPreferenceController;
