@@ -34,7 +34,7 @@
 /workspaces/translations                            @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
 /workspaces/konflux                                 @redhat-developer/rhdh-plugins-maintainers @rrosatti @sahil143 @milantaky
 /workspaces/x2a                                     @redhat-developer/rhdh-plugins-maintainers @mareklibra @eloycoto @yray-pixel
-/workspaces/dcm                                     @redhat-developer/rhdh-plugins-maintainers @asmasarw @jkilzi @mareklibra
+/workspaces/dcm                                     @redhat-developer/rhdh-plugins-maintainers @asmasarw @mareklibra
 
 # AI agent configuration — requires maintainer approval to prevent
 # agents from modifying their own guardrails.
@@ -44,4 +44,7 @@
 /.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/fullsend-poll-jira.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend-ci-repair.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend-ci-triage.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/prioritize.yml                   @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/scripts/ci/fullsend-ci-context.cjs                 @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
