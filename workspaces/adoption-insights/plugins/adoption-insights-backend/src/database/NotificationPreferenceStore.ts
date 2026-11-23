@@ -28,7 +28,7 @@ export class NotificationPreferenceStore {
     private readonly logger: LoggerService,
   ) {}
 
-  private validFrequency(
+  private normalizeStoredFrequency(
     value: string,
     userRef: string,
   ): NotificationFrequency {
@@ -48,7 +48,9 @@ export class NotificationPreferenceStore {
       .select('frequency')
       .where({ user_ref: userRef })
       .first<{ frequency: string }>();
-    return row ? this.validFrequency(row.frequency, userRef) : undefined;
+    return row
+      ? this.normalizeStoredFrequency(row.frequency, userRef)
+      : undefined;
   }
 
   /** Upserts and returns the previous value (undefined if no row existed). */
@@ -83,7 +85,7 @@ export class NotificationPreferenceStore {
         .update({ frequency, updated_at: trx.fn.now() });
 
       return {
-        previous: this.validFrequency(row.frequency, userRef),
+        previous: this.normalizeStoredFrequency(row.frequency, userRef),
       };
     });
   }
