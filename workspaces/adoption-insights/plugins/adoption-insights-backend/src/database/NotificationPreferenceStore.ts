@@ -56,18 +56,33 @@ export class NotificationPreferenceStore {
     frequency: NotificationFrequency,
   ): Promise<{ previous?: NotificationFrequency }> {
     return this.db.transaction(async trx => {
+      // The unique key serializes first writes for this user. SQLite also
+      // acquires its write lock before the read below.
+      const inserted = await trx('notification_preferences')
+        .insert({ user_ref: userRef, frequency, updated_at: trx.fn.now() })
+        .onConflict('user_ref')
+        .ignore()
+        .returning('user_ref');
+      if (inserted.length > 0) {
+        return { previous: undefined };
+      }
+
+      // On PostgreSQL, lock an existing row before reading the value to audit.
       const row = await trx('notification_preferences')
         .select('frequency')
         .where({ user_ref: userRef })
+        .forUpdate()
         .first<{ frequency: string }>();
+      if (!row) {
+        throw new Error(`Notification preference row missing for ${userRef}`);
+      }
 
       await trx('notification_preferences')
-        .insert({ user_ref: userRef, frequency, updated_at: trx.fn.now() })
-        .onConflict('user_ref')
-        .merge(['frequency', 'updated_at']);
+        .where({ user_ref: userRef })
+        .update({ frequency, updated_at: trx.fn.now() });
 
       return {
-        previous: row ? this.validFrequency(row.frequency, userRef) : undefined,
+        previous: this.validFrequency(row.frequency, userRef),
       };
     });
   }

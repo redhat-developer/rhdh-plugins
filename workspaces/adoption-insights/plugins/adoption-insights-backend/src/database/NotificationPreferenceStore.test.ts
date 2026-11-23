@@ -91,6 +91,32 @@ describe('NotificationPreferenceStore', () => {
       expect(await store.get('user:default/bob')).toBe('monthly');
     });
 
+    it('reports the actual previous value for concurrent first writes', async () => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const userRef = `user:default/new-${attempt}`;
+        const [daily, weekly] = await Promise.all([
+          store.set(userRef, 'daily'),
+          store.set(userRef, 'weekly'),
+        ]);
+        expect([
+          [undefined, 'daily'],
+          ['weekly', undefined],
+        ]).toContainEqual([daily.previous, weekly.previous]);
+      }
+    });
+
+    it('reports the actual previous value for concurrent updates', async () => {
+      await store.set('user:default/alice', 'off');
+      const [daily, weekly] = await Promise.all([
+        store.set('user:default/alice', 'daily'),
+        store.set('user:default/alice', 'weekly'),
+      ]);
+      expect([
+        ['off', 'daily'],
+        ['weekly', 'off'],
+      ]).toContainEqual([daily.previous, weekly.previous]);
+    });
+
     it('warns and falls back to off for an invalid stored frequency', async () => {
       await knex('notification_preferences').insert({
         user_ref: 'user:default/alice',
