@@ -73,7 +73,3 @@ workspace/theme:
 workspace/translations:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/translations/**']
-
-workspace/x2a:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/x2a/**']
