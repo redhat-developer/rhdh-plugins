@@ -16,6 +16,11 @@
 
 import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
 
+/**
+ * Temporary bridge until BUI supports outlined floating labels in the preview drawer
+ * (see RHIDP-18055). Global injection is intentional; selectors track BUI class names.
+ */
+
 /** Bumped when styles change so dev HMR picks up updates (element id is replaced). */
 const STYLE_ID = 'bulk-import-preview-drawer-field-styles-v5';
 

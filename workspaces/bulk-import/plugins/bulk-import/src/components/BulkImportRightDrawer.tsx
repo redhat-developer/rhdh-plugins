@@ -20,6 +20,7 @@ import { createPortal } from 'react-dom';
 
 import { Box } from '@backstage/ui';
 
+import { useTranslation } from '../hooks/useTranslation';
 import {
   bulkImportDrawerScrimColor,
   bulkImportDrawerZIndex,
@@ -66,6 +67,8 @@ export const BulkImportRightDrawer = ({
   /** `temporary` shows scrim and closes on outside click; `persistent` is panel-only. */
   variant?: 'persistent' | 'temporary';
 }) => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     injectPreviewDrawerFieldStyles();
   }, []);
@@ -114,7 +117,7 @@ export const BulkImportRightDrawer = ({
       {showScrim && (
         <button
           type="button"
-          aria-label="Close drawer"
+          aria-label={t('previewFile.closeDrawer')}
           data-testid={testId ? `${testId}-backdrop` : undefined}
           onClick={onClose}
           style={{

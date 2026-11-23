@@ -140,7 +140,8 @@ const DeleteRepositoryDialog = ({
             }
             isPending={mutationDelete.isLoading}
             style={{
-              backgroundColor: '#C9190B',
+              backgroundColor:
+                'var(--pf-t--global--color--status--danger--default, #c9190b)',
             }}
           >
             {mutationDelete.isLoading

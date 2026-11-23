@@ -25,7 +25,6 @@ import {
 } from '@backstage/plugin-catalog-react';
 import { Box, Checkbox, Combobox, Flex, Text, TextField } from '@backstage/ui';
 
-import { Spinner } from '@patternfly/react-core';
 import { FormikErrors, useFormik, useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -40,6 +39,7 @@ import {
   getValidationSchema,
   getYamlKeyValuePairs,
 } from '../../utils/repository-utils';
+import { BulkImportLoadingIcon } from '../bulkImportIcons';
 import { bulkImportTypographyPreviewSection } from '../bulkImportTypography';
 import { PreviewAutoResizeTextAreaField } from './PreviewAutoResizeTextAreaField';
 import { PreviewCatalogInfoPreviewCard } from './PreviewCatalogInfoPreviewCard';
@@ -161,7 +161,9 @@ export const PreviewPullRequestForm = ({
   );
 
   const entityOwnerLoadingSpinner = entitiesLoading ? (
-    <Spinner size="sm" aria-label={t('previewFile.pullRequest.loadingText')} />
+    <BulkImportLoadingIcon
+      aria-label={t('previewFile.pullRequest.loadingText')}
+    />
   ) : undefined;
 
   const updatePullRequestKeyValuePairFields = (

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import useObservable from 'react-use/esm/useObservable';
+
 import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
 
 /**
@@ -21,7 +23,8 @@ import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
  */
 export const useBulkImportColorScheme = (): 'light' | 'dark' => {
   const themeApi = useApi(appThemeApiRef);
-  const themeId = themeApi.getActiveThemeId() ?? '';
+  const themeId =
+    useObservable(themeApi.activeThemeId$(), themeApi.getActiveThemeId()) ?? '';
   const variant = themeApi
     .getInstalledThemes()
     .find(theme => theme.id === themeId)?.variant;

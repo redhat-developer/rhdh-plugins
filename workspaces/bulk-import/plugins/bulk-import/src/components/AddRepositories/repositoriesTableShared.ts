@@ -87,7 +87,6 @@ export const repositoriesTablePanelStyle: CSSProperties = {
   overflow: 'hidden',
 };
 
-/** Column width hints for the four-column add-repositories layout. */
 /** Compact BUI TablePagination: tighter row-size select and even gaps between controls. */
 export const bulkImportTablePaginationCss = `
 .bulk-import-table-pagination {
@@ -164,6 +163,7 @@ export const bulkImportTablePaginationCss = `
 }
 `;
 
+/** Column width hints for the four-column add-repositories layout. */
 export const repositoriesTableFixedColumnCss = `
   .bulk-import-repositories-table th:nth-child(1),
   .bulk-import-repositories-table td:nth-child(1) {

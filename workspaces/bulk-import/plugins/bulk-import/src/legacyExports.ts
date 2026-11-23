@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+/**
+ * Legacy NFS entry point. Host apps that still bundle MUI alongside this plugin must apply
+ * their own ClassNameGenerator configuration (removed here with the BUI migration).
+ */
+
 export {
   bulkImportPlugin,
   BulkImportPage,

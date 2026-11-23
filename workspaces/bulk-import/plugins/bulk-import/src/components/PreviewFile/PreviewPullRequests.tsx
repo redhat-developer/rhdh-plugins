@@ -36,7 +36,7 @@ const getLabel = (status: any, repoId: string, repoName: string) => {
         style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
       >
         <BulkImportErrorIcon />
-        <Text>{repoName}</Text>
+        <Text as="span">{repoName}</Text>
       </span>
     );
   }
@@ -47,7 +47,7 @@ const getLabel = (status: any, repoId: string, repoName: string) => {
         style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
       >
         <BulkImportInfoIcon />
-        <Text>{repoName}</Text>
+        <Text as="span">{repoName}</Text>
       </span>
     );
   }

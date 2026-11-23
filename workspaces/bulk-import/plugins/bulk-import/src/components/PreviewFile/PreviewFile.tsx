@@ -64,7 +64,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           <TooltipTrigger>
             <span>
               <BulkImportErrorIcon />
-              <Text data-testid="failed">
+              <Text as="span" data-testid="failed">
                 {' '}
                 {t('previewFile.failedToCreatePR')}{' '}
               </Text>

@@ -18,10 +18,12 @@ import type { MouseEvent } from 'react';
 
 import { Flex, Text } from '@backstage/ui';
 
-import { Spinner } from '@patternfly/react-core';
-
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
+import {
+  BulkImportLoadingIcon,
+  bulkImportTableLoadingIconSize,
+} from '../bulkImportIcons';
 import { OrganizationTableRow } from './OrganizationTableRow';
 import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
 import { RepositoryTableRow } from './RepositoryTableRow';
@@ -69,7 +71,10 @@ export const RepositoriesTableBody = ({
               justify="center"
               style={{ padding: '16px' }}
             >
-              <Spinner size="lg" aria-label={t('importActions.loading')} />
+              <BulkImportLoadingIcon
+                size={bulkImportTableLoadingIconSize}
+                aria-label={t('importActions.loading')}
+              />
             </Flex>
           </td>
         </tr>

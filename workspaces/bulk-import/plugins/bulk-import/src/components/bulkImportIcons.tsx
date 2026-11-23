@@ -24,12 +24,29 @@ import {
   RiErrorWarningLine,
   RiExternalLinkLine,
   RiInformationLine,
+  RiLoader4Line,
   RiQuestionLine,
   RiRefreshLine,
 } from '@remixicon/react';
 
+const loaderSpinStyleId = 'bulk-import-loader-spin-keyframes';
+
+if (
+  typeof document !== 'undefined' &&
+  !document.getElementById(loaderSpinStyleId)
+) {
+  const style = document.createElement('style');
+  style.id = loaderSpinStyleId;
+  style.textContent =
+    '@keyframes bulk-import-loader-spin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(style);
+}
+
 /** Matches 0.875rem table/link text where these icons appear most often. */
 const defaultSize = 14;
+
+/** Matches former PatternFly Spinner `size="lg"` in repository table loading rows. */
+export const bulkImportTableLoadingIconSize = 54;
 
 type BulkImportIconProps = Omit<
   ComponentProps<typeof RiExternalLinkLine>,
@@ -129,6 +146,26 @@ export const BulkImportWarningIcon = ({
     size={size}
     color="#F0AB00"
     style={{ verticalAlign: 'middle', ...style }}
+    {...props}
+  />
+);
+
+/** Inline loading indicator (replaces former MUI CircularProgress / PF Spinner). */
+export const BulkImportLoadingIcon = ({
+  size = defaultSize,
+  'aria-label': ariaLabel,
+  style,
+  ...props
+}: BulkImportIconProps & { 'aria-label': string }) => (
+  <RiLoader4Line
+    size={size}
+    role="status"
+    aria-label={ariaLabel}
+    style={{
+      animation: 'bulk-import-loader-spin 1s linear infinite',
+      color: 'var(--bui-fg-accent, #0066cc)',
+      ...style,
+    }}
     {...props}
   />
 );

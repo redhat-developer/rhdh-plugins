@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
-
 /**
  * Solid surfaces for drawers, footers, and outlined fields in the bulk-import UI.
  *
@@ -34,7 +32,3 @@ export const bulkImportDrawerScrimColor =
 
 /** Above Backstage page chrome; below global tooltips if any. */
 export const bulkImportDrawerZIndex = 1200;
-
-export const bulkImportOpaqueSurfaceStyle: CSSProperties = {
-  backgroundColor: bulkImportOpaqueSurfaceColor,
-};

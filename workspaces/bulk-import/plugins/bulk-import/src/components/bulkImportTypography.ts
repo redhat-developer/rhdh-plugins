@@ -16,6 +16,10 @@
 
 import type { CSSProperties } from 'react';
 
+/**
+ * Temporary MUI typography metric shims until BUI tokens cover these layouts (RHIDP-18055).
+ */
+
 /** Matches Material UI default `Typography` variant="h5". */
 export const bulkImportTypographyH5: CSSProperties = {
   fontSize: '1.5rem',

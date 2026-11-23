@@ -16,12 +16,14 @@
 
 import { Alert, Flex, Text } from '@backstage/ui';
 
-import { Spinner } from '@patternfly/react-core';
-
 import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { repositoriesTableCellStyle } from '../AddRepositories/repositoriesTableShared';
+import {
+  BulkImportLoadingIcon,
+  bulkImportTableLoadingIconSize,
+} from '../bulkImportIcons';
 import { AddedRepositoryTableRow } from './AddedRepositoryTableRow';
 import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
@@ -53,7 +55,10 @@ export const AddedRepositoriesTableBody = ({
               justify="center"
               style={{ padding: '16px' }}
             >
-              <Spinner size="lg" aria-label={t('importActions.loading')} />
+              <BulkImportLoadingIcon
+                size={bulkImportTableLoadingIconSize}
+                aria-label={t('importActions.loading')}
+              />
             </Flex>
           </td>
         </tr>
