@@ -199,7 +199,7 @@ Content-Type: application/json
 { "frequency": "monthly" }
 ```
 
-Any other value returns HTTP 400 with `message: "Invalid notification preference"` and field errors. Successful and validation-rejected PUTs produce a `notification-preference-update` audit event. These routes remain available while notification sending is not enabled.
+Invalid requests return HTTP 400 with `message: "Invalid notification preference"`, `errors` for field-level problems, and `formErrors` for object-level problems such as extra keys. Successful and validation-rejected PUTs produce a `notification-preference-update` audit event. These routes remain available while notification sending is not enabled.
 
 ## Example Request
 

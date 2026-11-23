@@ -355,6 +355,18 @@ describe('notification preference API across databases', () => {
       expect(res.body.message).toBe('Invalid notification preference');
     });
 
+    it('reports extra body keys in formErrors', async () => {
+      const res = await request(server)
+        .put(url)
+        .send({ frequency: 'weekly', userRef: 'user:default/other' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        message: 'Invalid notification preference',
+        errors: {},
+        formErrors: [expect.stringContaining('userRef')],
+      });
+    });
+
     it('isolates the signed-in users', async () => {
       await request(server).put(url).send({ frequency: 'monthly' });
       const otherUser = mockCredentials.user.header('user:default/other');

@@ -88,9 +88,22 @@ describe('NotificationPreferenceController', () => {
     expect(res.json).toHaveBeenCalledWith({
       message: 'Invalid notification preference',
       errors: expect.any(Object),
+      formErrors: expect.any(Array),
     });
     expect(auditEvent.fail).toHaveBeenCalledWith({
       error: expect.any(Error),
+    });
+    expect(store.set).not.toHaveBeenCalled();
+  });
+
+  it('reports extra body keys in formErrors', async () => {
+    req.body = { frequency: 'weekly', userRef: 'user:default/bob' };
+    await controller.updatePreference(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Invalid notification preference',
+      errors: {},
+      formErrors: [expect.stringContaining('userRef')],
     });
     expect(store.set).not.toHaveBeenCalled();
   });

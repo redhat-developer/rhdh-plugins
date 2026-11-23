@@ -47,9 +47,11 @@ export class NotificationPreferenceController {
     const parsed = NotificationPreferenceSchema.safeParse(req.body);
     if (!parsed.success) {
       auditEvent.fail({ error: parsed.error });
+      const { fieldErrors, formErrors } = parsed.error.flatten();
       res.status(400).json({
         message: 'Invalid notification preference',
-        errors: parsed.error.flatten().fieldErrors,
+        errors: fieldErrors,
+        formErrors,
       });
       return;
     }
