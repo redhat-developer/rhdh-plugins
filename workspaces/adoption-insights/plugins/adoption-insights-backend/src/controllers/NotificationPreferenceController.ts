@@ -66,7 +66,10 @@ export class NotificationPreferenceController {
         frequency,
       );
       auditEvent.success({
-        meta: { frequency, previousFrequency: previous ?? 'off' },
+        meta: {
+          frequency,
+          previousFrequency: previous ?? DEFAULT_NOTIFICATION_FREQUENCY,
+        },
       });
       res.status(200).json({ frequency });
     } catch (error) {

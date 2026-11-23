@@ -16,6 +16,7 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 import {
+  DEFAULT_NOTIFICATION_FREQUENCY,
   NOTIFICATION_FREQUENCIES,
   NotificationFrequency,
 } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
@@ -38,7 +39,7 @@ export class NotificationPreferenceStore {
       userRef,
       frequency: value,
     });
-    return 'off';
+    return DEFAULT_NOTIFICATION_FREQUENCY;
   }
 
   /** Returns undefined when the user has no row. */
