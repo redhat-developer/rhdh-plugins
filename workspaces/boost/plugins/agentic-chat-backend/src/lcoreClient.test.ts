@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
+import { once } from 'node:events';
+import type { AddressInfo } from 'node:net';
 import { mockServices } from '@backstage/backend-test-utils';
 import express from 'express';
 import request from 'supertest';
 import { createLcoreForwarder } from './lcoreClient';
-
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 
 it.each([
   [400, 400],
@@ -35,28 +33,35 @@ it.each([
 ])(
   'maps LCORE %i to %i with a sanitized response',
   async (upstream, expected) => {
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(
-        Response.json(
-          { error: 'Private runtime error details' },
-          { status: upstream, headers: { 'Retry-After': '120' } },
-        ),
+    const runtime = express()
+      .get('/v2/conversations', (_req, res) => {
+        res
+          .status(upstream)
+          .set('Retry-After', '120')
+          .json({ error: 'Private runtime error details' });
+      })
+      .listen(0, '127.0.0.1');
+
+    try {
+      await once(runtime, 'listening');
+      const { port } = runtime.address() as AddressInfo;
+      const forward = createLcoreForwarder(
+        `http://127.0.0.1:${port}`,
+        mockServices.logger.mock(),
       );
-    const forward = createLcoreForwarder(
-      'http://127.0.0.1:8090',
-      mockServices.logger.mock(),
-    );
-    const app = express();
-    app.get('/conversations', async (_req, res) => {
-      res.locals.userEntityRef = 'user:default/alice';
-      await forward('/v2/conversations', 'GET', res);
-    });
+      const app = express();
+      app.get('/conversations', async (_req, res) => {
+        res.locals.userEntityRef = 'user:default/alice';
+        await forward('/v2/conversations', 'GET', res);
+      });
 
-    const response = await request(app).get('/conversations');
+      const response = await request(app).get('/conversations');
 
-    expect(response.status).toBe(expected);
-    expect(response.body).toEqual({ error: 'Chat runtime request failed' });
-    expect(response.headers['retry-after']).toBeUndefined();
+      expect(response.status).toBe(expected);
+      expect(response.body).toEqual({ error: 'Chat runtime request failed' });
+      expect(response.headers['retry-after']).toBeUndefined();
+    } finally {
+      await new Promise<void>(resolve => runtime.close(() => resolve()));
+    }
   },
 );

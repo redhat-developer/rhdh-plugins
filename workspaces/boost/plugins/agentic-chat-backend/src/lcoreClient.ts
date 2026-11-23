@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { request, type IncomingMessage } from 'node:http';
+import { json } from 'node:stream/consumers';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Response } from 'express';
 import {
@@ -39,6 +41,7 @@ const PASSTHROUGH_ERROR_STATUSES = new Set([
   HTTP_STATUS_UNPROCESSABLE_ENTITY,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 ]);
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 export function createLcoreForwarder(baseUrl: string, logger: LoggerService) {
   return async function forward(
@@ -47,39 +50,58 @@ export function createLcoreForwarder(baseUrl: string, logger: LoggerService) {
     response: Response,
     body?: unknown,
   ) {
-    // Build a fresh URL: browser identity selectors and credentials are never forwarded.
-    const url = new URL(path, baseUrl);
-    url.searchParams.set('user_id', response.locals.userEntityRef);
+    const query = new URLSearchParams({
+      user_id: response.locals.userEntityRef,
+    });
     try {
-      const upstream = await fetch(url, {
-        method,
-        ...(body !== undefined && {
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }),
-        redirect: 'error',
-        signal: AbortSignal.timeout(30_000),
+      const payload = JSON.stringify(body);
+      const upstream = await new Promise<IncomingMessage>((resolve, reject) => {
+        const upstreamRequest = request(
+          baseUrl,
+          {
+            // Pass the encoded path directly so URL parsing cannot normalize it.
+            path: `${path}?${query}`,
+            method,
+            headers:
+              payload === undefined
+                ? undefined
+                : {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(payload),
+                  },
+            signal: AbortSignal.timeout(30_000),
+          },
+          resolve,
+        );
+        upstreamRequest.once('error', reject);
+        upstreamRequest.end(payload);
       });
-      if (!upstream.ok) {
-        const status = PASSTHROUGH_ERROR_STATUSES.has(upstream.status)
-          ? upstream.status
+      const upstreamStatus = upstream.statusCode ?? HTTP_STATUS_BAD_GATEWAY;
+      if (upstreamStatus < 200 || upstreamStatus >= 300) {
+        upstream.destroy();
+        if (REDIRECT_STATUSES.has(upstreamStatus)) {
+          throw new Error('Unexpected LCORE redirect');
+        }
+        const status = PASSTHROUGH_ERROR_STATUSES.has(upstreamStatus)
+          ? upstreamStatus
           : HTTP_STATUS_BAD_GATEWAY;
         if (status === HTTP_STATUS_TOO_MANY_REQUESTS) {
-          const retryAfter = upstream.headers.get('Retry-After');
-          if (retryAfter !== null) {
+          const retryAfter = upstream.headers['retry-after'];
+          if (retryAfter !== undefined) {
             response.set('Retry-After', retryAfter);
           }
         }
-        logger.warn('LCORE request failed', { status: upstream.status });
+        logger.warn('LCORE request failed', { status: upstreamStatus });
         response.status(status).json({ error: 'Chat runtime request failed' });
         return;
       }
-      if (upstream.status === HTTP_STATUS_NO_CONTENT) {
+      if (upstreamStatus === HTTP_STATUS_NO_CONTENT) {
+        upstream.resume();
         response.status(HTTP_STATUS_NO_CONTENT).end();
         return;
       }
-      const result = await upstream.json();
-      response.status(upstream.status).json(result);
+      const result = await json(upstream);
+      response.status(upstreamStatus).json(result);
     } catch {
       logger.warn('LCORE request could not be completed');
       response

@@ -38,7 +38,7 @@ The backend passes through LCORE's success status and JSON body. The routes belo
 - GET `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id` and a `chat_history` array of turns.
 - DELETE `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id`, a boolean `deleted`, and a human-readable `response` when LCORE returns JSON. If the runtime returns `204 No Content`, the response has an empty body.
 
-The backend forwards conversation IDs to LCORE for format validation. The `conversation_id` field in an agent run request is optional.
+The backend preserves the encoded conversation ID path segment on reads and deletes and forwards it to LCORE for format validation. The `conversation_id` field in an agent run request is optional.
 
 See the [LCORE conversation response models](https://github.com/lightspeed-core/lightspeed-stack/blob/main/src/models/api/responses/successful/conversations.py) for details on the conversation payloads.
 

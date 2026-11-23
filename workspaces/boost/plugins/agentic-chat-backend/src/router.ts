@@ -116,29 +116,13 @@ export async function createRouter(options: RouterOptions) {
     await forward('/v2/conversations', 'GET', res);
   });
 
-  router.param('conversationId', (_req, _res, next, id: string) => {
-    // The upstream URL builder resolves dot segments before sending the request.
-    if (id === '.' || id === '..') {
-      return next(new InputError('Invalid conversation identifier'));
-    }
-    return next();
-  });
-
   router
     .route('/v2/conversations/:conversationId')
     .get(async (req, res) => {
-      await forward(
-        `/v2/conversations/${encodeURIComponent(req.params.conversationId)}`,
-        'GET',
-        res,
-      );
+      await forward(req.path, 'GET', res);
     })
     .delete(async (req, res) => {
-      await forward(
-        `/v2/conversations/${encodeURIComponent(req.params.conversationId)}`,
-        'DELETE',
-        res,
-      );
+      await forward(req.path, 'DELETE', res);
     });
 
   router.use(MiddlewareFactory.create({ logger, config }).error());

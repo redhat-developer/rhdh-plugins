@@ -58,9 +58,7 @@ const selection = {
   provider: 'openai',
   model: 'selected-model',
 };
-const aliceConversationId = '550e8400-e29b-41d4-a716-446655440000';
-const ogxConversationId =
-  'conv_0123456789abcdef0123456789abcdef0123456789abcdef';
+const testConversationId = '550e8400-e29b-41d4-a716-446655440000';
 
 let server: Server;
 let port: number;
@@ -81,7 +79,7 @@ beforeAll(async () => {
     const url = new URL(req.url, 'http://localhost');
     const owner = url.searchParams.get('user_id');
     calls.push({
-      path: url.pathname,
+      path: req.path,
       owner,
       method: req.method,
       body: req.body,
@@ -102,7 +100,7 @@ beforeAll(async () => {
     res.json({
       conversations:
         owner === 'user:default/alice'
-          ? [{ conversation_id: aliceConversationId }]
+          ? [{ conversation_id: testConversationId }]
           : [],
     });
   });
@@ -179,7 +177,11 @@ async function app(
 it('submits one mapped workflow with trusted identity and preserves upstream acceptance', async () => {
   const response = await request(await app())
     .post('/v1/agent/run')
-    .send({ ...selection, query: 'Hello', conversation_id: ogxConversationId });
+    .send({
+      ...selection,
+      query: 'Hello',
+      conversation_id: testConversationId,
+    });
   expect(response.status).toBe(202);
   expect(response.body).toEqual({ workflow_id: 'wf-1', status: 'running' });
   expect(calls).toEqual([
@@ -195,7 +197,7 @@ it('submits one mapped workflow with trusted identity and preserves upstream acc
         spawn: 'none',
         tools: ['search'],
         inference_provider: { name: 'openai', model: 'selected-model' },
-        conversation_id: ogxConversationId,
+        conversation_id: testConversationId,
       },
     },
   ]);
@@ -203,8 +205,8 @@ it('submits one mapped workflow with trusted identity and preserves upstream acc
 
 it.each([
   ['get', '/v2/conversations'],
-  ['get', `/v2/conversations/${aliceConversationId}`],
-  ['delete', `/v2/conversations/${aliceConversationId}`],
+  ['get', `/v2/conversations/${testConversationId}`],
+  ['delete', `/v2/conversations/${testConversationId}`],
   ['post', '/v1/agent/run'],
 ])('requires agentic-chat.chat on %s %s', async (method, path) => {
   const client = request(await app({ allowed: false }));
@@ -234,7 +236,7 @@ it('forwards history with trusted owner instead of browser user_id or Authorizat
     .set('Authorization', mockCredentials.user.header('user:default/alice'));
   expect(response.status).toBe(200);
   expect(response.body).toEqual({
-    conversations: [{ conversation_id: aliceConversationId }],
+    conversations: [{ conversation_id: testConversationId }],
   });
   expect(calls[0]).toMatchObject({
     owner: 'user:default/alice',
@@ -244,22 +246,27 @@ it('forwards history with trusted owner instead of browser user_id or Authorizat
 
 it('preserves a successful no-content delete response', async () => {
   const response = await request(await app()).delete(
-    `/v2/conversations/${aliceConversationId}`,
+    `/v2/conversations/${testConversationId}`,
   );
   expect(response.status).toBe(204);
   expect(response.text).toBe('');
   expect(calls[0]).toMatchObject({
     method: 'DELETE',
-    path: `/v2/conversations/${aliceConversationId}`,
+    path: `/v2/conversations/${testConversationId}`,
     owner: 'user:default/alice',
   });
 });
 
-it.each(['get', 'delete'] as const)(
-  'leaves conversation ID format validation to LCORE on %s',
-  async method => {
+it.each([
+  ['get', testConversationId.replace('-', '%2d')],
+  ['delete', testConversationId.replace('-', '%2d')],
+  ['get', '%2E'],
+  ['delete', '%2E%2E'],
+] as const)(
+  'forwards the encoded conversation ID unchanged on %s for %s',
+  async (method, encodedId) => {
     respondUpstream = res => res.status(400).json({ error: 'Invalid ID' });
-    const path = '/v2/conversations/invalid%20id';
+    const path = `/v2/conversations/${encodedId}`;
     const response = await request(await app())[method](path);
 
     expect(response.status).toBe(400);
@@ -283,18 +290,6 @@ it('leaves run request conversation ID format validation to LCORE', async () => 
   expect(calls).toHaveLength(1);
   expect(calls[0].body).toMatchObject({ conversation_id: conversationId });
 });
-
-it.each(['%2E', '%2E%2E'])(
-  'rejects the dot segment %s before forwarding',
-  async segment => {
-    const response = await request(await app()).get(
-      `/v2/conversations/${segment}`,
-    );
-
-    expect(response.status).toBe(400);
-    expect(calls).toHaveLength(0);
-  },
-);
 
 it('rejects identity overrides and reports missing Catalog agents', async () => {
   const client = request(await app());
