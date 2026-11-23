@@ -15,6 +15,7 @@
  */
 
 import { AuditorService, HttpAuthService } from '@backstage/backend-plugin-api';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { DEFAULT_NOTIFICATION_FREQUENCY } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import { Request, Response } from 'express';
 import { NotificationPreferenceStore } from '../database/NotificationPreferenceStore';
@@ -27,17 +28,30 @@ export class NotificationPreferenceController {
     private readonly httpAuth: HttpAuthService,
   ) {}
 
+  private async getUserEntityRef(req: Request): Promise<string> {
+    try {
+      const credentials = await this.httpAuth.credentials(req, {
+        allow: ['user'],
+      });
+      return credentials.principal.userEntityRef;
+    } catch (error) {
+      if (error instanceof NotAllowedError) {
+        throw new AuthenticationError('User credentials required');
+      }
+      throw error;
+    }
+  }
+
   async getPreference(req: Request, res: Response): Promise<void> {
-    const credentials = await this.httpAuth.credentials(req, {
-      allow: ['user'],
-    });
-    const frequency = await this.store.get(credentials.principal.userEntityRef);
+    const userRef = await this.getUserEntityRef(req);
+    const frequency = await this.store.get(userRef);
     res.status(200).json({
       frequency: frequency ?? DEFAULT_NOTIFICATION_FREQUENCY,
     });
   }
 
   async updatePreference(req: Request, res: Response): Promise<void> {
+    const userRef = await this.getUserEntityRef(req);
     const auditEvent = await this.auditor.createEvent({
       eventId: 'notification-preference-update',
       severityLevel: 'medium',
@@ -57,14 +71,8 @@ export class NotificationPreferenceController {
     }
 
     try {
-      const credentials = await this.httpAuth.credentials(req, {
-        allow: ['user'],
-      });
       const { frequency } = parsed.data;
-      const { previous } = await this.store.set(
-        credentials.principal.userEntityRef,
-        frequency,
-      );
+      const { previous } = await this.store.set(userRef, frequency);
       auditEvent.success({
         meta: {
           frequency,

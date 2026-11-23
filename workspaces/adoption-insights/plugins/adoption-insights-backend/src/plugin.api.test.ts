@@ -415,9 +415,14 @@ describe('notification preference API across databases', () => {
         .put(url)
         .set('Authorization', mockCredentials.service.header())
         .send({ frequency: 'daily' });
+      const invalidServicePut = await request(server)
+        .put(url)
+        .set('Authorization', mockCredentials.service.header())
+        .send({ frequency: 'invalid' });
       expect(noUser.status).toBe(401);
       expect(service.status).toBe(401);
       expect(servicePut.status).toBe(401);
+      expect(invalidServicePut.status).toBe(401);
     });
   });
 });

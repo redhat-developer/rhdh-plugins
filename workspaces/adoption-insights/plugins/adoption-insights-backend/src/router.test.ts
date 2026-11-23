@@ -65,10 +65,7 @@ describe('createRouter', () => {
       }),
     };
 
-    const mockHttpAuth = mockServices.httpAuth.mock();
-    jest
-      .mocked(mockHttpAuth.credentials)
-      .mockResolvedValue(mockCredentials.user('user:default/test-user'));
+    const httpAuth = mockServices.httpAuth();
 
     const eventApiController = new EventApiController(
       mockEventDatabase as any,
@@ -76,7 +73,7 @@ describe('createRouter', () => {
       mockServices.rootConfig.mock(),
       mockAuditor as any,
       mockServices.auth.mock(),
-      mockHttpAuth,
+      httpAuth,
       mockServices.discovery.mock(),
       { getEntityByRef: jest.fn() } as any,
       mockServices.logger.mock(),
@@ -90,11 +87,11 @@ describe('createRouter', () => {
       new NotificationPreferenceController(
         mockPreferenceStore as any,
         mockAuditor as any,
-        mockHttpAuth,
+        httpAuth,
       );
 
     const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
+      httpAuth,
       eventApiController,
       notificationPreferenceController,
       permissions: mockServices.permissions.mock({
