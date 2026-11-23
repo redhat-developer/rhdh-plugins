@@ -91,14 +91,35 @@ describe('scorecard-backend-module-github', () => {
     expect(res.status).toBe(200);
   });
 
-  it('registers the github.openPRs metric provider', async () => {
+  it('registers the github metric providers', async () => {
     const res = await request(server).get(
       '/api/scorecard/metrics?datasource=github',
     );
 
     expect(res.status).toBe(200);
-    expect(res.body.metrics).toHaveLength(1);
-    expect(res.body.metrics[0]).toEqual(
+    expect(
+      res.body.metrics.map((metric: { id: string }) => metric.id).sort(),
+    ).toEqual(
+      [
+        'github.openPRs',
+        'github.openIssues',
+        'github.openedIssues7d',
+        'github.openedPRs7d',
+        'github.closedIssues7d',
+        'github.closedPRs7d',
+        'github.timeToReview',
+        'github.timeToApprove',
+        'github.timeToMerge',
+        'github.actionsStarted7d',
+        'github.actionsSuccessful7d',
+        'github.actionsFailed7d',
+        'github.actionsSuccessRatio7d',
+        'github.actionsSuccessRatio24h',
+        'github.prCiFirstTimePassRate7d',
+        'github.prCiFirstTimePassRate24h',
+      ].sort(),
+    );
+    expect(res.body.metrics).toContainEqual(
       expect.objectContaining({
         id: 'github.openPRs',
         title: 'GitHub open PRs',

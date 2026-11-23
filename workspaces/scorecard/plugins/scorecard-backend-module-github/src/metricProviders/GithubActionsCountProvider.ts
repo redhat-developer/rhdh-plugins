@@ -29,8 +29,8 @@ import { WorkflowRun } from '../github/types';
 
 const ACTIVITY_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'success', expression: '>=0' },
-    { key: 'warning', expression: '==0' },
+    { key: 'success', expression: '>0' },
+    { key: 'warning', expression: '<=0' },
   ],
 };
 
