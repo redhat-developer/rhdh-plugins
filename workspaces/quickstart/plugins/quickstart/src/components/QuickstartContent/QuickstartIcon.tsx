@@ -139,6 +139,7 @@ export const QuickstartIcon = ({
   if (shouldUseMaterialLigature(icon)) {
     return (
       <Box
+        aria-hidden
         className={['material-icons-outlined', className]
           .filter(Boolean)
           .join(' ')}

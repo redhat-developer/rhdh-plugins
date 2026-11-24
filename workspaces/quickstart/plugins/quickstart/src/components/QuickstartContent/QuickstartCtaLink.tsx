@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { Button } from '@backstage/ui';
+import { Button, ButtonLink } from '@backstage/ui';
 import { RiExternalLinkLine } from '@remixicon/react';
-import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
@@ -28,12 +27,12 @@ export type QuickstartCtaLinkProps = {
 };
 
 /**
- * MUI LinkButton `variant="outlined"` → BUI Button `variant="secondary"`.
- * RHDH theme styles secondary as PatternFly outlined buttons.
+ * MUI LinkButton `variant="outlined"` → BUI ButtonLink `variant="secondary"`.
+ * Anchor-backed so Ctrl/Cmd-click, middle-click, and copy-link work; onPress
+ * still marks the step complete.
  */
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   if (!cta) {
     return (
@@ -49,30 +48,28 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
 
   if (isExternalLink) {
     return (
-      <Button
+      <ButtonLink
         variant="secondary"
+        href={cta.link}
         data-cta-href={cta.link}
+        target="_blank"
+        rel="noopener noreferrer"
         iconEnd={<RiExternalLinkLine size={15} />}
-        onPress={() => {
-          onClick();
-          window.open(cta.link, '_blank', 'noopener,noreferrer');
-        }}
+        onPress={() => onClick()}
       >
         {finalText}
-      </Button>
+      </ButtonLink>
     );
   }
 
   return (
-    <Button
+    <ButtonLink
       variant="secondary"
+      href={cta.link}
       data-cta-href={cta.link}
-      onPress={() => {
-        onClick();
-        navigate(cta.link);
-      }}
+      onPress={() => onClick()}
     >
       {finalText}
-    </Button>
+    </ButtonLink>
   );
 };

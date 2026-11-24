@@ -108,7 +108,7 @@ test.describe('Test Quick Start plugin', () => {
     const configureGitDocsUrl =
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/';
     const configureGitCta = page
-      .getByRole('button', { name: translations.steps.configureGit.ctaTitle })
+      .getByRole('link', { name: translations.steps.configureGit.ctaTitle })
       .and(
         page.locator(
           '[data-cta-href*="integrating_red_hat_developer_hub_with_github"]',
@@ -131,7 +131,7 @@ test.describe('Test Quick Start plugin', () => {
     );
     await setupLightspeedDescription.waitFor({ state: 'visible' });
     const setupLightspeedCta = page
-      .getByRole('button', {
+      .getByRole('link', {
         name: translations.steps.setupLightspeed.ctaTitle,
       })
       .and(

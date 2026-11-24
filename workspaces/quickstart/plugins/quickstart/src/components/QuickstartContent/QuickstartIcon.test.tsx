@@ -90,7 +90,9 @@ describe('QuickstartIcon', () => {
 
   it('falls back to material ligature for legacy Import icon', () => {
     render(<QuickstartIcon icon="Import" />);
-    expect(screen.getByText('login')).toHaveClass('material-icons-outlined');
+    const ligature = screen.getByText('login');
+    expect(ligature).toHaveClass('material-icons-outlined');
+    expect(ligature).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('falls back to material ligature for legacy SelfService icon', () => {

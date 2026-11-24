@@ -61,15 +61,19 @@ export class UIhelper {
       .click();
   }
   /**
-   * CTAs are BUI Buttons (not anchors). Target URL is exposed as data-cta-href.
+   * CTAs are BUI ButtonLinks (anchors). Target URL is on href and data-cta-href.
    */
   async verifyButtonURL(label: string | RegExp, url: string) {
-    const buttons = this.page.getByRole('button', { name: label, exact: true });
-    await expect(buttons.first()).toBeVisible();
-    const count = await buttons.count();
+    const links = this.page.getByRole('link', { name: label, exact: true });
+    await expect(links.first()).toBeVisible();
+    const count = await links.count();
     const hrefs: string[] = [];
     for (let i = 0; i < count; i++) {
-      hrefs.push((await buttons.nth(i).getAttribute('data-cta-href')) ?? '');
+      hrefs.push(
+        (await links.nth(i).getAttribute('data-cta-href')) ??
+          (await links.nth(i).getAttribute('href')) ??
+          '',
+      );
     }
     expect(hrefs.some(href => href.includes(url))).toBeTruthy();
   }
@@ -78,7 +82,7 @@ export class UIhelper {
     // Use a locator + auto-wait: accordion panels remount after navigation/progress
     // updates, so a one-shot getByRole scan can miss the CTA.
     const cta = this.page.locator(
-      `button[data-cta-href="${url}"], button[data-cta-href*="${url}"]`,
+      `a[data-cta-href="${url}"], a[data-cta-href*="${url}"]`,
     );
     await cta.first().click({ timeout: 15000 });
   }
