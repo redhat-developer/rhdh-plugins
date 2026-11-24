@@ -99,6 +99,12 @@ permission:
       - x2a
 scaffolder: {}
 x2a:
+  scm:
+    # The one host each SCM OAuth provider above is registered against
+    # (gitlab: its `audience`). No default: tokens for other hosts are refused.
+    authHosts:
+      github: github.com
+      gitlab: gitlab.com
   kubernetes:
     namespace: ${X2A_KUBERNETES_NAMESPACE:-default}
     image: ${X2A_KUBERNETES_IMAGE:-quay.io/x2ansible/x2a-convertor}
