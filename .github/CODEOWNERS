@@ -48,3 +48,6 @@
 /.github/workflows/fullsend-ci-triage.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/prioritize.yml                   @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /scripts/ci/fullsend-ci-context.cjs                 @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+
+# UI related configuration
+/scripts/ci/material-ui-v4-policy.json              @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-ui
