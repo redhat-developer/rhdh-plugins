@@ -167,6 +167,10 @@ flag_management:
     - name: e2e-extensions
       paths:
         - workspaces/extensions/
+    - name: e2e-global-header
+      paths:
+        - workspaces/app-defaults/e2e-tests/global-header.spec.ts
+        - workspaces/app-defaults/e2e-tests/utils/global-header/
     - name: e2e-homepage
       paths:
         - workspaces/homepage/

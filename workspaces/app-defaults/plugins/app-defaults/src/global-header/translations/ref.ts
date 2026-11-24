@@ -24,6 +24,8 @@ export const globalHeaderMessages = {
     noSupportLinksSubtitle: 'Your administrator needs to set up support links.',
     quickStart: 'Quick start',
     supportTitle: 'Support',
+    faq: 'FAQ',
+    communityForum: 'Community Forum',
   },
   profile: {
     picture: 'Profile picture',
@@ -45,9 +47,12 @@ export const globalHeaderMessages = {
       'Configure application links in dynamic plugin config for quick access from here.',
     developerHub: 'Developer Hub',
     rhdhLocal: 'RHDH Local',
+    internalWiki: 'Internal Wiki',
+    issueTracker: 'Issue Tracker',
     sections: {
       documentation: 'Documentation',
       developerTools: 'Developer Tools',
+      resources: 'Resources',
     },
   },
   starred: {
@@ -74,6 +79,9 @@ export const globalHeaderMessages = {
       errorFetching: 'Error fetching templates',
       noTemplatesAvailable: 'No templates available',
     },
+  },
+  components: {
+    visualizerDashboard: 'Visualizer Dashboard',
   },
 };
 

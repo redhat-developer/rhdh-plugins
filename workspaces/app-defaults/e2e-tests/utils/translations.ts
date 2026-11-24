@@ -18,6 +18,8 @@ export type E2eTranslations = {
   languageDropdownTitle: string;
   catalogSideBarTitle: string;
   overviewTabTitle: string;
+  /** Localized sidebar / page title (`pages.Home`). */
+  homeTitle: string;
   /** Localized sidebar / page title (`pages.Learning Paths`). */
   learningPathTitle: string;
 };
@@ -27,36 +29,42 @@ const localeMessages: Record<string, E2eTranslations> = {
     languageDropdownTitle: 'English',
     catalogSideBarTitle: 'Catalog',
     overviewTabTitle: 'Overview',
+    homeTitle: 'Home',
     learningPathTitle: 'Learning Paths',
   },
   de: {
     languageDropdownTitle: 'Deutsch',
     catalogSideBarTitle: 'Katalog',
     overviewTabTitle: 'Übersicht',
+    homeTitle: 'Startseite',
     learningPathTitle: 'Lernpfade',
   },
   es: {
     languageDropdownTitle: 'Español',
     catalogSideBarTitle: 'Catálogo',
     overviewTabTitle: 'Resumen',
+    homeTitle: 'Inicio',
     learningPathTitle: 'Rutas de aprendizaje',
   },
   fr: {
     languageDropdownTitle: 'Français',
     catalogSideBarTitle: 'Catalogue',
     overviewTabTitle: 'Aperçu',
+    homeTitle: 'Accueil',
     learningPathTitle: "Parcours d'apprentissage",
   },
   it: {
     languageDropdownTitle: 'Italiano',
     catalogSideBarTitle: 'Catalogo',
     overviewTabTitle: 'Panoramica',
+    homeTitle: 'Home',
     learningPathTitle: 'Learning Path',
   },
   ja: {
     languageDropdownTitle: '日本語',
     catalogSideBarTitle: 'カタログ',
     overviewTabTitle: '概要',
+    homeTitle: 'ホーム',
     learningPathTitle: 'ラーニングパス',
   },
 };

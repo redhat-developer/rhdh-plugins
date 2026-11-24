@@ -17,6 +17,8 @@
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 import { globalHeaderTranslationRef } from './ref';
 
+export { globalHeaderTranslationRef } from './ref';
+
 /**
  * Translation resource for the global header plugin, providing support for multiple languages.
  *
@@ -32,5 +34,3 @@ export const globalHeaderTranslations = createTranslationResource({
     ja: () => import('./ja'),
   },
 });
-
-export { globalHeaderTranslationRef };

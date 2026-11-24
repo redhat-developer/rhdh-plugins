@@ -598,11 +598,14 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'profile.settings': string;
     readonly 'profile.myProfile': string;
     readonly 'profile.signOut': string;
+    readonly 'components.visualizerDashboard': string;
     readonly 'help.tooltip': string;
     readonly 'help.noSupportLinks': string;
     readonly 'help.noSupportLinksSubtitle': string;
     readonly 'help.quickStart': string;
     readonly 'help.supportTitle': string;
+    readonly 'help.faq': string;
+    readonly 'help.communityForum': string;
     readonly 'notifications.title': string;
     readonly 'notifications.unsupportedDismissOption': string;
     readonly 'create.title': string;
@@ -621,8 +624,11 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'applicationLauncher.noLinksTitle': string;
     readonly 'applicationLauncher.noLinksSubtitle': string;
     readonly 'applicationLauncher.rhdhLocal': string;
+    readonly 'applicationLauncher.internalWiki': string;
+    readonly 'applicationLauncher.issueTracker': string;
     readonly 'applicationLauncher.sections.documentation': string;
     readonly 'applicationLauncher.sections.developerTools': string;
+    readonly 'applicationLauncher.sections.resources': string;
   }
 >;
 

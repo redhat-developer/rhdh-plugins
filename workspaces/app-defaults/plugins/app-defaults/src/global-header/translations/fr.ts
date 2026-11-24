@@ -30,6 +30,8 @@ const globalHeaderTranslationFr = createTranslationMessages({
       "Votre administrateur doit configurer les liens d'assistance.",
     'help.quickStart': 'Démarrage rapide',
     'help.supportTitle': 'Assistance',
+    'help.faq': 'FAQ',
+    'help.communityForum': 'Forum communautaire',
     'profile.picture': 'Photo de profil',
     'profile.settings': 'Paramètres',
     'profile.myProfile': 'Mon profil',
@@ -45,8 +47,11 @@ const globalHeaderTranslationFr = createTranslationMessages({
       "Configurez les liens de l'application dans la configuration dynamique du plugin pour un accès rapide depuis ici.",
     'applicationLauncher.developerHub': 'Espace développeurs',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.internalWiki': 'Wiki interne',
+    'applicationLauncher.issueTracker': 'Suivi des problèmes',
     'applicationLauncher.sections.documentation': 'Documentation',
     'applicationLauncher.sections.developerTools': 'Outils de développement',
+    'applicationLauncher.sections.resources': 'Ressources',
     'starred.title': 'Vos articles favoris',
     'starred.removeTooltip': 'Supprimer de la liste',
     'starred.noItemsTitle': "Aucun article marqué d'une étoile pour le moment",
@@ -63,6 +68,7 @@ const globalHeaderTranslationFr = createTranslationMessages({
     'create.templates.errorFetching':
       'Erreur lors de la récupération des modèles',
     'create.templates.noTemplatesAvailable': 'Aucun modèle disponible',
+    'components.visualizerDashboard': 'Tableau de bord Visualizer',
   },
 });
 

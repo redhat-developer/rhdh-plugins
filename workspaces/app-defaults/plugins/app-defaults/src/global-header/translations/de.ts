@@ -30,6 +30,8 @@ const globalHeaderTranslationDe = createTranslationMessages({
       'Supportverknüpfungen müssen vom Administrator eingerichtet werden.',
     'help.quickStart': 'Schnellstart',
     'help.supportTitle': 'Support',
+    'help.faq': 'FAQ',
+    'help.communityForum': 'Community-Forum',
     'profile.picture': 'Profilbild',
     'profile.settings': 'Einstellungen',
     'profile.myProfile': 'Mein Profil',
@@ -44,10 +46,13 @@ const globalHeaderTranslationDe = createTranslationMessages({
       'Keine Anwendungsverknüpfungen konfiguriert',
     'applicationLauncher.noLinksSubtitle':
       'Konfigurieren Sie Anwendungsverknüpfungen in der Konfiguration für dynamische Plugins, um von hier aus schnell darauf zugreifen zu können.',
-    'applicationLauncher.developerHub': 'Developer Hub',
+    'applicationLauncher.developerHub': 'Entwickler-Hub',
     'applicationLauncher.rhdhLocal': 'RHDH lokal',
+    'applicationLauncher.internalWiki': 'Internes Wiki',
+    'applicationLauncher.issueTracker': 'Issue-Tracker',
     'applicationLauncher.sections.documentation': 'Dokumentation',
     'applicationLauncher.sections.developerTools': 'Entwicklertools',
+    'applicationLauncher.sections.resources': 'Ressourcen',
     'starred.title': 'Ihre mit Sternchen gekennzeichneten Elemente',
     'starred.removeTooltip': 'Aus der Liste entfernen',
     'starred.noItemsTitle':
@@ -57,13 +62,14 @@ const globalHeaderTranslationDe = createTranslationMessages({
     'notifications.title': 'Benachrichtigungen',
     'notifications.unsupportedDismissOption':
       'Verwerfen-Option „{{option}}“ nicht unterstützt; derzeit werden „none“, „session“ oder „localstorage“ unterstützt!',
-    'create.title': 'Self-Service',
+    'create.title': 'Selfservice',
     'create.registerComponent.title': 'Eine Komponente registrieren',
     'create.registerComponent.subtitle': 'In die Katalogseite importieren',
     'create.templates.sectionTitle': 'Eine Vorlage verwenden',
     'create.templates.allTemplates': 'Alle Vorlagen',
     'create.templates.errorFetching': 'Fehler beim Abrufen der Vorlagen',
     'create.templates.noTemplatesAvailable': 'Keine Vorlagen verfügbar',
+    'components.visualizerDashboard': 'Visualizer-Dashboard',
   },
 });
 

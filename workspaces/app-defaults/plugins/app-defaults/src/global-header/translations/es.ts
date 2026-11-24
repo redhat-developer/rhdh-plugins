@@ -30,6 +30,8 @@ const globalHeaderTranslationEs = createTranslationMessages({
       'Su administrador debe configurar enlaces de soporte.',
     'help.quickStart': 'Inicio rápido',
     'help.supportTitle': 'Soporte',
+    'help.faq': 'Preguntas frecuentes',
+    'help.communityForum': 'Foro de la comunidad',
     'profile.picture': 'Foto de perfil',
     'profile.settings': 'Configuración',
     'profile.myProfile': 'Mi perfil',
@@ -44,11 +46,14 @@ const globalHeaderTranslationEs = createTranslationMessages({
       'No hay enlaces de aplicación configurados',
     'applicationLauncher.noLinksSubtitle':
       'Configure los enlaces de aplicación en la configuración del complemento dinámico para obtener acceso rápido desde aquí.',
-    'applicationLauncher.developerHub': 'Developer Hub',
+    'applicationLauncher.developerHub': 'Centro para desarrolladores',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.internalWiki': 'Wiki interna',
+    'applicationLauncher.issueTracker': 'Seguimiento de incidencias',
     'applicationLauncher.sections.documentation': 'Documentación',
     'applicationLauncher.sections.developerTools':
       'Herramientas para desarrolladores',
+    'applicationLauncher.sections.resources': 'Recursos',
     'starred.title': 'Sus artículos destacados',
     'starred.removeTooltip': 'Eliminar de la lista',
     'starred.noItemsTitle': 'Aún no hay elementos destacados',
@@ -64,6 +69,7 @@ const globalHeaderTranslationEs = createTranslationMessages({
     'create.templates.allTemplates': 'Todas las plantillas',
     'create.templates.errorFetching': 'Error al extraer plantillas',
     'create.templates.noTemplatesAvailable': 'No hay plantillas disponibles',
+    'components.visualizerDashboard': 'Panel del visualizador',
   },
 });
 

@@ -4,7 +4,7 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { JSX as JSX_2 } from 'react';
 
 // @public (undocumented)
 export const CrashButton: (input: CrashButtonProps) => JSX_2.Element;

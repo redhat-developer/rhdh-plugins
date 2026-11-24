@@ -95,8 +95,18 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
 
   const menuId = `${id}-menu`;
 
+  // Prefer an explicit aria-label from buttonProps. Otherwise icon-only
+  // triggers use the tooltip (they have no visible text). Text buttons must
+  // not get tooltip-as-aria-label alone — that fails WCAG 2.5.3 when the
+  // visible label differs (e.g. profile name vs "Settings").
+  const { ['aria-label']: ariaLabelFromProps, ...restButtonProps } =
+    buttonProps ?? {};
+
+  const resolvedAriaLabel =
+    ariaLabelFromProps ?? (isIconButton ? tooltip : undefined);
+
   const commonButtonProps = {
-    ...buttonProps,
+    ...restButtonProps,
     onClick: (event: MouseEvent<HTMLElement>) => {
       onOpen(event);
       // Defer focus until MUI finishes rendering the menu into the DOM.
@@ -110,12 +120,19 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
     'aria-haspopup': true,
     'aria-controls': menuId,
     'aria-expanded': Boolean(anchorEl),
-    'aria-label': tooltip,
+    ...(resolvedAriaLabel !== undefined && resolvedAriaLabel !== null
+      ? { 'aria-label': resolvedAriaLabel }
+      : {}),
   };
 
   return (
     <Box>
-      <Tooltip title={tooltip}>
+      {/*
+        Icon-only triggers: tooltip is the accessible name (default).
+        Text buttons: describeChild so visible label / explicit aria-label
+        stay the name and tooltip is only a description (WCAG 2.5.3).
+      */}
+      <Tooltip title={tooltip ?? ''} describeChild={!isIconButton}>
         {isIconButton ? (
           <IconButton {...commonButtonProps} color="inherit" size={size}>
             {buttonContent}

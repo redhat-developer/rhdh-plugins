@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
+import { cloneElement, isValidElement, type CSSProperties } from 'react';
 import { useApiHolder, useApp } from '@backstage/core-plugin-api';
 import { iconsApiRef } from '@backstage/frontend-plugin-api';
 import MuiIcon from '@mui/material/Icon';
@@ -55,11 +55,16 @@ export const HeaderIcon = ({
 
   // Prefer IconElement from iconsApi; then IconComponent (getIcon / getSystemIcon)
   // so size/fontSize still applies for legacy MUI IconComponent registrations.
+  // IconElements (e.g. Remix) default to 24px; clone with remixIconSize so they
+  // match MUI `fontSize="small"` (20px) used by help / waving_hand / etc.
   const iconElement = iconsApi?.icon(icon);
   if (iconElement) {
+    const sizedIcon = isValidElement(iconElement)
+      ? cloneElement(iconElement, { size: remixIconSize(size) } as never)
+      : iconElement;
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
-        {iconElement}
+        {sizedIcon}
       </Box>
     );
   }

@@ -30,6 +30,8 @@ const globalHeaderTranslationIt = createTranslationMessages({
       'Il tuo amministratore deve configurare i link di supporto.',
     'help.quickStart': 'Avvio rapido',
     'help.supportTitle': 'Supporto',
+    'help.faq': 'FAQ',
+    'help.communityForum': 'Forum della community',
     'profile.picture': 'Immagine del profilo',
     'profile.settings': 'Impostazioni',
     'profile.myProfile': 'Il mio profilo',
@@ -44,10 +46,13 @@ const globalHeaderTranslationIt = createTranslationMessages({
       "Nessun link dell'applicazione configurato",
     'applicationLauncher.noLinksSubtitle':
       "Configura i link dell'applicazione nella configurazione dinamica del plugin per un accesso rapido da qui.",
-    'applicationLauncher.developerHub': 'Developer Hub',
+    'applicationLauncher.developerHub': 'Hub per sviluppatori',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.internalWiki': 'Wiki interna',
+    'applicationLauncher.issueTracker': 'Tracker delle segnalazioni',
     'applicationLauncher.sections.documentation': 'Documentazione',
     'applicationLauncher.sections.developerTools': 'Strumenti per sviluppatori',
+    'applicationLauncher.sections.resources': 'Risorse',
     'starred.title': 'I tuoi elementi preferiti',
     'starred.removeTooltip': 'Rimuovi dalla lista',
     'starred.noItemsTitle': 'Ancora nessun elemento preferito',
@@ -63,6 +68,7 @@ const globalHeaderTranslationIt = createTranslationMessages({
     'create.templates.allTemplates': 'Tutti i modelli',
     'create.templates.errorFetching': "Errore durante l'estrazione dei modelli",
     'create.templates.noTemplatesAvailable': 'Nessun modello disponibile',
+    'components.visualizerDashboard': 'Dashboard Visualizer',
   },
 });
 

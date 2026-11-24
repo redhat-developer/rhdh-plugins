@@ -33,6 +33,11 @@ export const HelpDrawerMenuItem = ({
   };
 
   return (
-    <GlobalHeaderMenuItem title="Help" icon="help" onClick={handleClick} />
+    <GlobalHeaderMenuItem
+      title="Help"
+      titleKey="help.tooltip"
+      icon="help"
+      onClick={handleClick}
+    />
   );
 };

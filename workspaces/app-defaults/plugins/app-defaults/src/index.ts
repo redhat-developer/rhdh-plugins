@@ -37,8 +37,6 @@ import { learningPathsModule } from './learning-paths';
 import globalHeaderPlugin from './global-header/plugin';
 import { globalHeaderModule } from './global-header/extensions/globalHeaderModule';
 import { globalHeaderTranslationsModule } from './global-header/globalHeaderTranslationsModule';
-import { globalHeaderTranslations } from './global-header/translations';
-import { globalHeaderTranslationRef } from './global-header/translations/ref';
 
 export { appDefaultsModule };
 
@@ -78,8 +76,8 @@ export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
 
 export { globalHeaderModule };
 export { globalHeaderTranslationsModule };
-export { globalHeaderTranslations };
-export { globalHeaderTranslationRef };
+export { globalHeaderTranslations } from './global-header/translations';
+export { globalHeaderTranslationRef } from './global-header/translations/ref';
 export { default as globalHeaderPlugin } from './global-header/plugin';
 
 /**

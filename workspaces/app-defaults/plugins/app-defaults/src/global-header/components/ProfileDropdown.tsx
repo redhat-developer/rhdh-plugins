@@ -32,77 +32,60 @@ import { useTranslation } from '../hooks/useTranslation';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
 /**
+ * Normalize entity-ref display names (e.g. `user:default/jdoe` → `Jdoe`).
+ */
+function formatProfileDisplayName(name: string): string {
+  const regex = /^[^:/]+:[^/]+\/[^/]+$/;
+  if (regex.test(name)) {
+    return name
+      .charAt(name.indexOf('/') + 1)
+      .toLocaleUpperCase('en-US')
+      .concat(name.substring(name.indexOf('/') + 2));
+  }
+  return name;
+}
+
+/**
  * Trigger button content that displays the user's avatar and display name.
  */
-const ProfileButtonContent = () => {
-  const [user, setUser] = useState<string | null>();
-  const { t } = useTranslation();
-  const {
-    displayName,
-    backstageIdentity,
-    profile,
-    loading: profileLoading,
-  } = useUserProfile();
-  const catalogApi = useApi(catalogApiRef);
+const ProfileButtonContent = ({
+  displayName,
+  picture,
+  pictureAlt,
+  loading,
+}: {
+  displayName?: string;
+  picture?: string;
+  pictureAlt: string;
+  loading: boolean;
+}) => {
   const theme = useTheme();
-
-  useEffect(() => {
-    const fetchUserEntity = async () => {
-      try {
-        if (backstageIdentity?.userEntityRef) {
-          const userProfile = (await catalogApi.getEntityByRef(
-            backstageIdentity.userEntityRef,
-          )) as unknown as UserEntity;
-          setUser(
-            userProfile?.spec?.profile?.displayName ??
-              userProfile?.metadata?.title,
-          );
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
-    };
-    fetchUserEntity();
-  }, [backstageIdentity, catalogApi]);
-
-  const profileDisplayName = () => {
-    const name = user ?? displayName;
-    // Entity ref format (e.g. "user:default/jdoe") -- extract and capitalize the name after the slash
-    const regex = /^[^:/]+:[^/]+\/[^/]+$/;
-    if (regex.test(name)) {
-      return name
-        .charAt(name.indexOf('/') + 1)
-        .toLocaleUpperCase('en-US')
-        .concat(name.substring(name.indexOf('/') + 2));
-    }
-    return name;
-  };
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      {!profileLoading && (
+      {!loading && (
         <>
-          {profile.picture ? (
+          {picture ? (
             <Avatar
-              src={profile.picture}
+              src={picture}
               sx={{ mr: 2, height: '32px', width: '32px' }}
-              alt={t('profile.picture')}
+              alt={pictureAlt}
             />
           ) : (
             <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
           )}
-          <Typography
-            variant="body2"
-            sx={{
-              display: { xs: 'none', md: 'block' },
-              fontWeight: 500,
-              mr: '1rem',
-            }}
-          >
-            {profileDisplayName()}
-          </Typography>
+          {displayName ? (
+            <Typography
+              variant="body2"
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                fontWeight: 500,
+                mr: '1rem',
+              }}
+            >
+              {displayName}
+            </Typography>
+          ) : null}
         </>
       )}
       <KeyboardArrowDownOutlinedIcon
@@ -116,18 +99,71 @@ const ProfileButtonContent = () => {
  * Profile dropdown. Collects menu items from the `'profile'` target
  * via GlobalHeaderContext.
  *
+ * Accessible name is `{displayName}, {Settings}` so visible text stays part
+ * of the name (WCAG 2.5.3) while e2e can still match "Settings".
+ *
  * @internal
  */
 export const ProfileDropdown = () => {
+  const [catalogDisplayName, setCatalogDisplayName] = useState<
+    string | null | undefined
+  >();
   const { t } = useTranslation();
+  const {
+    displayName,
+    backstageIdentity,
+    profile,
+    loading: profileLoading,
+  } = useUserProfile();
+  const catalogApi = useApi(catalogApiRef);
+
+  useEffect(() => {
+    const fetchUserEntity = async () => {
+      try {
+        if (backstageIdentity?.userEntityRef) {
+          const userProfile = (await catalogApi.getEntityByRef(
+            backstageIdentity.userEntityRef,
+          )) as unknown as UserEntity;
+          setCatalogDisplayName(
+            userProfile?.spec?.profile?.displayName ??
+              userProfile?.metadata?.title,
+          );
+        } else {
+          setCatalogDisplayName(null);
+        }
+      } catch {
+        setCatalogDisplayName(null);
+      }
+    };
+    fetchUserEntity();
+  }, [backstageIdentity, catalogApi]);
+
+  const resolvedName = catalogDisplayName ?? displayName;
+  const profileDisplayName = resolvedName
+    ? formatProfileDisplayName(resolvedName)
+    : undefined;
+  const settingsLabel = t('profile.settings');
+  // Include visible display name in the accessible name (WCAG 2.5.3).
+  const ariaLabel = profileDisplayName
+    ? `${profileDisplayName}, ${settingsLabel}`
+    : settingsLabel;
+
   return (
     <GlobalHeaderDropdown
       target="profile"
-      buttonContent={<ProfileButtonContent />}
-      tooltip={t('profile.settings')}
+      buttonContent={
+        <ProfileButtonContent
+          displayName={profileDisplayName}
+          picture={profile.picture}
+          pictureAlt={t('profile.picture')}
+          loading={profileLoading}
+        />
+      }
+      tooltip={settingsLabel}
       buttonProps={{
         color: 'inherit',
         sx: { display: 'flex', alignItems: 'center' },
+        'aria-label': ariaLabel,
       }}
     />
   );

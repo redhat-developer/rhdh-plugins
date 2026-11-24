@@ -54,6 +54,16 @@ describe('HeaderIcon', () => {
     expect(mockGetSystemIcon).not.toHaveBeenCalled();
   });
 
+  it('applies remixIconSize to IconElements so they match MUI small', () => {
+    const RemixIcon = ({ size }: { size?: number }) => (
+      <svg data-testid="remix-icon" data-size={size} aria-hidden />
+    );
+    mockIcon.mockReturnValue(<RemixIcon size={24} />);
+
+    render(<HeaderIcon icon="quiz" size="small" />);
+    expect(screen.getByTestId('remix-icon')).toHaveAttribute('data-size', '20');
+  });
+
   it('falls back to useApp().getSystemIcon for legacy registrations', () => {
     mockIcon.mockReturnValue(undefined);
     mockGetIcon.mockReturnValue(undefined);

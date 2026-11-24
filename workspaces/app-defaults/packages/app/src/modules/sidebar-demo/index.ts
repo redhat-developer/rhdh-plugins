@@ -21,16 +21,13 @@ import {
   SidebarItemBlueprint,
   SidebarItemGroupBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import HelpIcon from '@mui/icons-material/HelpOutline';
 
 /**
  * Demo contributions for the priority-ordered sidebar provided by
  * `@red-hat-developer-hub/backstage-plugin-app-defaults`. The search modal,
  * the spacer and dividers, and the notifications item come from the app
- * defaults module itself.
+ * defaults module itself. Help lives in the global header, not the sidebar.
  *
- * - `Help` is an action item (no `to`) that opens the Red Hat Developer
- *   Hub documentation in a new tab and sits in the bottom block next to notifications.
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
  *   nav items (same `to`) and move them into the `Documentation` group.
  * - The `Documentation` group uses the default inline submenu.
@@ -39,25 +36,9 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  *   app-defaults ships there.
  *
  * Resulting order, top to bottom: logo, search, auto-discovered pages,
- * Documentation, [spacer], divider, Notifications, Help, divider,
+ * Documentation, [spacer], divider, Notifications, divider,
  * Administration, Settings.
  */
-const helpItem = SidebarItemBlueprint.make({
-  name: 'help',
-  params: {
-    title: 'Help',
-    icon: HelpIcon,
-    onClick: () => {
-      window.open(
-        'https://access.redhat.com/documentation/red_hat_developer_hub',
-        '_blank',
-        'noopener',
-      );
-    },
-    priority: -50,
-  },
-});
-
 const documentationGroup = SidebarItemGroupBlueprint.make({
   name: 'documentation',
   params: {
@@ -192,7 +173,6 @@ export const sidebarDemoModule = createFrontendModule({
   extensions: [
     topSpacerElement,
     crashingElement,
-    helpItem,
     documentationGroup,
     docsItem,
     apiDocsItem,

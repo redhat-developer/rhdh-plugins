@@ -10,6 +10,7 @@ app:
     - page:catalog:
         config:
           path: /
+          title: Home
     - api:app/app-language:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
@@ -21,6 +22,16 @@ app:
     - sidebar-element:app/notifications: true
     # Demo element that throws on render; keep it disabled by default.
     - sidebar-element:app/crashing: false
+
+  support:
+    url: https://access.redhat.com/products/red-hat-developer-hub
+    items:
+      - title: Red Hat Developer Hub
+        links:
+          - url: https://access.redhat.com/products/red-hat-developer-hub
+            title: Product Info
+          - url: https://access.redhat.com/documentation/en-us/red_hat_developer_hub
+            title: Documentation
 
   # Sidebar entries declared in config are merged with the contributed ones
   # (see plugins/app-defaults/README.md). `Community` is a top-level link,
@@ -42,6 +53,50 @@ app:
           - title: RHDH docs
             icon: help
             to: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+
+globalHeader:
+  components:
+    - title: Visualizer Dashboard
+      titleKey: components.visualizerDashboard
+      icon: dashboard
+      link: /visualizer/tree
+      priority: 75
+
+  menuItems:
+    - target: help
+      title: Quick start
+      titleKey: help.quickStart
+      icon: waving_hand
+      link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/
+      priority: 100
+    - target: app-launcher
+      title: Internal Wiki
+      titleKey: applicationLauncher.internalWiki
+      icon: article
+      link: https://wiki.internal.example.com
+      sectionLabel: applicationLauncher.sections.resources
+      priority: 80
+    - target: app-launcher
+      title: Issue Tracker
+      titleKey: applicationLauncher.issueTracker
+      icon: bugReport
+      link: https://issues.internal.example.com
+      sectionLabel: applicationLauncher.sections.resources
+      priority: 70
+    - target: help
+      title: FAQ
+      titleKey: help.faq
+      icon: quiz
+      link: https://faq.example.com
+      sectionLabel: help.supportTitle
+      priority: 90
+    - target: help
+      title: Community Forum
+      titleKey: help.communityForum
+      icon: forum
+      link: https://forum.example.com
+      sectionLabel: help.supportTitle
+      priority: 80
 
 organization:
   name: My Company

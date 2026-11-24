@@ -3,36 +3,32 @@
 '@red-hat-developer-hub/backstage-plugin-app-defaults': minor
 ---
 
-Split global-header extension APIs into app-react and the default implementation into app-defaults.
+Moved the global header into app-defaults and split extension APIs into app-react.
 
-`app-react` now exports `GlobalHeaderComponentBlueprint`, `GlobalHeaderMenuItemBlueprint`, related data refs, types, and context hooks so plugins can contribute header items without depending on the default implementation.
+`app-react` exports `GlobalHeaderComponentBlueprint`, `GlobalHeaderMenuItemBlueprint`,
+related data refs, types, and context hooks
+(`useGlobalHeaderComponents` / `useGlobalHeaderMenuItems`) so plugins can contribute
+header items without depending on the default implementation.
 
-`app-defaults` now hosts the default global-header module, plugin, translations, and configuration, and loads them through the app-defaults feature loader.
+`app-defaults` hosts the default module, plugin, translations, and configuration, and
+loads them through the feature loader. Default toolbar/menu items are also available
+from `./global-header` (`globalHeaderPlugin`). Building-block UI
+(`GlobalHeaderMenuItem`, `GlobalHeaderIconButton`, `GlobalHeaderDropdown`,
+`GlobalHeaderCompanyLogo`) is exported from `/global-header-components`. The header
+logo export is named `GlobalHeaderCompanyLogo` so it does not collide with the sidebar
+`CompanyLogo` on the package root.
 
-Building-block UI (`GlobalHeaderMenuItem`, `GlobalHeaderIconButton`,
-`GlobalHeaderDropdown`, `GlobalHeaderCompanyLogo`) is exported from
-`@red-hat-developer-hub/backstage-plugin-app-defaults/global-header-components`.
-The header logo export is named `GlobalHeaderCompanyLogo` so it does not
-collide with the sidebar `CompanyLogo` on the package root.
+`HeaderIcon` resolves icons via `iconsApi` and falls back to `useApp().getSystemIcon`
+so legacy host icon catalogs keep working. The common icon bundle adds Material Icons
+ligature aliases (`waving_hand` → same glyph as `quickstart`, plus snake_case variants
+of camelCase ids such as `manage_accounts`) so remotes that still pass ligature ids
+render on hosts that do not load the Material Icons font.
 
-Default toolbar/menu items are also available from the dedicated
-`./global-header` entry (`globalHeaderPlugin`).
+**BREAKING:** `@red-hat-developer-hub/backstage-plugin-global-header` is discontinued
+(the standalone `workspaces/global-header` workspace is removed). Migrate imports to
+`@red-hat-developer-hub/backstage-plugin-app-defaults` and
+`@red-hat-developer-hub/backstage-plugin-app-react`. Building-block UI that used
+`/components` now lives at `/global-header-components`.
 
-Hosts that enable the app-defaults feature loader but do not want the masthead
-can disable `app-root-wrapper:app/global-header`. Custom header/dropdown UI
-must read extension data through the `app-react` hooks
-(`useGlobalHeaderComponents` / `useGlobalHeaderMenuItems`).
-
-`HeaderIcon` resolves icons via `iconsApi` and falls back to
-`useApp().getSystemIcon` so legacy host icon catalogs keep working.
-
-The common icon bundle adds Material Icons ligature aliases
-(`waving_hand` → same glyph as `quickstart`, plus snake_case variants of
-camelCase ids such as `manage_accounts`) so remotes that still pass
-ligature ids render on hosts that do not load the Material Icons font.
-
-The standalone `workspaces/global-header` workspace is removed. Global header
-continues inside `@red-hat-developer-hub/backstage-plugin-app-defaults` under
-`src/global-header` (modules, translations, and `/global-header-components`).
-The former `@red-hat-developer-hub/backstage-plugin-global-header` package is
-discontinued.
+**BREAKING:** The app-defaults feature loader now registers the global header masthead
+by default. Disable `app-root-wrapper:app/global-header` if you do not want it.

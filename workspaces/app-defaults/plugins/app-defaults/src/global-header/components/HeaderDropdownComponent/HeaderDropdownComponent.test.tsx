@@ -118,6 +118,59 @@ describe('HeaderDropdownComponent', () => {
     expect(await screen.findByText('Test Tooltip')).toBeInTheDocument();
   });
 
+  it('uses tooltip as aria-label only for icon buttons', async () => {
+    await renderInTestApp(
+      <HeaderDropdownComponent
+        buttonContent={<span>Icon</span>}
+        onOpen={jest.fn()}
+        onClose={jest.fn()}
+        anchorEl={null}
+        isIconButton
+        tooltip="Help"
+      >
+        <div>Dropdown Content</div>
+      </HeaderDropdownComponent>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Help' })).toBeInTheDocument();
+  });
+
+  it('does not override text-button content with tooltip aria-label', async () => {
+    await renderInTestApp(
+      <HeaderDropdownComponent
+        buttonContent={<span>Guest</span>}
+        onOpen={jest.fn()}
+        onClose={jest.fn()}
+        anchorEl={null}
+        tooltip="Settings"
+      >
+        <div>Dropdown Content</div>
+      </HeaderDropdownComponent>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Guest' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Settings$/ })).toBeNull();
+  });
+
+  it('honors an explicit aria-label on text buttons', async () => {
+    await renderInTestApp(
+      <HeaderDropdownComponent
+        buttonContent={<span>Guest</span>}
+        onOpen={jest.fn()}
+        onClose={jest.fn()}
+        anchorEl={null}
+        tooltip="Settings"
+        buttonProps={{ 'aria-label': 'Guest, Settings' }}
+      >
+        <div>Dropdown Content</div>
+      </HeaderDropdownComponent>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Guest, Settings' }),
+    ).toBeInTheDocument();
+  });
+
   it('stretches mixed li/a menuitems to the full list width', async () => {
     const anchorEl = document.createElement('button');
     document.body.appendChild(anchorEl);

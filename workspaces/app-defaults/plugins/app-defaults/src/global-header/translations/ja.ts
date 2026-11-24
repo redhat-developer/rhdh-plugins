@@ -30,6 +30,8 @@ const globalHeaderTranslationJa = createTranslationMessages({
       '管理者がサポートリンクを設定する必要があります。',
     'help.quickStart': 'クイックスタート',
     'help.supportTitle': 'サポート',
+    'help.faq': 'FAQ',
+    'help.communityForum': 'コミュニティフォーラム',
     'profile.picture': 'プロファイル写真',
     'profile.settings': '設定',
     'profile.myProfile': 'マイプロファイル',
@@ -46,8 +48,11 @@ const globalHeaderTranslationJa = createTranslationMessages({
       'ここからすばやくアクセスできるように、動的プラグイン設定でアプリケーションリンクを設定してください。',
     'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.internalWiki': '内部 Wiki',
+    'applicationLauncher.issueTracker': '課題トラッカー',
     'applicationLauncher.sections.documentation': 'ドキュメント',
     'applicationLauncher.sections.developerTools': '開発者ツール',
+    'applicationLauncher.sections.resources': 'リソース',
     'starred.title': 'スター付き項目',
     'starred.removeTooltip': 'リストから削除',
     'starred.noItemsTitle': 'スター付き項目はまだありません',
@@ -65,6 +70,7 @@ const globalHeaderTranslationJa = createTranslationMessages({
       'テンプレートの取得中にエラーが発生しました',
     'create.templates.noTemplatesAvailable':
       '利用できるテンプレートがありません',
+    'components.visualizerDashboard': 'ビジュアライザーダッシュボード',
   },
 });
 
