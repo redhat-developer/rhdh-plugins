@@ -1,0 +1,54 @@
+app:
+  title: PR Compass
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+integrations:
+  github:
+    - host: github.com
+
+auth:
+  environment: development
+  providers:
+    guest: {}
+
+catalog:
+  rules:
+    - allow: [Component, System, Group, User, Resource, Location]
+  locations:
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../examples/entities.yaml
+      rules:
+        - allow: [Component]
+
+permission:
+  enabled: true
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - permission
+      - pr-compass
+    admin:
+      users:
+        - name: user:development/guest
+
+prCompass:
+  # Stop gathering after this many pull requests from one host.
+  maxPullRequests: 100

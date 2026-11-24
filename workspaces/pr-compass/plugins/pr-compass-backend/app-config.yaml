@@ -1,0 +1,17 @@
+# Configuration for the standalone PR Compass development backend.
+app:
+  title: PR Compass harness
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+
+# These integrations are used to discover sources.
+# The fixture providers for development setup return sample data without contacting SCM services.
+# Configure integrations here when using real providers.
+integrations: {}
+
+prCompass:
+  maxPullRequests: 5

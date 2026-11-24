@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-service
+  description: An example service for local development.
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

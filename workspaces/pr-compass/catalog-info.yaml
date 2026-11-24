@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pr-compass
+  title: PR Compass
+  description: |
+    A personal triage board of ranked open pull requests awaiting the signed-in developer's review.
+spec:
+  type: backstage-plugin
+  owner: rhdh-team
+  lifecycle: experimental
+  subcomponentOf: rhdh-plugins
