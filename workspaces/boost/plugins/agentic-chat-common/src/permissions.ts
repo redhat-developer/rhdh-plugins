@@ -16,7 +16,11 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
-/** Chat execution and history access; RBAC action is use. @public */
+/**
+ * Chat execution and history access. The RBAC action is `use`.
+ *
+ * @public
+ */
 export const agenticChatPermission = createPermission({
   name: 'agentic-chat.chat',
   attributes: {},

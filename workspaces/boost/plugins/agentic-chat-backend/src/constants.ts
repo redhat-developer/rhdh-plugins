@@ -17,7 +17,9 @@
 export const DEFAULT_LCORE_SERVER_HOST = '127.0.0.1';
 export const DEFAULT_LCORE_SERVER_PORT = 8090;
 
-/** HTTP status codes */
+/**
+ * HTTP status codes
+ */
 export const HTTP_STATUS_NO_CONTENT = 204;
 export const HTTP_STATUS_BAD_REQUEST = 400;
 export const HTTP_STATUS_UNAUTHORIZED = 401;

@@ -16,7 +16,11 @@
 
 import { z } from 'zod';
 
-/** Run input accepted by the agentic-chat backend. @public */
+/**
+ * Run input accepted by the agentic-chat backend.
+ *
+ * @public
+ */
 export const runAgentRequestSchema = z
   .object({
     query: z

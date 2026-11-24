@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-/** Agentic chat backend for Red Hat Developer Hub. @packageDocumentation */
+/**
+ * Agentic chat backend for Red Hat Developer Hub.
+ *
+ * @packageDocumentation
+ */
 export { agenticChatPlugin as default } from './plugin';

@@ -16,7 +16,11 @@
 
 export interface Config {
   'agentic-chat'?: {
-    /** Local LCORE sidecar port. Defaults to 8090. @visibility backend */
+    /**
+     * Local LCORE sidecar port. Defaults to 8090.
+     *
+     * @visibility backend
+     */
     servicePort?: number;
   };
 }

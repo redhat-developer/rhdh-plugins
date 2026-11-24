@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-/** Shared contracts and permission for agentic chat. @packageDocumentation */
+/**
+ * Shared contracts and permission for agentic chat.
+ *
+ * @packageDocumentation
+ */
 export { agenticChatPermission } from './permissions';
 export { runAgentRequestSchema } from './schemas';
 export type {

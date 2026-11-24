@@ -17,13 +17,25 @@
 import type { z } from 'zod';
 import type { runAgentRequestSchema } from './schemas';
 
-/** Browser request to submit a turn. @public */
+/**
+ * Browser request to submit a turn.
+ *
+ * @public
+ */
 export type RunAgentRequest = z.infer<typeof runAgentRequestSchema>;
 
-/** The execution mode exposed by an AI Catalog agent. @public */
+/**
+ * The execution mode exposed by an AI Catalog agent.
+ *
+ * @public
+ */
 export type AgentExecutionMode = 'in-process' | 'subprocess' | 'sandbox';
 
-/** Interpreted agent and turn input sent to the LCORE controller. @public */
+/**
+ * Interpreted agent and turn input sent to the LCORE controller.
+ *
+ * @public
+ */
 export interface AgentExecutionInput {
   agent: string;
   prompt: string;
