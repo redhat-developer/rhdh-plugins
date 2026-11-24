@@ -80,9 +80,6 @@ export class Extensions {
   }
 
   async expandCollapsedSidebarGroup() {
-    if (process.env.APP_MODE === 'legacy') {
-      return;
-    }
     await this.page
       .locator('nav button:has(svg[data-testid="ExpandMoreIcon"])')
       .first()
