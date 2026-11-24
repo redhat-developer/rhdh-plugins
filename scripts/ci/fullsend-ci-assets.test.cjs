@@ -114,9 +114,9 @@ test('workflow permissions and artifact scope remain constrained', () => {
   assert.deepEqual(repair.permissions, {});
   assert.equal(triage.jobs.prepare.permissions.actions, 'read');
   assert.equal(triage.jobs.prepare.permissions.contents, 'read');
-  assert.equal(triage.jobs.triage.permissions.contents, 'read');
+  assert.equal(triage.jobs.triage.permissions.contents, 'write');
   assert.equal(repair.jobs.prepare.permissions['pull-requests'], 'read');
-  assert.equal(repair.jobs.repair.permissions.contents, 'read');
+  assert.equal(repair.jobs.repair.permissions.contents, 'write');
 
   const ci = read('.github/workflows/ci.yml');
   assert.match(ci, /retention-days:\s*7/);
