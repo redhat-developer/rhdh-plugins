@@ -15,4 +15,5 @@ spec:
     - ./workspaces/lightspeed/catalog-info.yaml
     - ./workspaces/extensions/catalog-info.yaml
     - ./workspaces/orchestrator/catalog-info.yaml
+    - ./workspaces/test-plugins/catalog-info.yaml
     - ./workspaces/theme/catalog-info.yaml

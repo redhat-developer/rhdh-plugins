@@ -30,3 +30,9 @@ The common icon bundle adds Material Icons ligature aliases
 (`waving_hand` → same glyph as `quickstart`, plus snake_case variants of
 camelCase ids such as `manage_accounts`) so remotes that still pass
 ligature ids render on hosts that do not load the Material Icons font.
+
+The standalone `workspaces/global-header` workspace is removed. Global header
+continues inside `@red-hat-developer-hub/backstage-plugin-app-defaults` under
+`src/global-header` (modules, translations, and `/global-header-components`).
+The former `@red-hat-developer-hub/backstage-plugin-global-header` package is
+discontinued.
