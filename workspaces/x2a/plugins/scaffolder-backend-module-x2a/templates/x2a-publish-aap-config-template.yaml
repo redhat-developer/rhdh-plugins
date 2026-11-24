@@ -1,0 +1,138 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: x2a-publish-aap-config-template
+  title: Publish AAP configuration
+  description: Publish generated X2A AAP Config-as-Code files to an AAP configuration repository.
+spec:
+  type: service
+  parameters:
+    - title: Generated AAP configuration
+      required:
+        - sourceRepository
+        - sourceBranch
+        - sourceCommit
+        - artifactPath
+        - projectName
+        - projectDirName
+        - moduleName
+      properties:
+        sourceRepository:
+          title: Source repository
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            requestUserCredentials:
+              secretsKey: X2A_AAP_SOURCE_TOKEN
+            allowedHosts:
+              - github.com
+              - gitlab.com
+              - bitbucket.org
+        sourceBranch:
+          title: Source branch
+          type: string
+        sourceCommit:
+          title: Source commit
+          type: string
+          ui:widget: hidden
+        artifactPath:
+          title: Generated artifact path
+          type: string
+          ui:widget: hidden
+        projectName:
+          title: Project
+          type: string
+        projectDirName:
+          title: Stable project directory
+          type: string
+          ui:widget: hidden
+        moduleName:
+          title: Module
+          type: string
+    - title: AAP settings
+      required:
+        - inventory
+      properties:
+        inventory:
+          title: AAP inventory
+          type: string
+          minLength: 1
+        scmCredentialName:
+          title: AAP SCM credential (optional)
+          type: string
+          description: Optional existing AAP credential used to access the migration repository.
+        jobCredentialNames:
+          title: AAP job credentials (optional)
+          type: array
+          default: []
+          description: Existing AAP credentials to attach to the Job Template. Leave empty if none are required.
+          ui:options:
+            orderable: false
+            addable: true
+            removable: true
+          items:
+            title: Credential name
+            type: string
+            minLength: 1
+        executionEnvironmentName:
+          title: AAP execution environment (optional)
+          type: string
+          description: Optional existing AAP execution environment.
+    - title: Destination repository
+      required:
+        - destinationRepository
+        - destinationBranch
+        - destinationConfigDirectory
+      properties:
+        destinationRepository:
+          title: AAP configuration repository
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            requestUserCredentials:
+              secretsKey: X2A_AAP_DESTINATION_TOKEN
+            allowedHosts:
+              - github.com
+              - gitlab.com
+              - bitbucket.org
+        destinationBranch:
+          title: Destination branch
+          type: string
+          default: main
+        destinationConfigDirectory:
+          title: Configuration root directory
+          type: string
+          default: config/dev
+          description: Base directory in the destination repository. X2A appends the stable project and module directories to keep generated files isolated.
+        destinationPathPreview:
+          title: Complete destination path
+          type: string
+          description: This is the directory where the generated AAP configuration files will be published.
+          ui:field: DestinationPathPreview
+  steps:
+    - id: publish
+      name: Publish AAP configuration
+      action: x2a:aapConfig:publish
+      input:
+        sourceRepository: ${{ parameters.sourceRepository }}
+        sourceBranch: ${{ parameters.sourceBranch }}
+        sourceCommit: ${{ parameters.sourceCommit }}
+        artifactPath: ${{ parameters.artifactPath }}
+        projectName: ${{ parameters.projectName }}
+        projectDirName: ${{ parameters.projectDirName }}
+        moduleName: ${{ parameters.moduleName }}
+        inventory: ${{ parameters.inventory }}
+        scmCredentialName: ${{ parameters.scmCredentialName }}
+        jobCredentialNames: ${{ parameters.jobCredentialNames }}
+        executionEnvironmentName: ${{ parameters.executionEnvironmentName }}
+        destinationRepository: ${{ parameters.destinationRepository }}
+        destinationBranch: ${{ parameters.destinationBranch }}
+        destinationConfigDirectory: ${{ parameters.destinationConfigDirectory }}
+        sourceToken: ${{ secrets.X2A_AAP_SOURCE_TOKEN }}
+        destinationToken: ${{ secrets.X2A_AAP_DESTINATION_TOKEN }}
+  output:
+    links:
+      - title: Destination repository
+        url: ${{ steps.publish.output.destinationRepository }}
+      - title: Destination commit
+        url: ${{ steps.publish.output.destinationCommitUrl }}

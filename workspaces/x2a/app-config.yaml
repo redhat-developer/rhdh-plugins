@@ -153,7 +153,7 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, API, Resource, Location, Template]
   locations:
     # Local example organizational data
     - type: file
@@ -163,6 +163,10 @@ catalog:
     # x2a Create Project template
     - type: file
       target: ../../plugins/scaffolder-backend-module-x2a/templates/conversion-project-template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../plugins/scaffolder-backend-module-x2a/templates/x2a-publish-aap-config-template.yaml
       rules:
         - allow: [Template]
 

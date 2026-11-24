@@ -81,13 +81,31 @@ const rulesAcceptanceField = FormFieldBlueprint.make({
   },
 });
 
+const destinationPathPreviewField = FormFieldBlueprint.make({
+  name: 'DestinationPathPreview',
+  params: {
+    field: () =>
+      import('./scaffolder').then(m =>
+        createFormField({
+          name: 'DestinationPathPreview',
+          component: m.DestinationPathPreview,
+        }),
+      ),
+  },
+});
+
 /**
  * The X2Ansible plugin for the new frontend system.
  * @alpha
  */
 export default createFrontendPlugin({
   pluginId: 'x2a',
-  extensions: [x2aPage, repoAuthField, rulesAcceptanceField],
+  extensions: [
+    x2aPage,
+    repoAuthField,
+    rulesAcceptanceField,
+    destinationPathPreviewField,
+  ],
   routes: {
     root: rootRouteRef,
   },

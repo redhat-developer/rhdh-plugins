@@ -43,6 +43,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.artifacts.migrated_sources': '移行済みソース',
     'modulePage.artifacts.editInCodespaces': 'Codespaces で編集',
     'modulePage.artifacts.ansible_project': 'AAP プロジェクト',
+    'modulePage.artifacts.aap_config': 'AAP 設定ドラフト',
+    'modulePage.artifacts.publishAapConfig': '設定を公開',
     'modulePage.artifacts.description':
       'これらのアーティファクトは変換プロセスによって生成されたものであり、レビューに使用できます。',
     'modulePage.phases.title': '移行フェーズ',

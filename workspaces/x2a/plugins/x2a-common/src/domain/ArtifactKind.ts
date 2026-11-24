@@ -26,6 +26,7 @@ export class ArtifactKind {
   static readonly MIGRATED_SOURCES = new ArtifactKind('migrated_sources');
   static readonly PROJECT_METADATA = new ArtifactKind('project_metadata');
   static readonly ANSIBLE_PROJECT = new ArtifactKind('ansible_project');
+  static readonly AAP_CONFIG = new ArtifactKind('aap_config');
   static readonly ADVERSARIAL_REPORT = new ArtifactKind('adversarial_report');
   static readonly ADVERSARIAL_REPORT_JSON = new ArtifactKind(
     'adversarial_report_json',
@@ -37,6 +38,7 @@ export class ArtifactKind {
     ArtifactKind.MIGRATED_SOURCES,
     ArtifactKind.PROJECT_METADATA,
     ArtifactKind.ANSIBLE_PROJECT,
+    ArtifactKind.AAP_CONFIG,
     ArtifactKind.ADVERSARIAL_REPORT,
     ArtifactKind.ADVERSARIAL_REPORT_JSON,
   ]);
@@ -82,6 +84,10 @@ export class ArtifactKind {
 
   isAnsibleProject(): boolean {
     return this === ArtifactKind.ANSIBLE_PROJECT;
+  }
+
+  isAapConfig(): boolean {
+    return this === ArtifactKind.AAP_CONFIG;
   }
 
   isAdversarialReport(): boolean {
