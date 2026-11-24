@@ -44,6 +44,15 @@
       "gitTag": "@red-hat-developer-hub/backstage-plugin-augment-common@0.3.0",
       "reason": "No longer maintained",
       "archivedDate": "2026-11-02"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-global-header",
+      "version": "3.3.1",
+      "workspace": "global-header",
+      "plugin": "global-header",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-global-header@3.3.1",
+      "reason": "Merged into @red-hat-developer-hub/backstage-plugin-app-defaults",
+      "archivedDate": "2026-11-24"
     }
   ]
 }

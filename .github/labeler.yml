@@ -19,8 +19,6 @@ workspace/dcm:
 workspace/extensions:
   - 'Workspace\\s*extensions'
 
-workspace/global-header:
-  - 'Workspace\\s*global-header'
 
 workspace/homepage:
   - 'Workspace\\s*homepage'

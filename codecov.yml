@@ -103,7 +103,6 @@ component_management:
         - workspaces/adoption-insights/
         - workspaces/app-defaults/
         - workspaces/bulk-import/
-        - workspaces/global-header/
         - workspaces/homepage/
         - workspaces/intelligent-assistant/
         - workspaces/orchestrator/
@@ -168,9 +167,6 @@ flag_management:
     - name: e2e-extensions
       paths:
         - workspaces/extensions/
-    - name: e2e-global-header
-      paths:
-        - workspaces/global-header/
     - name: e2e-homepage
       paths:
         - workspaces/homepage/
@@ -207,7 +203,7 @@ flag_management:
         - workspaces/extensions/
     - name: global-header
       paths:
-        - workspaces/global-header/
+        - workspaces/app-defaults/plugins/app-defaults/src/global-header/
     - name: homepage
       paths:
         - workspaces/homepage/
