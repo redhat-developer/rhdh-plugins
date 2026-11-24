@@ -46,9 +46,9 @@ import {
   getIdentity,
 } from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
+import { convertToMarkdown } from './documents/documentConverter';
 import { isValidFileType } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
-import { convertToMarkdown } from './documents/markitdownClient';
 import { SessionService } from './sessions/sessionService';
 import {
   createDocumentListResponse,
