@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.2.3
+
+### Patch Changes
+
+- 27ce671: Updated dependency `@playwright/test` to `1.65.1`.
+- d4cdc69: Updated dependency `@playwright/test` to `1.65.0`.
+- 83a899b: Updated dependency `@backstage/frontend-plugin-api` to `^0.18.2`.
+- b319862: Updated dependency `prettier` to `3.10.1`.
+- d25a6bd: Updated dependency `prettier` to `3.10.0`.
+- Updated dependencies [b319862]
+- Updated dependencies [d25a6bd]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.2.3
+
 ## 9.2.2
 
 ### Patch Changes
