@@ -155,7 +155,14 @@ describe('EditMigrationPlanPage', () => {
 
       expect(await editor()).toHaveValue('# Plan');
       expect(mockAuthenticate).toHaveBeenCalledWith([
-        { provider: 'github', tokenType: 'oauth', scope: 'repo' },
+        {
+          descriptor: {
+            provider: 'github',
+            tokenType: 'oauth',
+            scope: 'repo',
+          },
+          host: 'github.com',
+        },
       ]);
       expect(readPlan).toHaveBeenCalledWith({
         path: { projectId: 'proj-1' },
@@ -179,7 +186,10 @@ describe('EditMigrationPlanPage', () => {
 
       await editor();
       expect(mockAuthenticate).toHaveBeenCalledWith([
-        { provider: 'gitlab', tokenType: 'oauth', scope: 'api' },
+        {
+          descriptor: { provider: 'gitlab', tokenType: 'oauth', scope: 'api' },
+          host: 'gitlab.com',
+        },
       ]);
     });
 

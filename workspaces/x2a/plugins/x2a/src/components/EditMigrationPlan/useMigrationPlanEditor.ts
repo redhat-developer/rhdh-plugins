@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  extractAuthHost,
   MIGRATION_PLAN_MAX_CONTENT_BYTES,
   Module,
   Project,
@@ -85,10 +86,13 @@ export const useMigrationPlanEditor = ({
 
   const getToken = useCallback(async (): Promise<string> => {
     const [authToken] = await authenticate([
-      provider!.getContentWriteAuthTokenDescriptor(),
+      {
+        descriptor: provider!.getContentWriteAuthTokenDescriptor(),
+        host: extractAuthHost(project!.targetRepoUrl) ?? '',
+      },
     ]);
     return authToken.token;
-  }, [authenticate, provider]);
+  }, [authenticate, provider, project]);
 
   const providerLabel = provider
     ? { github: 'GitHub', gitlab: 'GitLab', bitbucket: 'Bitbucket' }[
