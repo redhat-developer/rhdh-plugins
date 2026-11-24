@@ -40,6 +40,9 @@ workspace/noop:
 workspace/orchestrator:
   - 'Workspace\\s*orchestrator'
 
+workspace/pr-compass:
+  - 'Workspace\\s*pr-compass'
+
 workspace/quickstart:
   - 'Workspace\\s*quickstart'
 

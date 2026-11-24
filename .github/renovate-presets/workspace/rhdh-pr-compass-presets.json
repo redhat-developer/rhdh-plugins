@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all PR Compass minor updates",
+      "matchFileNames": ["workspaces/pr-compass/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(PR Compass)"
+      ],
+      "addLabels": ["team/rhdh", "pr-compass"]
+    },
+    {
+      "description": "all PR Compass patch updates",
+      "matchFileNames": ["workspaces/pr-compass/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(PR Compass)"
+      ],
+      "addLabels": ["team/rhdh", "pr-compass"]
+    },
+    {
+      "description": "all PR Compass dev dependency updates",
+      "matchFileNames": ["workspaces/pr-compass/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(PR Compass)"
+      ],
+      "addLabels": ["team/rhdh", "pr-compass"]
+    }
+  ]
+}
