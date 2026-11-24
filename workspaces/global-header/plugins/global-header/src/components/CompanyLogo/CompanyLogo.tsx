@@ -21,6 +21,7 @@ import {
   useApi,
 } from '@backstage/frontend-plugin-api';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import RedHatDeveloperHubLogo from './RedHatDeveloperHubLogo';
 
 /**
@@ -59,11 +60,12 @@ export interface CompanyLogoProps {
 export const CompanyLogo = (props: CompanyLogoProps) => {
   const configApi = useApi(configApiRef);
   const themeApi = useApi(appThemeApiRef);
+  const muiTheme = useTheme();
 
   const themeId = themeApi.getActiveThemeId();
-  const themeVariant = themeApi
-    .getInstalledThemes()
-    .find(theme => theme.id === themeId)?.variant;
+  const themeVariant =
+    themeApi.getInstalledThemes().find(theme => theme.id === themeId)
+      ?.variant ?? muiTheme.palette.mode;
   const logoURLs =
     props.logo ?? configApi.getOptional<LogoURLs>('app.branding.fullLogo');
   const logoURI =
