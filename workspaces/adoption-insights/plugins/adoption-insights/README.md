@@ -242,12 +242,12 @@ app:
                 pluginDestinations:
                   my-custom-plugin: /my-custom-plugin
               breakpoints:
-                xl: { w: 4, h: 5 }
-                lg: { w: 4, h: 5 }
-                md: { w: 6, h: 5 }
-                sm: { w: 6, h: 5 }
-                xs: { w: 12, h: 5 }
-                xxs: { w: 12, h: 5 }
+                xl: { w: 4, h: 4 }
+                lg: { w: 4, h: 4 }
+                md: { w: 6, h: 4 }
+                sm: { w: 6, h: 4 }
+                xs: { w: 12, h: 4 }
+                xxs: { w: 12, h: 4 }
 
 homepage:
   defaultWidgets:

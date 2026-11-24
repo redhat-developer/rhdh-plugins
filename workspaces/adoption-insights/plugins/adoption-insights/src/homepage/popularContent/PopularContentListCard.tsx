@@ -47,8 +47,6 @@ export type PopularContentListCardProps = {
   emptyMessage?: string;
   errorMessage?: string;
   permissionDeniedMessage?: string;
-  /** Optional trailing content under the list (e.g. "View all"). */
-  footer?: ReactNode;
   /**
    * When true, show each row's 1-based rank in front of the title and omit
    * leading icons (rank replaces the icon slot, matching Top Plugins).
@@ -90,7 +88,8 @@ function TrendMetric({
     color = 'danger';
     Icon = RiArrowDownLine;
   }
-  const signed = `${rounded > 0 ? '+' : ''}${rounded}%`;
+  // Prototype shows the arrow for direction; no leading "+" on positive trends.
+  const label = `${rounded}%`;
 
   return (
     <Text
@@ -98,13 +97,13 @@ function TrendMetric({
       weight="bold"
       color={color}
       as="span"
-      aria-label={`Trend ${signed}`}
+      aria-label={`Trend ${label}`}
       style={{ flexShrink: 0 }}
     >
       <Flex align="center" gap="1" style={{ display: 'inline-flex' }}>
         <Icon size={14} aria-hidden />
         <Text variant="body-small" weight="bold" color={color} as="span">
-          {signed}
+          {label}
         </Text>
       </Flex>
     </Text>
@@ -165,7 +164,6 @@ export function PopularContentListCard({
   emptyMessage = 'No popular content to show yet.',
   errorMessage = 'Unable to load popular content right now.',
   permissionDeniedMessage = 'You do not have permission to view adoption insights data.',
-  footer,
   showRank = false,
   titleTooltip,
   visitsLabel = 'visits',
@@ -375,11 +373,6 @@ export function PopularContentListCard({
       noPadding
     >
       {body}
-      {footer ? (
-        <div style={{ padding: `0 ${contentInlinePadding} 16px` }}>
-          {footer}
-        </div>
-      ) : null}
     </InfoCard>
   );
 }

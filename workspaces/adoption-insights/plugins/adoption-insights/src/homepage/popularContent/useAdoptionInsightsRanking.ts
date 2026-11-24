@@ -72,7 +72,9 @@ export function useAdoptionInsightsRanking({
 
   const dateWindow = useMemo(() => {
     const end = new Date();
-    const start = subDays(end, lookbackDays);
+    // Inclusive window: lookbackDays=28 → subDays(today, 27), matching
+    // Header / getDateRange('last-28-days').
+    const start = subDays(end, Math.max(lookbackDays - 1, 0));
     return { start, end };
   }, [lookbackDays]);
 

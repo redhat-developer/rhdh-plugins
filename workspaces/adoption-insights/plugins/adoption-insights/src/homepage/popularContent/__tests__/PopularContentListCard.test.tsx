@@ -87,7 +87,7 @@ describe('PopularContentListCard', () => {
     expect(
       screen.getByRole('row', { name: 'Software Templates' }),
     ).not.toHaveAttribute('data-href');
-    expect(screen.getByLabelText('Trend +12%')).toBeInTheDocument();
+    expect(screen.getByLabelText('Trend 12%')).toBeInTheDocument();
     expect(screen.getByLabelText('Trend -5%')).toBeInTheDocument();
     expect(screen.getByText('1,284 visits')).toBeInTheDocument();
     expect(screen.getByText('876 visits')).toBeInTheDocument();

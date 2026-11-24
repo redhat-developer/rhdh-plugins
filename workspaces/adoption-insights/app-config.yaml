@@ -52,12 +52,12 @@ app:
                 # pluginDestinations:
                 #   my-custom-plugin: /my-custom-plugin
               breakpoints:
-                xl: { w: 4, h: 5, x: 0, y: 0 }
-                lg: { w: 4, h: 5, x: 0, y: 0 }
-                md: { w: 6, h: 5, x: 0, y: 0 }
-                sm: { w: 6, h: 5, x: 0, y: 0 }
-                xs: { w: 12, h: 5, x: 0, y: 0 }
-                xxs: { w: 12, h: 5, x: 0, y: 0 }
+                xl: { w: 4, h: 4, x: 0, y: 0 }
+                lg: { w: 4, h: 4, x: 0, y: 0 }
+                md: { w: 6, h: 4, x: 0, y: 0 }
+                sm: { w: 6, h: 4, x: 0, y: 0 }
+                xs: { w: 12, h: 4, x: 0, y: 0 }
+                xxs: { w: 12, h: 4, x: 0, y: 0 }
 
 # When homepage-backend is installed (RHDH / rhdh-local), Add-widget only lists
 # cards whose extension name matches a defaultWidgets.ref (last path segment of
