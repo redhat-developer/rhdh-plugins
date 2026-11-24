@@ -14,6 +14,7 @@
 | Coder  | `/fs-code` slash command, or `ready-to-code` label     | Post on a triaged issue                           |
 | Review | Auto-triggers on PR open/update                        | Automatic for `workspaces/scorecard/` PRs         |
 | Fix    | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
+| CVE bump | Monday cron or **Actions → Fullsend CVE schedule** | Opens `chore/<workspace>-cve-bumps-<base>` PRs |
 
 ### Auto-trigger vs. manual trigger
 
@@ -88,14 +89,14 @@ the ID if `JIRA_BASE_URL` points to a different Jira instance.
 
 ## CVE schedule (Dependabot lockfile bumps)
 
-The [Fullsend CVE schedule](../.github/workflows/fullsend-cve-schedule.yml) workflow is a sibling of the event shim (not wired into `fullsend.yaml`). It plans a workspace matrix, runs the `cve-bump` agent per cell, and opens `chore/<workspace>-cve-bumps` PRs.
+The [Fullsend CVE schedule](../.github/workflows/fullsend-cve-schedule.yml) workflow is a sibling of the event shim (not wired into `fullsend.yaml`). It plans a **workspace × base** matrix, runs the `cve-bump` agent per cell, and opens `chore/<workspace>-cve-bumps-<base>` PRs (`…-main`, `…-release-2.1`, …).
 
 ### Trigger
 
-| Trigger  | Detail                                                                       |
-| -------- | ---------------------------------------------------------------------------- |
-| Schedule | Mondays `08:00` UTC (`0 8 * * 1`)                                            |
-| Manual   | Actions → **Fullsend CVE schedule** (`workspace`, `issue_number`, `dry_run`) |
+| Trigger  | Detail                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| Schedule | Mondays `08:00` UTC (`0 8 * * 1`)                                                               |
+| Manual   | Actions → **Fullsend CVE schedule** (`workspace`, `bases`, `issue_number`, `dry_run`)           |
 
 Concurrency group `fullsend-cve-schedule` does not cancel in-progress runs.
 
@@ -103,22 +104,22 @@ Concurrency group `fullsend-cve-schedule` does not cancel in-progress runs.
 
 There is no external queue. [`plan-cve-matrix.cjs`](../.fullsend/rhdh/scripts/plan-cve-matrix.cjs) builds the run set from:
 
-1. Allowlist / skip list in [`.fullsend/rhdh/cve-schedule.yaml`](../.fullsend/rhdh/cve-schedule.yaml) (`max_parallel: 3`)
+1. Allowlist / skip / `bases` / `max_parallel` in [`.fullsend/rhdh/cve-schedule.yaml`](../.fullsend/rhdh/cve-schedule.yaml) (default bases: `release-2.1`, `main`)
 2. Open Dependabot alerts (requires repo secret `DEPENDABOT_TOKEN` with **Dependabot alerts: read**)
-3. Skip a workspace when an open PR already exists on `chore/<workspace>-cve-bumps` (or one labeled `fullsend-cve-failed`)
+3. Skip a cell when an open PR already exists on that head+base (or one labeled `fullsend-cve-failed`)
 4. Ensure a tracking issue labeled `package-impact-report`
 
-Per-workspace alert JSON is uploaded as the `cve-schedule-alerts` artifact (not embedded in matrix output). Fan-out uses GHA `max-parallel` plus concurrency `fullsend-cve-<workspace>`.
+Per-workspace alert JSON is uploaded as the `cve-schedule-alerts` artifact (not embedded in matrix output). Fan-out uses GHA `max-parallel` plus concurrency `fullsend-cve-<workspace>-<base>`.
 
 ### How PRs are opened
 
 1. Each matrix cell dispatches Fullsend `cve-bump` (`role: coder`).
-2. Pre-script loads the workspace alert artifact and checks out `chore/<workspace>-cve-bumps` from `main`.
-3. The agent classifies / bumps the lockfile and writes `cve-result.json` (it does not push or open the PR).
-4. Post-script pushes the branch, runs `gh pr create` (labels `fullsend-cve`, `workspace/<ws>`), and comments on the tracking issue.
-5. The schedule summary job posts selected / skipped workspaces to the same issue.
+2. Pre-script loads the workspace alert artifact and checks out `chore/<workspace>-cve-bumps-<base>` from that base.
+3. The agent classifies / bumps the lockfile and writes `cve-result.json` (it does not push or open the PR). Sandbox sets `YARN_ENABLE_SCRIPTS=false` so lockfile bumps skip native postinstalls (PR CI still does a full install).
+4. Post-script pushes with `--force-with-lease`, runs `gh pr create` (labels `fullsend-cve`, `workspace/<ws>`), holds **main** PRs with `do-not-merge/hold` (merge z-stream first), and comments on the tracking issue.
+5. The schedule summary job posts selected / skipped cells to the same issue.
 
-Ops: set `DEPENDABOT_TOKEN` before relying on the Monday cron. First enablement: `dry_run=true`, then a single-`workspace` dispatch.
+Ops: set `DEPENDABOT_TOKEN` before relying on the Monday cron. First enablement: `dry_run=true`, then a single-`workspace` dispatch (optionally `bases=release-2.1`).
 
 ## Coexistence with PR Agent
 
@@ -200,7 +201,7 @@ Available in the workflow run logs under the sandbox creation step. Look for `fu
 | Slash command ignored                 | Commenter is not OWNER/MEMBER/COLLABORATOR                |
 | Review doesn't trigger                | PR doesn't touch files in `workspaces/scorecard/`         |
 | CVE schedule plan fails on alerts     | Missing or under-scoped `DEPENDABOT_TOKEN` secret         |
-| CVE workspace skipped                 | Open PR already on `chore/<workspace>-cve-bumps`          |
+| CVE cell skipped                      | Open PR already on `chore/<workspace>-cve-bumps-<base>`   |
 | 403 from mint                         | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
 | `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project                    |
 | Agent produces no output              | Check transcript artifact for agent errors                |
