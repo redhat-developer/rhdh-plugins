@@ -80,7 +80,7 @@ jobs:
     if: ${{ needs.prepare.outputs.operation == 'fix' && needs.prepare.outputs.matrix != '{"include":[]}' }}
     permissions:
       actions: write
-      contents: read
+      contents: write
       id-token: write
       issues: write
       packages: read
