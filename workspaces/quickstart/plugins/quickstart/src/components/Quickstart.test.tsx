@@ -106,7 +106,7 @@ describe('Quickstart', () => {
         screen.getByRole('button', { name: /Step 1 for Admin/i }),
       );
 
-      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      const cta = await screen.findByRole('link', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -117,7 +117,7 @@ describe('Quickstart', () => {
       fireEvent.click(
         screen.getByRole('button', { name: /Step 2 for Admin/i }),
       );
-      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      const cta2 = await screen.findByRole('link', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {
@@ -135,7 +135,7 @@ describe('Quickstart', () => {
         screen.getByRole('button', { name: /Step 1 for Developer/i }),
       );
 
-      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      const cta = await screen.findByRole('link', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -146,7 +146,7 @@ describe('Quickstart', () => {
       fireEvent.click(
         screen.getByRole('button', { name: /Step 2 for Developer/i }),
       );
-      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      const cta2 = await screen.findByRole('link', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {
