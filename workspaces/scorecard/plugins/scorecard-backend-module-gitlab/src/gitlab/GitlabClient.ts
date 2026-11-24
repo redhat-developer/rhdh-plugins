@@ -21,42 +21,25 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { Gitlab } from '@gitbeaker/rest';
-
-type GitlabApi = InstanceType<typeof Gitlab>;
-
-type GitlabIssuesOptions = {
-  state?: 'opened' | 'closed';
-  createdAfter?: string;
-  updatedAfter?: string;
-};
-
-type GitlabMergeRequestsOptions = {
-  state?: 'opened' | 'closed' | 'merged';
-  createdAfter?: string;
-  updatedAfter?: string;
-};
-
-type GitlabJobItem = {
-  created_at: string;
-  status?: string;
-};
-
-type FetchJobsSinceOptions = {
-  since: Date;
-  scope?: string[];
-  fetchItemsLimit?: number;
-};
-
-type GitlabJobsWindowStats = {
-  started: number;
-  successful: number;
-  failed: number;
-};
+import type {
+  GitlabApi,
+  GitlabIssuesRequestAttributes,
+  GitlabMergeRequestsRequestAttributes,
+  CountItemsSinceOptions,
+  AllIssuesResponse,
+  AllMergeRequestsResponse,
+  GitlabJobsWindowStats,
+  GitlabJobItem,
+  FetchJobsSinceOptions,
+} from './types';
+import { resolveTotalCount } from './utils/resolveTotalCount';
+import { parseIssuesResponse } from './utils/parseIssuesResponse';
+import { parseMergeRequestsResponse } from './utils/parseMergeRequestsResponse';
 
 export class GitlabClient {
-  private static readonly MAX_JOBS_PAGES = 10;
-  private static readonly GITLAB_JOBS_PAGE_SIZE = 100;
-  private static readonly JOBS_FETCH_ITEMS_LIMIT = 1000;
+  private static readonly MAX_PAGES = 10;
+  private static readonly PAGE_SIZE = 100;
+  private static readonly FETCH_ITEMS_LIMIT = 1000;
 
   private readonly integrations: ScmIntegrations;
   private readonly credentialsProvider: DefaultGitlabCredentialsProvider;
@@ -90,35 +73,87 @@ export class GitlabClient {
     });
   }
 
-  private resolveTotalCount(
-    total: number | undefined,
-    context: string,
-  ): number {
-    if (!Number.isFinite(total)) {
-      throw new TypeError(
-        `GitLab did not return a pagination total for ${context}. ` +
-          'Counts cannot be derived from a single page when X-Total is absent.',
+  private async countItemsSince(
+    options: CountItemsSinceOptions,
+  ): Promise<number> {
+    let count = 0;
+    let scanned = 0;
+
+    const { fetchPage, timestampField, since, context } = options;
+
+    const limitReached = () => {
+      this.logger.warn(
+        `Reached fetch limit while counting ${context} ` +
+          `(fetchItemsLimit=${GitlabClient.FETCH_ITEMS_LIMIT}, maxPages=${GitlabClient.MAX_PAGES}). ` +
+          'Counts cannot be completed without scanning more candidates.',
       );
+
+      return count;
+    };
+
+    for (
+      let page = 1;
+      page <= GitlabClient.MAX_PAGES &&
+      scanned < GitlabClient.FETCH_ITEMS_LIMIT;
+      page++
+    ) {
+      const items = await fetchPage(page, GitlabClient.PAGE_SIZE);
+
+      if (items.length === 0) {
+        return count;
+      }
+
+      for (const item of items) {
+        if (scanned >= GitlabClient.FETCH_ITEMS_LIMIT) return limitReached();
+
+        scanned++;
+
+        const raw = item[timestampField];
+
+        if (typeof raw === 'string' && new Date(raw) >= since) {
+          count++;
+        }
+      }
+
+      if (items.length < GitlabClient.PAGE_SIZE) return count;
+
+      if (page === GitlabClient.MAX_PAGES) return limitReached();
     }
-    return total as number;
+    return count;
   }
 
-  private async getIssuesCount(
+  async getIssues(
     url: string,
     projectSlug: string,
-    options?: GitlabIssuesOptions,
-  ): Promise<number> {
+    requestAttributes: GitlabIssuesRequestAttributes = {},
+  ): Promise<AllIssuesResponse> {
     const api = await this.getGitlabApi(url);
-    const { paginationInfo } = await api.Issues.all({
+
+    const response = await api.Issues.all({
       projectId: projectSlug,
+      page: 1,
+      ...requestAttributes,
+    });
+
+    return parseIssuesResponse(response, this.logger);
+  }
+
+  async getIssuesCount(
+    url: string,
+    projectSlug: string,
+    options?: GitlabIssuesRequestAttributes,
+  ): Promise<number> {
+    const requestAttributes = {
+      ...options,
       perPage: 1,
       maxPages: 1,
-      page: 1,
       showExpanded: true,
-      ...options,
-    });
-    return this.resolveTotalCount(
-      paginationInfo.total,
+    };
+
+    const issues = await this.getIssues(url, projectSlug, requestAttributes);
+
+    return resolveTotalCount(
+      issues.paginationInfo?.total,
       `issues in '${projectSlug}'`,
     );
   }
@@ -142,28 +177,60 @@ export class GitlabClient {
     projectSlug: string,
     since: Date,
   ): Promise<number> {
-    return this.getIssuesCount(url, projectSlug, {
-      state: 'closed',
-      updatedAfter: since.toISOString(),
+    return this.countItemsSince({
+      fetchPage: async (page, perPage) => {
+        const { data } = await this.getIssues(url, projectSlug, {
+          state: 'closed',
+          updatedAfter: since.toISOString(),
+          page,
+          perPage,
+          maxPages: 1,
+        });
+
+        return data;
+      },
+      timestampField: 'closed_at',
+      since,
+      context: `closed issues in '${projectSlug}'`,
     });
   }
 
-  private async getMergeRequestsCount(
+  async getMergeRequests(
     url: string,
     projectSlug: string,
-    options?: GitlabMergeRequestsOptions,
-  ): Promise<number> {
+    requestAttributes: GitlabMergeRequestsRequestAttributes = {},
+  ): Promise<AllMergeRequestsResponse> {
     const api = await this.getGitlabApi(url);
-    const { paginationInfo } = await api.MergeRequests.all({
+
+    const response = await api.MergeRequests.all({
       projectId: projectSlug,
+      page: 1,
+      ...requestAttributes,
+    });
+
+    return parseMergeRequestsResponse(response, this.logger);
+  }
+
+  async getMergeRequestsCount(
+    url: string,
+    projectSlug: string,
+    options?: GitlabMergeRequestsRequestAttributes,
+  ): Promise<number> {
+    const requestAttributes = {
+      ...options,
       perPage: 1,
       maxPages: 1,
-      page: 1,
       showExpanded: true,
-      ...options,
-    });
-    return this.resolveTotalCount(
-      paginationInfo.total,
+    };
+
+    const mergeRequests = await this.getMergeRequests(
+      url,
+      projectSlug,
+      requestAttributes,
+    );
+
+    return resolveTotalCount(
+      mergeRequests.paginationInfo?.total,
       `merge requests in '${projectSlug}'`,
     );
   }
@@ -190,14 +257,42 @@ export class GitlabClient {
     projectSlug: string,
     since: Date,
   ): Promise<number> {
-    const closedMRs = await this.getMergeRequestsCount(url, projectSlug, {
-      state: 'closed',
-      updatedAfter: since.toISOString(),
-    });
-    const mergedMRs = await this.getMergeRequestsCount(url, projectSlug, {
-      state: 'merged',
-      updatedAfter: since.toISOString(),
-    });
+    const updatedAfter = since.toISOString();
+
+    const [closedMRs, mergedMRs] = await Promise.all([
+      this.countItemsSince({
+        fetchPage: async (page, perPage) => {
+          const { data } = await this.getMergeRequests(url, projectSlug, {
+            state: 'closed',
+            updatedAfter,
+            page,
+            perPage,
+            maxPages: 1,
+          });
+
+          return data;
+        },
+        timestampField: 'closed_at',
+        since,
+        context: `closed merge requests in '${projectSlug}'`,
+      }),
+      this.countItemsSince({
+        fetchPage: async (page, perPage) => {
+          const { data } = await this.getMergeRequests(url, projectSlug, {
+            state: 'merged',
+            updatedAfter,
+            page,
+            perPage,
+            maxPages: 1,
+          });
+
+          return data;
+        },
+        timestampField: 'merged_at',
+        since,
+        context: `merged merge requests in '${projectSlug}'`,
+      }),
+    ]);
 
     return closedMRs + mergedMRs;
   }
@@ -221,7 +316,8 @@ export class GitlabClient {
       page: 1,
       showExpanded: true,
     });
-    return this.resolveTotalCount(
+
+    return resolveTotalCount(
       paginationInfo.total,
       `pipelines in '${projectSlug}'`,
     );
@@ -298,6 +394,7 @@ export class GitlabClient {
         allItems.push(item);
       }
     }
+
     return allItems.length >= fetchItemsLimit;
   }
 
@@ -311,6 +408,7 @@ export class GitlabClient {
     if (oldestItem && new Date(oldestItem.created_at) < since) {
       return false;
     }
+
     return items.length >= perPage;
   }
 
@@ -322,10 +420,10 @@ export class GitlabClient {
     const {
       since,
       scope,
-      fetchItemsLimit = GitlabClient.JOBS_FETCH_ITEMS_LIMIT,
+      fetchItemsLimit = GitlabClient.FETCH_ITEMS_LIMIT,
     } = options;
 
-    const perPage = GitlabClient.GITLAB_JOBS_PAGE_SIZE;
+    const perPage = GitlabClient.PAGE_SIZE;
     const allItems: GitlabJobItem[] = [];
 
     let page = 1;
@@ -333,7 +431,7 @@ export class GitlabClient {
     let truncated = false;
 
     while (hasMore && allItems.length < fetchItemsLimit) {
-      if (page > GitlabClient.MAX_JOBS_PAGES) {
+      if (page > GitlabClient.MAX_PAGES) {
         truncated = true;
         break;
       }
@@ -361,7 +459,7 @@ export class GitlabClient {
     if (truncated) {
       this.logger.warn(
         `Reached jobs fetch limit for '${projectSlug}' ` +
-          `(fetchItemsLimit=${fetchItemsLimit}, maxPages=${GitlabClient.MAX_JOBS_PAGES}); stopping fetch`,
+          `(fetchItemsLimit=${fetchItemsLimit}, maxPages=${GitlabClient.MAX_PAGES}); stopping fetch`,
       );
     }
 

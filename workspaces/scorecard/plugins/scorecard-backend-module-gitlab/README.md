@@ -83,28 +83,28 @@ For self-hosted GitLab, point the source location at that host (for example `url
 
 ## Available Metrics
 
-| Metric ID                        | Description                                                         | Type       | Time Window |
-| -------------------------------- | ------------------------------------------------------------------- | ---------- | ----------- |
-| `gitlab.openIssues`              | Currently open issues                                               | Number     | —           |
-| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                                    | Number     | 7 days      |
-| `gitlab.closedIssues7d`          | Closed issues with activity in the last 7 days (`updatedAfter`)     | Number     | 7 days      |
-| `gitlab.openMergeRequests`       | Currently open merge requests                                       | Number     | —           |
-| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days                            | Number     | 7 days      |
-| `gitlab.closedMergeRequests7d`   | Closed/merged MRs with activity in the last 7 days (`updatedAfter`) | Number     | 7 days      |
-| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days (`created_after`)              | Number     | 7 days      |
-| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days                             | Number     | 7 days      |
-| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                                 | Number     | 7 days      |
-| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days                         | Number (%) | 7 days      |
-| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours                       | Number (%) | 24 hours    |
-| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                                     | Number     | 7 days      |
-| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                                  | Number     | 7 days      |
-| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                                      | Number     | 7 days      |
-| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days                              | Number (%) | 7 days      |
-| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours                            | Number (%) | 24 hours    |
+| Metric ID                        | Description                                            | Type       | Time Window |
+| -------------------------------- | ------------------------------------------------------ | ---------- | ----------- |
+| `gitlab.openIssues`              | Currently open issues                                  | Number     | —           |
+| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                       | Number     | 7 days      |
+| `gitlab.closedIssues7d`          | Issues closed in the last 7 days                       | Number     | 7 days      |
+| `gitlab.openMergeRequests`       | Currently open merge requests                          | Number     | —           |
+| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days               | Number     | 7 days      |
+| `gitlab.closedMergeRequests7d`   | Merge requests closed or merged in the last 7 days     | Number     | 7 days      |
+| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days (`created_after`) | Number     | 7 days      |
+| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days                | Number     | 7 days      |
+| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                    | Number     | 7 days      |
+| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days            | Number (%) | 7 days      |
+| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours          | Number (%) | 24 hours    |
+| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                        | Number     | 7 days      |
+| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                     | Number     | 7 days      |
+| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                         | Number     | 7 days      |
+| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days                 | Number (%) | 7 days      |
+| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours               | Number (%) | 24 hours    |
 
 Success ratio metrics are `successful / (successful + failed)` as a percentage. Pending, running, and canceled pipelines/jobs are ignored. When there are no successful or failed items in the window, the ratio metric is omitted and stored as a calculation error.
 
-Closed issues/MRs (`gitlab.closedIssues7d`, `gitlab.closedMergeRequests7d`) use GitLab `updatedAfter` with `state=closed`/`merged` because GitLab has no `closedAfter` filter. These counts are closed/merged items that were **updated** in the window, not items whose close/merge event necessarily happened in that window. Comments, labels, or other activity on older closed/merged items can inflate the value. Exact close-event counts would require the GitLab Events API.
+Closed issues/MRs (`gitlab.closedIssues7d`, `gitlab.closedMergeRequests7d`) use `state=closed`/`merged` with `updatedAfter` only to bound candidates (GitLab has no `closedAfter` list filter). The Scorecard backend then counts rows whose `closed_at` or `merged_at` falls in the window. Candidate pages use the same client-side cap as jobs (1000 items / 10 pages); when the cap is hit the client logs a warning and returns a truncated count. Items closed or merged in the window but not updated since the window start never enter the candidate set and are not counted.
 
 Pipeline started/success/failed windows use GitLab `created_after` so they match “started in the window”. Accurate filtering needs a GitLab version that supports `created_after` on project pipelines; unsupported instances may error or ignore the param (surfaced as calculation errors).
 

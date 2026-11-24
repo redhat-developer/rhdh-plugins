@@ -114,7 +114,8 @@ describe('GitlabClient', () => {
       await expect(
         gitlabClient.getOpenIssuesCount(url, projectSlug),
       ).rejects.toThrow(
-        `GitLab did not return a pagination total for issues in '${projectSlug}'`,
+        `GitLab did not return a pagination total for issues in '${projectSlug}'. ` +
+          'Counts cannot be derived from a single page when X-Total is absent.',
       );
     });
 
@@ -127,7 +128,8 @@ describe('GitlabClient', () => {
       await expect(
         gitlabClient.getOpenIssuesCount(url, projectSlug),
       ).rejects.toThrow(
-        `GitLab did not return a pagination total for issues in '${projectSlug}'`,
+        `GitLab did not return a pagination total for issues in '${projectSlug}'. ` +
+          'Counts cannot be derived from a single page when X-Total is absent.',
       );
     });
 
@@ -181,9 +183,13 @@ describe('GitlabClient', () => {
   });
 
   describe('getClosedIssuesCount', () => {
-    it('should filter by state closed and updatedAfter', async () => {
-      mockGitlabApi.Issues.all.mockResolvedValue(mockExpandedCount(3));
+    it('should count issues with closed_at in the window and exclude older closes', async () => {
       const since = new Date('2024-01-01T00:00:00Z');
+      mockGitlabApi.Issues.all.mockResolvedValue([
+        { closed_at: '2024-01-02T00:00:00Z' },
+        { closed_at: '2023-12-01T00:00:00Z' },
+        { closed_at: '2024-01-05T12:00:00Z' },
+      ]);
 
       const result = await gitlabClient.getClosedIssuesCount(
         url,
@@ -191,14 +197,66 @@ describe('GitlabClient', () => {
         since,
       );
 
-      expect(result).toBe(3);
+      expect(result).toBe(2);
       expect(mockGitlabApi.Issues.all).toHaveBeenCalledWith(
         expect.objectContaining({
           projectId: projectSlug,
           state: 'closed',
           updatedAfter: since.toISOString(),
-          showExpanded: true,
+          page: 1,
+          perPage: 100,
+          maxPages: 1,
         }),
+      );
+    });
+
+    it('should page through candidates until a short page', async () => {
+      const since = new Date('2024-01-01T00:00:00Z');
+      const firstPage = Array.from({ length: 100 }, () => ({
+        closed_at: '2024-01-02T00:00:00Z',
+      }));
+      const secondPage = [
+        { closed_at: '2024-01-03T00:00:00Z' },
+        { closed_at: '2023-01-01T00:00:00Z' },
+      ];
+
+      mockGitlabApi.Issues.all
+        .mockResolvedValueOnce(firstPage)
+        .mockResolvedValueOnce(secondPage);
+
+      const result = await gitlabClient.getClosedIssuesCount(
+        url,
+        projectSlug,
+        since,
+      );
+
+      expect(result).toBe(101);
+      expect(mockGitlabApi.Issues.all).toHaveBeenCalledTimes(2);
+      expect(mockGitlabApi.Issues.all).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ page: 2 }),
+      );
+    });
+
+    it('should stop at the candidate fetch cap and warn', async () => {
+      const since = new Date('2024-01-01T00:00:00Z');
+      const fullPage = Array.from({ length: 100 }, () => ({
+        closed_at: '2024-01-02T00:00:00Z',
+      }));
+      mockGitlabApi.Issues.all.mockResolvedValue(fullPage);
+
+      const result = await gitlabClient.getClosedIssuesCount(
+        url,
+        projectSlug,
+        since,
+      );
+
+      expect(result).toBe(1000);
+      expect(mockGitlabApi.Issues.all).toHaveBeenCalledTimes(10);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached fetch limit while counting closed issues in '${projectSlug}' ` +
+          '(fetchItemsLimit=1000, maxPages=10). ' +
+          'Counts cannot be completed without scanning more candidates.',
       );
     });
   });
@@ -246,27 +304,78 @@ describe('GitlabClient', () => {
   });
 
   describe('getClosedMergeRequestsCount', () => {
-    it('should sum closed and merged counts', async () => {
-      mockGitlabApi.MergeRequests.all
-        .mockResolvedValueOnce(mockExpandedCount(4))
-        .mockResolvedValueOnce(mockExpandedCount(6));
-
+    it('should sum closed and merged counts after closed_at/merged_at filters', async () => {
       const since = new Date('2024-01-01T00:00:00Z');
+      mockGitlabApi.MergeRequests.all.mockImplementation(
+        async (options: { state?: string }) => {
+          if (options.state === 'closed') {
+            return [
+              { closed_at: '2024-01-02T00:00:00Z' },
+              { closed_at: '2023-01-01T00:00:00Z' },
+            ];
+          }
+          return [
+            { merged_at: '2024-01-03T00:00:00Z' },
+            { merged_at: '2024-01-04T00:00:00Z' },
+            { merged_at: '2022-01-01T00:00:00Z' },
+          ];
+        },
+      );
+
       const result = await gitlabClient.getClosedMergeRequestsCount(
         url,
         projectSlug,
         since,
       );
 
-      expect(result).toBe(10);
+      expect(result).toBe(3);
       expect(mockGitlabApi.MergeRequests.all).toHaveBeenCalledTimes(2);
-      expect(mockGitlabApi.MergeRequests.all).toHaveBeenNthCalledWith(
-        1,
-        expect.objectContaining({ state: 'closed' }),
+      expect(mockGitlabApi.MergeRequests.all).toHaveBeenCalledWith(
+        expect.objectContaining({
+          state: 'closed',
+          updatedAfter: since.toISOString(),
+          page: 1,
+          perPage: 100,
+          maxPages: 1,
+        }),
       );
-      expect(mockGitlabApi.MergeRequests.all).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({ state: 'merged' }),
+      expect(mockGitlabApi.MergeRequests.all).toHaveBeenCalledWith(
+        expect.objectContaining({
+          state: 'merged',
+          updatedAfter: since.toISOString(),
+          page: 1,
+          perPage: 100,
+          maxPages: 1,
+        }),
+      );
+    });
+
+    it('should stop at the candidate fetch cap for closed merge requests and warn', async () => {
+      const since = new Date('2024-01-01T00:00:00Z');
+      const fullPage = Array.from({ length: 100 }, () => ({
+        closed_at: '2024-01-02T00:00:00Z',
+      }));
+      mockGitlabApi.MergeRequests.all.mockImplementation(
+        async (options: { state?: string }) => {
+          if (options.state === 'closed') {
+            return fullPage;
+          }
+          return [{ merged_at: '2024-01-02T00:00:00Z' }];
+        },
+      );
+
+      const result = await gitlabClient.getClosedMergeRequestsCount(
+        url,
+        projectSlug,
+        since,
+      );
+
+      // closed pass hits the 1000-item cap; merged pass still adds 1
+      expect(result).toBe(1001);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached fetch limit while counting closed merge requests in '${projectSlug}' ` +
+          '(fetchItemsLimit=1000, maxPages=10). ' +
+          'Counts cannot be completed without scanning more candidates.',
       );
     });
   });

@@ -130,10 +130,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.gitlab.openedIssues7d.title': 'Issues GitLab ouvertes (7 j)',
     'metric.gitlab.openedIssues7d.description':
       'Nombre d’issues ouvertes au cours des 7 derniers jours pour un projet GitLab donné.',
-    'metric.gitlab.closedIssues7d.title':
-      'Issues GitLab fermées mises à jour (7 j)',
+    'metric.gitlab.closedIssues7d.title': 'Issues GitLab fermées (7 j)',
     'metric.gitlab.closedIssues7d.description':
-      'Nombre d’issues fermées avec activité au cours des 7 derniers jours.',
+      'Nombre d’issues fermées au cours des 7 derniers jours pour un projet GitLab donné.',
     'metric.gitlab.openMergeRequests.title': 'Merge requests GitLab ouvertes',
     'metric.gitlab.openMergeRequests.description':
       'Nombre actuel de merge requests ouvertes pour un projet GitLab donné.',
@@ -142,9 +141,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.gitlab.openedMergeRequests7d.description':
       'Nombre de merge requests ouvertes au cours des 7 derniers jours pour un projet GitLab donné.',
     'metric.gitlab.closedMergeRequests7d.title':
-      'MR GitLab fermées/fusionnées mises à jour (7 j)',
+      'MR GitLab fermées ou fusionnées (7 j)',
     'metric.gitlab.closedMergeRequests7d.description':
-      'Nombre de merge requests fermées ou fusionnées avec activité au cours des 7 derniers jours.',
+      'Nombre de merge requests fermées ou fusionnées au cours des 7 derniers jours pour un projet GitLab donné.',
     'metric.gitlab.startedPipelines7d.title': 'Pipelines GitLab démarrés (7 j)',
     'metric.gitlab.startedPipelines7d.description':
       'Nombre de pipelines démarrés au cours des 7 derniers jours pour un projet GitLab donné.',

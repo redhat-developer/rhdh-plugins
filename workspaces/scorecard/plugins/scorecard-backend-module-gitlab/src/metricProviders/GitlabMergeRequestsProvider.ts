@@ -72,9 +72,9 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
       },
       {
         id: GITLAB_MERGE_REQUESTS_METRIC_IDS.CLOSED_MRS_7D,
-        title: 'GitLab closed/merged MRs updated (7d)',
+        title: 'GitLab MRs closed or merged (7d)',
         description:
-          'Number of closed or merged merge requests with activity in the last 7 days.',
+          'Number of merge requests closed or merged in the last 7 days for a given GitLab project.',
         type: 'number',
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,
