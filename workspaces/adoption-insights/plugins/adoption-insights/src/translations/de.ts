@@ -65,7 +65,11 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'header.dateRange.today': 'Heute',
     'header.title': 'Adoption Insights',
     'homepage.topPlugins.empty': 'Noch keine Plugin-Nutzungsdaten',
+    'homepage.topPlugins.emptyDescription':
+      'Sobald Plugins in Ihrer Organisation verwendet werden, erscheinen die beliebtesten hier.',
     'homepage.topPlugins.error': 'Plugin-Daten konnten nicht geladen werden',
+    'homepage.topPlugins.errorDescription':
+      'Beim Laden der Plugin-Nutzung ist etwas schiefgelaufen. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
     'homepage.topPlugins.permissionDenied':
       'Sie haben keine Berechtigung, Adoption-Insights-Daten anzuzeigen.',
     'homepage.topPlugins.title': 'Top-Plugins',

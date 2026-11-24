@@ -18,6 +18,7 @@ import { isValidElement, type ReactNode } from 'react';
 
 import { InfoCard } from '@backstage/core-components';
 import {
+  Alert,
   ButtonIcon,
   Flex,
   List,
@@ -30,6 +31,7 @@ import {
 import {
   RiArrowDownLine,
   RiArrowUpLine,
+  RiCheckboxCircleFill,
   RiInformationLine,
   RiSubtractLine,
 } from '@remixicon/react';
@@ -44,8 +46,14 @@ export type PopularContentListCardProps = {
   error?: Error;
   /** When true, show a soft permission/empty message instead of an error panel. */
   permissionDenied?: boolean;
+  /** Empty-state title. Prefer locale strings from the calling card. */
   emptyMessage?: string;
+  /** Empty-state supporting copy under the title. */
+  emptyDescription?: string;
+  /** Error-state title. Prefer locale strings from the calling card. */
   errorMessage?: string;
+  /** Error-state supporting copy under the title. */
+  errorDescription?: string;
   permissionDeniedMessage?: string;
   /**
    * When true, show each row's 1-based rank in front of the title and omit
@@ -88,8 +96,9 @@ function TrendMetric({
     color = 'danger';
     Icon = RiArrowDownLine;
   }
-  // Prototype shows the arrow for direction; no leading "+" on positive trends.
-  const label = `${rounded}%`;
+  // Prototype uses the arrow for direction; show the absolute value only.
+  const label = `${Math.abs(rounded)}%`;
+  const ariaLabel = rounded < 0 ? `Trend down ${label}` : `Trend ${label}`;
 
   return (
     <Text
@@ -97,7 +106,7 @@ function TrendMetric({
       weight="bold"
       color={color}
       as="span"
-      aria-label={`Trend ${label}`}
+      aria-label={ariaLabel}
       style={{ flexShrink: 0 }}
     >
       <Flex align="center" gap="1" style={{ display: 'inline-flex' }}>
@@ -161,9 +170,11 @@ export function PopularContentListCard({
   loading = false,
   error,
   permissionDenied = false,
-  emptyMessage = 'No popular content to show yet.',
-  errorMessage = 'Unable to load popular content right now.',
-  permissionDeniedMessage = 'You do not have permission to view adoption insights data.',
+  emptyMessage,
+  emptyDescription,
+  errorMessage,
+  errorDescription,
+  permissionDeniedMessage,
   showRank = false,
   titleTooltip,
   visitsLabel = 'visits',
@@ -204,25 +215,41 @@ export function PopularContentListCard({
     );
   } else if (error) {
     body = (
-      <Text
-        variant="body-small"
-        color="secondary"
-        role="alert"
-        style={statusStyle}
-      >
-        {errorMessage}
-      </Text>
+      <div role="alert" style={{ padding: contentInlinePadding }}>
+        <Alert
+          status="danger"
+          icon={false}
+          title={errorMessage}
+          description={errorDescription}
+        />
+      </div>
     );
   } else if (items.length === 0) {
     body = (
-      <Text
-        variant="body-small"
-        color="secondary"
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        gap="2"
         role="status"
-        style={statusStyle}
+        className={styles.emptyState}
       >
-        {emptyMessage}
-      </Text>
+        <RiCheckboxCircleFill
+          size={32}
+          color="var(--bui-fg-success)"
+          aria-hidden
+        />
+        {emptyMessage ? (
+          <Text variant="body-medium" weight="bold" as="span">
+            {emptyMessage}
+          </Text>
+        ) : null}
+        {emptyDescription ? (
+          <Text variant="body-small" color="secondary" as="span">
+            {emptyDescription}
+          </Text>
+        ) : null}
+      </Flex>
     );
   } else {
     body = (

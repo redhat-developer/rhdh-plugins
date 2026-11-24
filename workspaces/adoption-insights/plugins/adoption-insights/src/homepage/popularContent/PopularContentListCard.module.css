@@ -10,3 +10,10 @@
 .row[data-href] {
   cursor: pointer;
 }
+
+/* Centered empty state matching the homepage Top Plugins prototype. */
+.emptyState {
+  padding: var(--bui-space-6) var(--bui-space-4);
+  text-align: center;
+  min-height: 140px;
+}

@@ -111,7 +111,9 @@ export function TopPluginsCard(props: TopPluginsCardProps) {
       error={ranking.error}
       permissionDenied={ranking.permissionDenied}
       emptyMessage={t('homepage.topPlugins.empty')}
+      emptyDescription={t('homepage.topPlugins.emptyDescription')}
       errorMessage={t('homepage.topPlugins.error')}
+      errorDescription={t('homepage.topPlugins.errorDescription')}
       permissionDeniedMessage={t('homepage.topPlugins.permissionDenied')}
       visitsLabel={t('homepage.topPlugins.visits')}
       showRank

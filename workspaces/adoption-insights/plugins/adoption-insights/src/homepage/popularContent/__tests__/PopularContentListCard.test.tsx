@@ -88,7 +88,9 @@ describe('PopularContentListCard', () => {
       screen.getByRole('row', { name: 'Software Templates' }),
     ).not.toHaveAttribute('data-href');
     expect(screen.getByLabelText('Trend 12%')).toBeInTheDocument();
-    expect(screen.getByLabelText('Trend -5%')).toBeInTheDocument();
+    expect(screen.getByLabelText('Trend down 5%')).toBeInTheDocument();
+    expect(screen.getByText('12%')).toBeInTheDocument();
+    expect(screen.getByText('5%')).toBeInTheDocument();
     expect(screen.getByText('1,284 visits')).toBeInTheDocument();
     expect(screen.getByText('876 visits')).toBeInTheDocument();
     expect(
@@ -98,10 +100,18 @@ describe('PopularContentListCard', () => {
 
   it('renders empty state without throwing', async () => {
     await renderInTestApp(
-      <PopularContentListCard title="Top Plugins" items={[]} />,
+      <PopularContentListCard
+        title="Top Plugins"
+        items={[]}
+        emptyMessage="No plugin usage data yet"
+        emptyDescription="Once plugins are used in your organization, the most popular ones will appear here."
+      />,
     );
+    expect(screen.getByText('No plugin usage data yet')).toBeInTheDocument();
     expect(
-      screen.getByText('No popular content to show yet.'),
+      screen.getByText(
+        'Once plugins are used in your organization, the most popular ones will appear here.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -111,10 +121,15 @@ describe('PopularContentListCard', () => {
         title="Top Plugins"
         items={[]}
         error={new Error('boom')}
+        errorMessage="Couldn't load plugin data"
+        errorDescription="Something went wrong while loading plugin usage. Check your connection and try again."
       />,
     );
+    expect(screen.getByText("Couldn't load plugin data")).toBeInTheDocument();
     expect(
-      screen.getByText('Unable to load popular content right now.'),
+      screen.getByText(
+        'Something went wrong while loading plugin usage. Check your connection and try again.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -124,6 +139,7 @@ describe('PopularContentListCard', () => {
         title="Top Plugins"
         items={[]}
         permissionDenied
+        permissionDeniedMessage="You do not have permission to view adoption insights data."
       />,
     );
     expect(

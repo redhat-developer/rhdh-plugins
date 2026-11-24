@@ -136,7 +136,11 @@ export const adoptionInsightsMessages = {
     topPlugins: {
       title: 'Top Plugins',
       empty: 'No plugin usage data yet',
+      emptyDescription:
+        'Once plugins are used in your organization, the most popular ones will appear here.',
       error: "Couldn't load plugin data",
+      errorDescription:
+        'Something went wrong while loading plugin usage. Check your connection and try again.',
       permissionDenied:
         'You do not have permission to view adoption insights data.',
       trendTooltip: 'Trend calculated based on the last 28 days',
