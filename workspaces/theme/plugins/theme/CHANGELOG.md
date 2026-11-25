@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.5.3
+
+### Patch Changes
+
+- ac8eee7: Use a compact 12px font for sidebar labels and let them fill remaining row width instead of Backstage's fixed 110px slot.
+
 ## 1.5.2
 
 ### Patch Changes
