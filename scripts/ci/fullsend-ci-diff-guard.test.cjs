@@ -1,3 +1,18 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 const test = require('node:test');
@@ -70,9 +85,9 @@ test('rejects cross-workspace paths', t => {
 });
 
 test('rejects oversized and binary diffs', async t => {
-  await t.test('oversized', t => {
+  await t.test('oversized', st => {
     const { repo, base } = repoWithBase();
-    t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(repo, { recursive: true, force: true }));
     commit(
       repo,
       'workspaces/boost/example.ts',
@@ -80,25 +95,25 @@ test('rejects oversized and binary diffs', async t => {
     );
     assert.notEqual(runGuard(repo, base).status, 0);
   });
-  await t.test('binary', t => {
+  await t.test('binary', st => {
     const { repo, base } = repoWithBase();
-    t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(repo, { recursive: true, force: true }));
     commit(repo, 'workspaces/boost/example.ts', Buffer.from([0, 1, 2, 3]));
     assert.notEqual(runGuard(repo, base).status, 0);
   });
 });
 
 test('rejects multiple commits and unexpected subjects', async t => {
-  await t.test('multiple commits', t => {
+  await t.test('multiple commits', st => {
     const { repo, base } = repoWithBase();
-    t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(repo, { recursive: true, force: true }));
     commit(repo, 'workspaces/boost/example.ts', 'export const value = 2;\n');
     commit(repo, 'workspaces/boost/example.ts', 'export const value = 3;\n');
     assert.notEqual(runGuard(repo, base).status, 0);
   });
-  await t.test('subject', t => {
+  await t.test('subject', st => {
     const { repo, base } = repoWithBase();
-    t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(repo, { recursive: true, force: true }));
     commit(
       repo,
       'workspaces/boost/example.ts',

@@ -1,3 +1,18 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 const test = require('node:test');
@@ -196,7 +211,7 @@ test('no-change result produces no commit and escalates', t => {
 });
 
 test('secret findings and non-fast-forward push failures are rejected', async t => {
-  await t.test('secret finding', t => {
+  await t.test('secret finding', st => {
     const built = makeRepo();
     const run = makeRun({
       currentHead: built.base,
@@ -205,15 +220,15 @@ test('secret findings and non-fast-forward push failures are rejected', async t 
       repoDir: built.repo,
       gitleaksExit: 1,
     });
-    t.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
-    t.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
     assert.notEqual(run.execution.status, 0);
     assert.match(
       run.execution.stderr + run.execution.stdout,
       /Secret scanning rejected/i,
     );
   });
-  await t.test('push rejection', t => {
+  await t.test('push rejection', st => {
     const built = makeRepo();
     const remote = fs.mkdtempSync(
       path.join(os.tmpdir(), 'fullsend-ci-post-remote-'),
@@ -234,16 +249,16 @@ test('secret findings and non-fast-forward push failures are rejected', async t 
       repoDir: built.repo,
       rejectPush: true,
     });
-    t.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
-    t.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
-    t.after(() => fs.rmSync(remote, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(remote, { recursive: true, force: true }));
     assert.notEqual(run.execution.status, 0);
     assert.match(
       run.execution.stderr + run.execution.stdout,
       /fast-forward push was rejected/i,
     );
   });
-  await t.test('kill switch is rechecked before push', t => {
+  await t.test('kill switch is rechecked before push', st => {
     const built = makeRepo();
     const remote = fs.mkdtempSync(
       path.join(os.tmpdir(), 'fullsend-ci-post-remote-'),
@@ -264,9 +279,9 @@ test('secret findings and non-fast-forward push failures are rejected', async t 
       repoDir: built.repo,
       labels: [{ name: 'fullsend-no-fix' }],
     });
-    t.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
-    t.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
-    t.after(() => fs.rmSync(remote, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
+    st.after(() => fs.rmSync(remote, { recursive: true, force: true }));
     assert.notEqual(run.execution.status, 0);
     assert.match(
       run.execution.stderr + run.execution.stdout,

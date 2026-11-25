@@ -64,6 +64,19 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'header.dateRange.title': 'Intervallo di date',
     'header.dateRange.today': 'Oggi',
     'header.title': 'Insights adozione',
+    'homepage.topPlugins.empty':
+      'Nessun dato di utilizzo dei plugin disponibile',
+    'homepage.topPlugins.emptyDescription':
+      'Quando i plugin vengono usati nella tua organizzazione, i più popolari appariranno qui.',
+    'homepage.topPlugins.error': 'Impossibile caricare i dati dei plugin',
+    'homepage.topPlugins.errorDescription':
+      "Si è verificato un problema durante il caricamento dell'utilizzo dei plugin. Controlla la connessione e riprova.",
+    'homepage.topPlugins.permissionDenied':
+      "Non disponi dell'autorizzazione per visualizzare i dati di Adoption Insights.",
+    'homepage.topPlugins.title': 'Plugin principali',
+    'homepage.topPlugins.trendTooltip':
+      'Trend calcolato in base agli ultimi 28 giorni',
+    'homepage.topPlugins.visits': 'visite',
     'page.title': 'Insights adozione',
     'permission.description':
       'Per visualizzare il plugin "Insights adozione", contatta il tuo amministratore per concedere le autorizzazioni adoption-insights.events.read.',

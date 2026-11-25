@@ -63,6 +63,18 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'header.dateRange.title': '日付範囲',
     'header.dateRange.today': '今日',
     'header.title': 'Adoption Insights',
+    'homepage.topPlugins.empty': 'プラグインの使用データはまだありません',
+    'homepage.topPlugins.emptyDescription':
+      '組織でプラグインが使用されると、最も人気のあるものがここに表示されます。',
+    'homepage.topPlugins.error': 'プラグインデータを読み込めませんでした',
+    'homepage.topPlugins.errorDescription':
+      'プラグインの使用状況の読み込み中に問題が発生しました。接続を確認して、もう一度お試しください。',
+    'homepage.topPlugins.permissionDenied':
+      'Adoption Insights のデータを表示する権限がありません。',
+    'homepage.topPlugins.title': 'トッププラグイン',
+    'homepage.topPlugins.trendTooltip':
+      'トレンドは過去 28 日間に基づいて計算されます',
+    'homepage.topPlugins.visits': '訪問',
     'page.title': 'Adoption Insights',
     'permission.description':
       '"Adoption Insights" プラグインを表示するには、管理者に連絡して adoption-insights.events.read 権限を付与してもらうよう依頼してください。',
