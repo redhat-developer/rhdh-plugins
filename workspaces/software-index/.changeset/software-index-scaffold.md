@@ -1,0 +1,4 @@
+---
+---
+
+Initialize Software Index workspace.
