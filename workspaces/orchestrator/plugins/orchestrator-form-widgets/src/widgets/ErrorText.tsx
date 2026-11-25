@@ -21,7 +21,23 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-export const ErrorText = ({ text, id }: { text: string; id: string }) => {
+/**
+ * Props for {@link ErrorText}.
+ *
+ * @public
+ */
+export type ErrorTextProps = {
+  text: string;
+  id: string;
+};
+
+/**
+ * Displays an Active-widget fetch or configuration error.
+ *
+ * @public
+ */
+export const ErrorText = (props: ErrorTextProps) => {
+  const { text, id } = props;
   const { classes } = useStyles();
 
   return (

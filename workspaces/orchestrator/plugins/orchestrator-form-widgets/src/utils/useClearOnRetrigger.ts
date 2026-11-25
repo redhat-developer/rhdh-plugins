@@ -16,17 +16,24 @@
 import { useLayoutEffect, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 
-type UseClearOnRetriggerArgs = {
+/**
+ * Arguments for {@link useClearOnRetrigger}.
+ *
+ * @public
+ */
+export type UseClearOnRetriggerArgs = {
   enabled: boolean;
   retrigger: (string | undefined)[] | undefined;
   onClear: () => void;
 };
 
-export const useClearOnRetrigger = ({
-  enabled,
-  retrigger,
-  onClear,
-}: UseClearOnRetriggerArgs) => {
+/**
+ * Clears a field value when fetch:retrigger dependencies change.
+ *
+ * @public
+ */
+export const useClearOnRetrigger = (args: UseClearOnRetriggerArgs) => {
+  const { enabled, retrigger, onClear } = args;
   const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
     retrigger,
   );

@@ -16,12 +16,17 @@
 import { useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 import { JsonObject, JsonValue } from '@backstage/types';
-import { evaluateTemplateProps } from './evaluateTemplate';
+import { EvaluateTemplateProps } from './evaluateTemplate';
 
 const EMPTY = [] as string[];
 
+/**
+ * Evaluates fetch:retrigger dependency expressions against form data.
+ *
+ * @public
+ */
 export const useRetriggerEvaluate = (
-  templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  templateUnitEvaluator: EvaluateTemplateProps['unitEvaluator'],
   formData = {} as JsonObject,
   conditions?: string[],
 ): (string | undefined)[] | undefined => {

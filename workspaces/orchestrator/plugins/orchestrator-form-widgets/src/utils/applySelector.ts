@@ -30,6 +30,11 @@ const compileJsonata = (selector: string) => {
   }
 };
 
+/**
+ * Applies a JSONata selector and returns a string array.
+ *
+ * @public
+ */
 export const applySelectorArray = async (
   data: JsonObject | JsonArray,
   selector: string,
@@ -80,6 +85,11 @@ export const applySelectorArray = async (
   );
 };
 
+/**
+ * Applies a JSONata selector and returns a string.
+ *
+ * @public
+ */
 export const applySelectorString = async (
   data: JsonObject,
   selector: string,
@@ -121,6 +131,11 @@ export const applySelectorString = async (
   );
 };
 
+/**
+ * Applies a JSONata selector and returns an object.
+ *
+ * @public
+ */
 export const applySelectorObject = async (
   data: JsonObject,
   selector: string,

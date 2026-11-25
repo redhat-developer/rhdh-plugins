@@ -22,13 +22,20 @@ import {
   OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import type {
+  ActiveWidget,
+  FormWidgetsApiOptions,
+} from './FormWidgetsApiOptions';
+
 function LazyDecoratorContent({
   FormComponent,
   contentPromise,
+  additionalWidgets,
   ...props
 }: {
   FormComponent: ComponentType<FormDecoratorProps>;
   contentPromise: Promise<typeof import('./FormDecoratorContent')>;
+  additionalWidgets?: Record<string, ActiveWidget>;
 } & OrchestratorFormContextProps) {
   const [Content, setContent] = useState<ComponentType<any> | null>(null);
 
@@ -46,11 +53,20 @@ function LazyDecoratorContent({
     return null;
   }
 
-  return <Content FormComponent={FormComponent} {...props} />;
+  return (
+    <Content
+      FormComponent={FormComponent}
+      additionalWidgets={additionalWidgets}
+      {...props}
+    />
+  );
 }
 
 /**
  * Default Orchestrator form API implementation that supplies RJSF widgets.
+ *
+ * Pass {@link FormWidgetsApiOptions.additionalWidgets} to register custom
+ * Active widgets alongside the built-in set without forking this plugin.
  *
  * @public
  */
@@ -59,6 +75,12 @@ export class FormWidgetsApi implements OrchestratorFormApi {
     typeof import('./FormDecoratorContent')
   > | null = null;
 
+  private readonly additionalWidgets?: Record<string, ActiveWidget>;
+
+  constructor(options?: FormWidgetsApiOptions) {
+    this.additionalWidgets = options?.additionalWidgets;
+  }
+
   /** Returns the form decorator that injects the default RJSF widgets. */
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
@@ -66,12 +88,14 @@ export class FormWidgetsApi implements OrchestratorFormApi {
 
     this.contentPromise ??= import('./FormDecoratorContent');
     const contentPromise = this.contentPromise;
+    const { additionalWidgets } = this;
 
     return (FormComponent: ComponentType<FormDecoratorProps>) =>
       (props: OrchestratorFormContextProps) => (
         <LazyDecoratorContent
           FormComponent={FormComponent}
           contentPromise={contentPromise}
+          additionalWidgets={additionalWidgets}
           {...props}
         />
       );

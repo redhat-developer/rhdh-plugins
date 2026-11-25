@@ -20,3 +20,7 @@ export {
 } from './plugin';
 
 export { FormWidgetsApi } from './FormWidgetsApi';
+export type {
+  ActiveWidget,
+  FormWidgetsApiOptions,
+} from './FormWidgetsApiOptions';

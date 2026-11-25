@@ -21,7 +21,12 @@ import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { UiProps } from '../uiPropTypes';
 import { UNDEFINED_VALUE } from './constants';
 
-export type evaluateTemplateProps = {
+/**
+ * Shared props for template evaluation helpers.
+ *
+ * @public
+ */
+export type EvaluateTemplateProps = {
   template?: JsonValue;
   key: string;
   unitEvaluator: (
@@ -36,15 +41,23 @@ export type evaluateTemplateProps = {
   iteration?: number;
 };
 
-export type evaluateTemplateStringProps = Omit<
-  evaluateTemplateProps,
+/**
+ * Props for string-template evaluation helpers.
+ *
+ * @public
+ */
+export type EvaluateTemplateStringProps = Omit<
+  EvaluateTemplateProps,
   'template'
 > & {
   template?: JsonPrimitive;
 };
 
+/**
+ * @internal
+ */
 export const evaluateTemplateString = async (
-  props: evaluateTemplateStringProps,
+  props: EvaluateTemplateStringProps,
 ): Promise<JsonValue> => {
   const {
     template,
@@ -127,17 +140,20 @@ export const evaluateTemplateString = async (
 };
 
 /**
- * Substitutes `$${{…}}` in a fetch response selector (JSONata string) using the same rules as
- * `fetch:body` / `fetch:url`, then returns a plain string for JSONata evaluation against the response.
+ * Substitutes template placeholders in a fetch response selector (JSONata string) using the same
+ * rules as `fetch:body` / `fetch:url`, then returns a plain string for JSONata evaluation against
+ * the response.
+ *
+ * @public
  */
 export const evaluateFetchResponseSelectorTemplate = async (
-  props: evaluateTemplateStringProps,
+  props: EvaluateTemplateStringProps,
 ): Promise<string> => {
   let evaluated: JsonValue;
   try {
     evaluated = await evaluateTemplateString(props);
   } catch {
-    // Malformed `$${{…}}` or evaluator errors while editing should not break fetch widgets.
+    // Malformed template placeholders or evaluator errors while editing should not break fetch widgets.
     return '';
   }
   if (typeof evaluated === 'string') {
@@ -154,8 +170,11 @@ export const evaluateFetchResponseSelectorTemplate = async (
   return '';
 };
 
+/**
+ * @internal
+ */
 export const evaluateTemplate = async (
-  props: evaluateTemplateProps,
+  props: EvaluateTemplateProps,
 ): Promise<JsonValue> => {
   const { template, ...restProps } = props;
   const { key } = restProps;
@@ -212,6 +231,9 @@ export const evaluateTemplate = async (
   );
 };
 
+/**
+ * @internal
+ */
 export const useEvaluateTemplate = ({
   template,
   key,

@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+/**
+ * Options for {@link fetchWithRetry}.
+ *
+ * @public
+ */
 export type FetchRetryOptions = {
   maxAttempts?: number;
   delayMs?: number;
@@ -68,6 +73,14 @@ const getErrorStatus = (error: unknown): number | undefined => {
   return typeof status === 'number' ? status : undefined;
 };
 
+/**
+ * Runs a fetch function with optional retry / backoff.
+ *
+ * Prefer {@link useFetch} in widgets so auth, templates, and ui:props retry
+ * settings are applied consistently.
+ *
+ * @public
+ */
 export const fetchWithRetry = async (
   fetchFn: () => Promise<Response>,
   options?: FetchRetryOptions,

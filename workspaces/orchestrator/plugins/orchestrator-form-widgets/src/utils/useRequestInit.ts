@@ -20,7 +20,7 @@ import jsonata from 'jsonata';
 import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import {
   evaluateTemplate,
-  evaluateTemplateProps,
+  EvaluateTemplateProps,
   evaluateTemplateString,
 } from './evaluateTemplate';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
@@ -88,7 +88,7 @@ const evaluateJsonataInValue = async (
 export const getRequestInit = async (
   uiProps: JsonObject,
   prefix: string,
-  unitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  unitEvaluator: EvaluateTemplateProps['unitEvaluator'],
   formData: JsonObject,
 ): Promise<RequestInit> => {
   const requestInit: RequestInit = {};

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ComponentType } from 'react';
+import { useMemo, type ComponentType } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormContextProps,
@@ -22,14 +22,8 @@ import {
 import { FormValidation } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 
-import {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-  ActiveBoolean,
-} from './widgets';
+import { defaultActiveWidgets } from './defaultActiveWidgets';
+import type { ActiveWidget } from './FormWidgetsApiOptions';
 import { useGetExtraErrors, useGetExtraErrorsForField } from './utils';
 
 const customValidate = (
@@ -39,23 +33,24 @@ const customValidate = (
   return errors;
 };
 
-const widgets = {
-  SchemaUpdater,
-  ActiveTextInput,
-  ActiveText,
-  ActiveDropdown,
-  ActiveMultiSelect,
-  ActiveBoolean,
-};
-
 const FormDecoratorContent = ({
   FormComponent,
+  additionalWidgets,
   ...props
 }: {
   FormComponent: ComponentType<FormDecoratorProps>;
+  additionalWidgets?: Record<string, ActiveWidget>;
 } & OrchestratorFormContextProps) => {
   const getExtraErrors = useGetExtraErrors();
   const getExtraErrorsForField = useGetExtraErrorsForField();
+
+  const widgets = useMemo(
+    () => ({
+      ...defaultActiveWidgets,
+      ...additionalWidgets,
+    }),
+    [additionalWidgets],
+  );
 
   return (
     <FormComponent

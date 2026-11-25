@@ -65,6 +65,11 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [Hiding Fields](#hiding-fields)
     - [Example Usage](#example-usage)
   - [Customization](#customization)
+  - [Creating custom Active widgets](#creating-custom-active-widgets)
+    - [Public Active API (`./active`)](#public-active-api-active)
+    - [Registering a custom widget](#registering-a-custom-widget)
+    - [Reference example](#reference-example)
+    - [API reference](#api-reference)
 
 ## Context
 
@@ -1364,12 +1369,126 @@ Supported condition patterns are identical to `ui:hidden` (e.g., `when/is`,
 
 ## Customization
 
-The recommended approach for introducing customizations or other modifications is to contribute directly to [the library on GitHub](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-widgets).
-This ensures your changes are included in upcoming official releases and will get later maintenance.
+For product-wide improvements, contribute directly to [the library on GitHub](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-widgets).
 
-Alternatively, you can fork the plugin that provides the library and use it as a base for further changes.
-**However, you must still comply with the license terms.**
-In this scenario, you are responsible for managing updates and fixes, as backward compatibility is not guaranteed for forked versions.
+For domain-specific form controls, use the public Active widget API described below. You do not need to fork `orchestrator-form-widgets` or wait for a built-in widget.
 
-Currently, the Workflow execution RJSF form supports extending only one library at a time, meaning only a single implementation of `orchestratorFormApiRef` is active.
-You can fully replace the default implementation with your custom version by undeploying the original, [more info here](./extensibleForm.md).
+Forking the plugin remains an option for customizations outside the Active widget API scope (for example deeper form decorator changes). **However, you must still comply with the license terms**, and you are responsible for managing updates and fixes, as backward compatibility is not guaranteed for forked versions.
+
+The Workflow execution RJSF form still supports only one `orchestratorFormApiRef` implementation at a time. Custom widgets are registered by providing that API (for example with `FormWidgetsApi({ additionalWidgets })`) from your plugin. See [extensibleForm.md](./extensibleForm.md).
+
+## Creating custom Active widgets
+
+### Public Active API (`./active`)
+
+Import building blocks from:
+
+```ts
+import {
+  FormWidgetsApi,
+  defaultActiveWidgets,
+  useFetch,
+  useRetriggerEvaluate,
+  useTemplateUnitEvaluator,
+  useProcessingState,
+  useClearOnRetrigger,
+  applySelectorString,
+  evaluateFetchResponseSelectorTemplate,
+  useResolvedFieldHelp,
+  ErrorText,
+  FieldLabelWithHelp,
+  ExampleActiveWidget,
+  type UiProps,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/active';
+```
+
+Use these hooks and components the same way built-in Active widgets do (see `ActiveBoolean` as the canonical implementation). Prefer `useFetch` so proxy, auth, retry, and `fetch:error:*` behavior stay consistent with built-ins.
+
+### Registering a custom widget
+
+Create a plugin that implements `orchestratorFormApiRef` with `FormWidgetsApi` and your widgets:
+
+```ts
+import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
+import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import {
+  FormWidgetsApi,
+  ExampleActiveWidget,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/active';
+
+export const formApiFactory = createApiFactory({
+  api: orchestratorFormApiRef,
+  deps: {},
+  factory() {
+    return new FormWidgetsApi({
+      additionalWidgets: {
+        ExampleActiveWidget,
+        // MyCustomWidget,
+      },
+    });
+  },
+});
+
+export const myFormWidgetsPlugin = createPlugin({
+  id: 'my-form-widgets',
+  apis: [formApiFactory],
+});
+```
+
+For the new frontend system, register the same factory through an `ApiBlueprint` (same pattern as the built-in `orchestrator-form-widgets` plugin).
+
+`additionalWidgets` are merged on top of `defaultActiveWidgets`. If a key matches a built-in name, the additional widget wins.
+
+Deploy your plugin as the active `orchestratorFormApiRef` provider. Do not run a second competing form-widgets API implementation at the same time.
+
+### Reference example
+
+`ExampleActiveWidget` (`@alpha`) is a registration alias of `ActiveBoolean` (same behavior, custom `ui:widget` name). It is a teaching aid, **not** a production building block, and is **not** registered by default. Study [`ActiveBoolean.tsx`](../plugins/orchestrator-form-widgets/src/widgets/ActiveBoolean.tsx) for how to compose the public hooks; use `ExampleActiveWidget` only to practice `additionalWidgets` registration. After you register it as shown above, reference it from the workflow Input Schema:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tenantId": {
+      "type": "string",
+      "title": "Tenant ID"
+    },
+    "enableFeature": {
+      "type": "boolean",
+      "title": "Enable Feature",
+      "ui:widget": "ExampleActiveWidget",
+      "ui:props": {
+        "fetch:url": "https://api.example.com/features?tenant=$${{current.tenantId}}",
+        "fetch:response:value": "features.enabled",
+        "fetch:response:default": false,
+        "fetch:retrigger": ["current.tenantId"]
+      }
+    }
+  }
+}
+```
+
+Source: [`plugins/orchestrator-form-widgets/src/examples/ExampleActiveWidget.tsx`](../plugins/orchestrator-form-widgets/src/examples/ExampleActiveWidget.tsx).
+
+### API reference
+
+| Export                                                     | Kind      | Purpose                                        |
+| ---------------------------------------------------------- | --------- | ---------------------------------------------- |
+| `FormWidgetsApi`                                           | class     | Form API; accepts `{ additionalWidgets }`      |
+| `FormWidgetsApiOptions`                                    | type      | Constructor options                            |
+| `ActiveWidget`                                             | type      | Widget typed for Orchestrator form context     |
+| `defaultActiveWidgets`                                     | const     | Built-in widget registry                       |
+| `UiProps`                                                  | type      | Common `ui:props` keys                         |
+| `useFetch`                                                 | hook      | Fetch + retry + error handling from `ui:props` |
+| `useFetchAndEvaluate`                                      | hook      | Fetch + template evaluation (ActiveText-style) |
+| `useRetriggerEvaluate`                                     | hook      | Evaluate `fetch:retrigger` dependencies        |
+| `useTemplateUnitEvaluator`                                 | hook      | Template unit evaluator                        |
+| `useProcessingState`                                       | hook      | Form processing / Next-button loading          |
+| `useClearOnRetrigger`                                      | hook      | Clear value when dependencies change           |
+| `useResolvedFieldHelp`                                     | hook      | Resolve `ui:fieldHelp`                         |
+| `applySelectorString` / `Array` / `Object`                 | util      | JSONata response selectors                     |
+| `evaluateFetchResponseSelectorTemplate`                    | util      | Template-aware response selectors              |
+| `fetchWithRetry` / `FetchRetryOptions`                     | util      | Low-level retry helper                         |
+| `ErrorText`                                                | component | Error display                                  |
+| `FieldHelp` / `FieldLabelWithHelp` / `FieldWithHelpLayout` | component | Field help UI                                  |
+| `ExampleActiveWidget` (`@alpha`)                           | component | Registration alias of `ActiveBoolean`          |

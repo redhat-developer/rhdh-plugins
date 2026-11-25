@@ -16,6 +16,11 @@
 import { JsonValue } from '@backstage/types';
 import { TypographyVariant } from '@mui/material/styles';
 
+/**
+ * Common `ui:props` keys supported by Active widgets.
+ *
+ * @public
+ */
 export type UiProps = {
   'ui:variant'?: TypographyVariant;
   'ui:text'?: string;
@@ -36,6 +41,11 @@ export type UiProps = {
   [key: `fetch:response:${string}`]: JsonValue;
 };
 
+/**
+ * Type guard for `fetch:response:*` keys on {@link UiProps}.
+ *
+ * @public
+ */
 export const isFetchResponseKey = (
   key: string,
 ): key is `fetch:response:${string}` => {
