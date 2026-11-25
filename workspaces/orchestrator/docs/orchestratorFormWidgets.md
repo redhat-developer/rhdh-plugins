@@ -1400,7 +1400,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/active';
 ```
 
-Use these hooks and components the same way built-in Active widgets do (see `ActiveBoolean` / `ExampleActiveWidget`). Prefer `useFetch` so proxy, auth, retry, and `fetch:error:*` behavior stay consistent with built-ins.
+Use these hooks and components the same way built-in Active widgets do (see `ActiveBoolean` as the canonical implementation). Prefer `useFetch` so proxy, auth, retry, and `fetch:error:*` behavior stay consistent with built-ins.
 
 ### Registering a custom widget
 
@@ -1441,7 +1441,7 @@ Deploy your plugin as the active `orchestratorFormApiRef` provider. Do not run a
 
 ### Reference example
 
-`ExampleActiveWidget` is a boolean Active widget that uses the public hooks. It is **not** registered by default. After you register it as shown above, reference it from the workflow Input Schema:
+`ExampleActiveWidget` is a registration alias of `ActiveBoolean` (same behavior, custom `ui:widget` name). It is **not** registered by default. Study [`ActiveBoolean.tsx`](../plugins/orchestrator-form-widgets/src/widgets/ActiveBoolean.tsx) for how to compose the public hooks; use `ExampleActiveWidget` only to practice `additionalWidgets` registration. After you register it as shown above, reference it from the workflow Input Schema:
 
 ```json
 {
@@ -1489,4 +1489,4 @@ Source: [`plugins/orchestrator-form-widgets/src/examples/ExampleActiveWidget.tsx
 | `fetchWithRetry` / `FetchRetryOptions`                     | util      | Low-level retry helper                         |
 | `ErrorText`                                                | component | Error display                                  |
 | `FieldHelp` / `FieldLabelWithHelp` / `FieldWithHelpLayout` | component | Field help UI                                  |
-| `ExampleActiveWidget`                                      | component | Reference custom Active widget                 |
+| `ExampleActiveWidget`                                      | component | Registration alias of `ActiveBoolean`          |
