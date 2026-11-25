@@ -1,0 +1,56 @@
+name: Notify COPE about unvalidated trusted publishing
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+    branches: [main, 'release-*']
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  remind:
+    name: Trusted publishing validation
+    if: github.repository == 'redhat-developer/rhdh-plugins' && github.event.pull_request.user.login == 'rhdh-bot'
+    runs-on: ubuntu-latest
+    steps:
+      # pull_request_target runs from the trusted base; never check out the PR head.
+      - name: Checkout trusted base branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          sparse-checkout: scripts/ci/remind-unvalidated-release.js
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Notify COPE if a versioned package has not released since cutover
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          TRUSTED_PUBLISHING_CUTOVERS: ${{ vars.TRUSTED_PUBLISHING_CUTOVERS }}
+        with:
+          script: |
+            const cutovers = JSON.parse(process.env.TRUSTED_PUBLISHING_CUTOVERS || '{}');
+            const cutoff = cutovers[context.payload.pull_request.base.ref];
+            if (!cutoff) {
+              core.notice(`No trusted-publishing cutover configured for ${context.payload.pull_request.base.ref}; skipping validation.`);
+              return;
+            }
+            const { remind } = await import(`file://${process.env.GITHUB_WORKSPACE}/scripts/ci/remind-unvalidated-release.js`);
+            const missing = await remind({
+              github,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pr: context.payload.pull_request,
+              cutoff,
+            });
+            if (missing.length) {
+              core.setFailed(`No npm publish since trusted publishing was enabled: ${missing.join(', ')}. An initial release will require an explicit decision to merge despite this non-required check.`);
+            }
