@@ -29,6 +29,11 @@ const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 const ENCRYPTED_PREFIX = 'enc:';
 
+/** Preferred dedicated config for MCP user-token encryption at rest. */
+const DEDICATED_KEYS_PATH = 'intelligent-assistant.mcp.tokenEncryption.keys';
+/** Legacy Backstage S2S keys — kept as a compatibility fallback. */
+const LEGACY_KEYS_PATH = 'backend.auth.keys';
+
 export interface DecryptResult {
   plaintext: string | null;
   needsReEncrypt: boolean;
@@ -56,6 +61,33 @@ function decryptWithKey(key: Buffer, stored: string): string {
   return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
     'utf8',
   );
+}
+
+function readKeySecrets(config: Config, path: string): string[] | undefined {
+  const keys = config.getOptionalConfigArray(path);
+  if (!keys?.length) {
+    return undefined;
+  }
+  const secrets = keys
+    .map(k => k.getOptionalString('secret'))
+    .filter((s): s is string => !!s);
+  return secrets.length > 0 ? secrets : undefined;
+}
+
+/**
+ * Whether plaintext MCP token storage is allowed when no encryption keys are
+ * configured. Explicit `allowPlaintext` wins; otherwise production
+ * (`NODE_ENV === 'production'`) fails closed and other environments allow
+ * plaintext for local/dev convenience.
+ */
+export function isPlaintextTokenStorageAllowed(config: Config): boolean {
+  const explicit = config.getOptionalBoolean(
+    'intelligent-assistant.mcp.tokenEncryption.allowPlaintext',
+  );
+  if (explicit !== undefined) {
+    return explicit;
+  }
+  return process.env.NODE_ENV !== 'production';
 }
 
 class AesGcmEncryptor implements TokenEncryptor {
@@ -130,22 +162,37 @@ export function createTokenEncryptor(
   config: Config,
   logger: LoggerService,
 ): TokenEncryptor {
-  const keys = config.getOptionalConfigArray('backend.auth.keys');
-  const secrets = keys
-    ?.map(k => k.getOptionalString('secret'))
-    .filter((s): s is string => !!s);
+  const dedicatedSecrets = readKeySecrets(config, DEDICATED_KEYS_PATH);
+  const legacySecrets = readKeySecrets(config, LEGACY_KEYS_PATH);
+  const secrets = dedicatedSecrets ?? legacySecrets;
+  let source: string | undefined;
+  if (dedicatedSecrets) {
+    source = DEDICATED_KEYS_PATH;
+  } else if (legacySecrets) {
+    source = LEGACY_KEYS_PATH;
+  }
 
-  if (secrets && secrets.length > 0) {
+  if (secrets && source) {
     logger.info(
-      `Token encryption enabled — MCP user tokens will be encrypted at rest using backend.auth.keys (${secrets.length} key(s) configured)`,
+      `Token encryption enabled — MCP user tokens will be encrypted at rest using ${source} (${secrets.length} key(s) configured)`,
     );
     return new AesGcmEncryptor(secrets, logger);
   }
 
+  if (!isPlaintextTokenStorageAllowed(config)) {
+    throw new Error(
+      'MCP user token encryption is required: configure ' +
+        `${DEDICATED_KEYS_PATH} (preferred) or ${LEGACY_KEYS_PATH}, ` +
+        'or set intelligent-assistant.mcp.tokenEncryption.allowPlaintext: true ' +
+        'to explicitly permit plaintext storage.',
+    );
+  }
+
   logger.warn(
-    'Token encryption disabled — backend.auth.keys not configured. ' +
+    'Token encryption disabled — no encryption keys configured ' +
+      `(tried ${DEDICATED_KEYS_PATH}, then ${LEGACY_KEYS_PATH}). ` +
       'MCP user tokens will be stored as plaintext. ' +
-      'Configure backend.auth.keys for production deployments.',
+      `Configure ${DEDICATED_KEYS_PATH} (preferred) or ${LEGACY_KEYS_PATH} for production deployments.`,
   );
   return new PlaintextPassthrough();
 }

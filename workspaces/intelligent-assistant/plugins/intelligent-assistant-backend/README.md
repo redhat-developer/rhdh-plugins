@@ -266,6 +266,30 @@ settings panel:
 These endpoints power server selection and token configuration, including inline
 success/error feedback while users enter tokens.
 
+#### MCP user token encryption at rest
+
+Per-user MCP tokens saved via the settings UI are stored in the Backstage
+database (`lightspeed_mcp_user_settings`). Configure encryption so they are not
+stored as plaintext:
+
+```yaml
+intelligent-assistant:
+  mcp:
+    tokenEncryption:
+      keys:
+        - secret: ${LIGHTSPEED_MCP_TOKEN_SECRET}
+      # Optional: only for exceptional deployments that must store plaintext
+      # allowPlaintext: true
+```
+
+Behavior:
+
+- Prefer `intelligent-assistant.mcp.tokenEncryption.keys` (dedicated).
+- Fall back to `backend.auth.keys` for compatibility with existing installs.
+- In production (`NODE_ENV=production`), missing keys **fail closed** (plugin
+  startup throws) unless `allowPlaintext: true` is set explicitly.
+- Outside production, missing keys log a warning and store plaintext (local/dev).
+
 #### DCR authentication for Backstage-internal MCP servers (optional)
 
 By default, MCP servers use **static tokens** (`token` in app-config or a personal
