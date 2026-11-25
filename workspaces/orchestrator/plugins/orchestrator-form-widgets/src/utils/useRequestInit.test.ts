@@ -16,10 +16,10 @@
 
 import get from 'lodash/get';
 import { JsonObject } from '@backstage/types';
-import { evaluateTemplateProps } from './evaluateTemplate';
+import { EvaluateTemplateProps } from './evaluateTemplate';
 import { getRequestInit } from './useRequestInit';
 
-const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
+const unitEvaluator: EvaluateTemplateProps['unitEvaluator'] = async (
   unit,
   formData,
 ) => {

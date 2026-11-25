@@ -1373,6 +1373,8 @@ For product-wide improvements, contribute directly to [the library on GitHub](ht
 
 For domain-specific form controls, use the public Active widget API described below. You do not need to fork `orchestrator-form-widgets` or wait for a built-in widget.
 
+Forking the plugin remains an option for customizations outside the Active widget API scope (for example deeper form decorator changes). **However, you must still comply with the license terms**, and you are responsible for managing updates and fixes, as backward compatibility is not guaranteed for forked versions.
+
 The Workflow execution RJSF form still supports only one `orchestratorFormApiRef` implementation at a time. Custom widgets are registered by providing that API (for example with `FormWidgetsApi({ additionalWidgets })`) from your plugin. See [extensibleForm.md](./extensibleForm.md).
 
 ## Creating custom Active widgets
@@ -1441,7 +1443,7 @@ Deploy your plugin as the active `orchestratorFormApiRef` provider. Do not run a
 
 ### Reference example
 
-`ExampleActiveWidget` is a registration alias of `ActiveBoolean` (same behavior, custom `ui:widget` name). It is **not** registered by default. Study [`ActiveBoolean.tsx`](../plugins/orchestrator-form-widgets/src/widgets/ActiveBoolean.tsx) for how to compose the public hooks; use `ExampleActiveWidget` only to practice `additionalWidgets` registration. After you register it as shown above, reference it from the workflow Input Schema:
+`ExampleActiveWidget` (`@alpha`) is a registration alias of `ActiveBoolean` (same behavior, custom `ui:widget` name). It is a teaching aid, **not** a production building block, and is **not** registered by default. Study [`ActiveBoolean.tsx`](../plugins/orchestrator-form-widgets/src/widgets/ActiveBoolean.tsx) for how to compose the public hooks; use `ExampleActiveWidget` only to practice `additionalWidgets` registration. After you register it as shown above, reference it from the workflow Input Schema:
 
 ```json
 {
@@ -1489,4 +1491,4 @@ Source: [`plugins/orchestrator-form-widgets/src/examples/ExampleActiveWidget.tsx
 | `fetchWithRetry` / `FetchRetryOptions`                     | util      | Low-level retry helper                         |
 | `ErrorText`                                                | component | Error display                                  |
 | `FieldHelp` / `FieldLabelWithHelp` / `FieldWithHelpLayout` | component | Field help UI                                  |
-| `ExampleActiveWidget`                                      | component | Registration alias of `ActiveBoolean`          |
+| `ExampleActiveWidget` (`@alpha`)                           | component | Registration alias of `ActiveBoolean`          |

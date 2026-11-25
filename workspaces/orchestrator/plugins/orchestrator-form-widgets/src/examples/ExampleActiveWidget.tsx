@@ -24,8 +24,9 @@ import { ActiveBoolean } from '../widgets/ActiveBoolean';
  * compose the `./active` hooks the same way `ActiveBoolean` does, then register
  * it via `new FormWidgetsApi({ additionalWidgets: { MyWidget } })`.
  *
+ * Teaching / registration aid only — not a production building block.
  * Not registered by default.
  *
- * @public
+ * @alpha
  */
 export const ExampleActiveWidget = ActiveBoolean;

@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 /**
- * Custom hook to manage processing state and notify parent context about loading status.
+ * Tracks fetch/processing state and notifies the Orchestrator form context.
  * This hook tracks both fetch loading and post-fetch processing, ensuring that the
  * parent form knows when async operations are complete.
  *
@@ -25,10 +25,6 @@ import { useCallback, useEffect, useState } from 'react';
  * @param handleFetchStarted - Optional callback to notify when processing starts
  * @param handleFetchEnded - Optional callback to notify when processing ends
  * @returns Object containing processing state management
- */
-/**
- * Tracks fetch/processing state and notifies the Orchestrator form context.
- *
  * @public
  */
 export const useProcessingState = (

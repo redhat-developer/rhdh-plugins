@@ -16,7 +16,7 @@
 import { useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 import { JsonObject, JsonValue } from '@backstage/types';
-import { evaluateTemplateProps } from './evaluateTemplate';
+import { EvaluateTemplateProps } from './evaluateTemplate';
 
 const EMPTY = [] as string[];
 
@@ -26,7 +26,7 @@ const EMPTY = [] as string[];
  * @public
  */
 export const useRetriggerEvaluate = (
-  templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  templateUnitEvaluator: EvaluateTemplateProps['unitEvaluator'],
   formData = {} as JsonObject,
   conditions?: string[],
 ): (string | undefined)[] | undefined => {

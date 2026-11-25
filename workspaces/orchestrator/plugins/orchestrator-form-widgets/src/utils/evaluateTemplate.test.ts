@@ -18,11 +18,11 @@ import { JsonValue } from '@backstage/types';
 import {
   evaluateFetchResponseSelectorTemplate,
   evaluateTemplate,
-  evaluateTemplateProps,
+  EvaluateTemplateProps,
 } from './evaluateTemplate';
 import get from 'lodash/get';
 
-const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
+const unitEvaluator: EvaluateTemplateProps['unitEvaluator'] = async (
   unit,
   formData,
 ) => {
@@ -35,7 +35,7 @@ const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
 };
 
 /** Matches useTemplateUnitEvaluator: `current.*` uses the path after the first segment. */
-const unitEvaluatorAsInWidgets: evaluateTemplateProps['unitEvaluator'] = async (
+const unitEvaluatorAsInWidgets: EvaluateTemplateProps['unitEvaluator'] = async (
   unit,
   formData,
 ) => {

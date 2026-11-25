@@ -18,10 +18,7 @@ import { FieldHelpContent, resolveFieldHelp } from './resolveFieldHelp';
 import { useFieldHelpLocale } from './useFieldHelpLocale';
 
 /**
- * Resolves `ui:fieldHelp` for the active RHDH language.
- */
-/**
- * Resolves ui:fieldHelp content for the current locale.
+ * Resolves `ui:fieldHelp` for the active RHDH language / current locale.
  *
  * @public
  */

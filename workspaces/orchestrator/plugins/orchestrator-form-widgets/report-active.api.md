@@ -74,11 +74,11 @@ export type ErrorTextProps = {
 
 // @public
 export const evaluateFetchResponseSelectorTemplate: (
-  props: evaluateTemplateStringProps,
+  props: EvaluateTemplateStringProps,
 ) => Promise<string>;
 
 // @public
-export type evaluateTemplateProps = {
+export type EvaluateTemplateProps = {
   template?: JsonValue;
   key: string;
   unitEvaluator: (
@@ -94,14 +94,14 @@ export type evaluateTemplateProps = {
 };
 
 // @public
-export type evaluateTemplateStringProps = Omit<
-  evaluateTemplateProps,
+export type EvaluateTemplateStringProps = Omit<
+  EvaluateTemplateProps,
   'template'
 > & {
   template?: JsonPrimitive;
 };
 
-// @public
+// @alpha
 export const ExampleActiveWidget: Widget<
   JsonObject,
   JSONSchema7,
@@ -255,7 +255,7 @@ export const useResolvedFieldHelp: (
 
 // @public
 export const useRetriggerEvaluate: (
-  templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  templateUnitEvaluator: EvaluateTemplateProps['unitEvaluator'],
   formData?: JsonObject,
   conditions?: string[],
 ) => (string | undefined)[] | undefined;

@@ -49,8 +49,8 @@ export {
 } from './utils/applySelector';
 export {
   evaluateFetchResponseSelectorTemplate,
-  type evaluateTemplateProps,
-  type evaluateTemplateStringProps,
+  type EvaluateTemplateProps,
+  type EvaluateTemplateStringProps,
 } from './utils/evaluateTemplate';
 
 export { fetchWithRetry, type FetchRetryOptions } from './utils/retry';

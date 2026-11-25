@@ -16,8 +16,8 @@
 export * from './useRequestInit';
 export * from './evaluateTemplate';
 export type {
-  evaluateTemplateProps,
-  evaluateTemplateStringProps,
+  EvaluateTemplateProps,
+  EvaluateTemplateStringProps,
 } from './evaluateTemplate';
 export * from './useRetriggerEvaluate';
 export * from './useTemplateUnitEvaluator';

@@ -26,7 +26,7 @@ import { UNDEFINED_VALUE } from './constants';
  *
  * @public
  */
-export type evaluateTemplateProps = {
+export type EvaluateTemplateProps = {
   template?: JsonValue;
   key: string;
   unitEvaluator: (
@@ -46,8 +46,8 @@ export type evaluateTemplateProps = {
  *
  * @public
  */
-export type evaluateTemplateStringProps = Omit<
-  evaluateTemplateProps,
+export type EvaluateTemplateStringProps = Omit<
+  EvaluateTemplateProps,
   'template'
 > & {
   template?: JsonPrimitive;
@@ -57,7 +57,7 @@ export type evaluateTemplateStringProps = Omit<
  * @internal
  */
 export const evaluateTemplateString = async (
-  props: evaluateTemplateStringProps,
+  props: EvaluateTemplateStringProps,
 ): Promise<JsonValue> => {
   const {
     template,
@@ -147,7 +147,7 @@ export const evaluateTemplateString = async (
  * @public
  */
 export const evaluateFetchResponseSelectorTemplate = async (
-  props: evaluateTemplateStringProps,
+  props: EvaluateTemplateStringProps,
 ): Promise<string> => {
   let evaluated: JsonValue;
   try {
@@ -174,7 +174,7 @@ export const evaluateFetchResponseSelectorTemplate = async (
  * @internal
  */
 export const evaluateTemplate = async (
-  props: evaluateTemplateProps,
+  props: EvaluateTemplateProps,
 ): Promise<JsonValue> => {
   const { template, ...restProps } = props;
   const { key } = restProps;
