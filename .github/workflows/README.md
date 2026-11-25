@@ -10,6 +10,8 @@ Handles the release process for a specific workspace from a specified branch (de
 
 Automatic release checks and publication check out the triggering commit, not a moving branch. A SHA guard before npm publication rejects an unexpected checkout. Manual runs still check out the selected input branch.
 
+Publishing uses npm trusted publishing (GitHub Actions OIDC), without `RHDH_NPM_TOKEN`. Configure each published package on npm with `redhat-developer/rhdh-plugins` and the calling workflow filename `release.yml` for automatic main releases. For direct manual dispatches of the reusable workflow, also configure `release_workspace.yml`. The caller and reusable publish job both grant `id-token: write`; publishing fails closed if the package has no matching trusted publisher. Configure and validate each connection with a successful publish within npm's two-day window before relying on it.
+
 After a successful automatic release, calls [update-overlays.yml](./update-overlays.yml) to request an overlays update and comment its PR link on the merged Version Packages PR. Forced manual releases do not trigger this follow-up.
 
 ## [backport.yml](./backport.yml)
@@ -26,7 +28,7 @@ The same release process applies to both branch layouts:
 2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
 3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
-Both maintenance publish jobs check out and verify the triggering SHA before publication. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
+Both maintenance publish jobs check out and verify the triggering SHA before publication. They use npm trusted publishing without `RHDH_NPM_TOKEN`: configure each published package for the `release_workspace_version.yml` workflow on npm. The configuration is per workflow filename, not per release branch, and must be validated by a successful publish within npm's two-day window. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
 
 For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
 
