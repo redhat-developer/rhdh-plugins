@@ -140,6 +140,9 @@ jobs:
   release:
     name: Prior Version Release workspace ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_version_pr == 'true'
     defaults:
@@ -186,11 +189,7 @@ jobs:
 
       # CHANGED: Publish with tag "maintenance" to avoid overwriting the latest npm tag
       - name: publish
-        run: |
-          yarn config set -H 'npmAuthToken' "$NODE_AUTH_TOKEN"
-          yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.RHDH_NPM_TOKEN }}
+        run: yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
       
       - name: Create tag
         working-directory: ${{ github.workspace }}/scripts/ci
