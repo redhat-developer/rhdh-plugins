@@ -13,6 +13,12 @@ root NFS sync chunk. See the
 [New Frontend System Guide](new-frontend-system.md) for full details,
 including architecture, code examples, and API reference.
 
+The standalone `@red-hat-developer-hub/backstage-plugin-global-header` package is
+discontinued. Plugins that contributed header items must import blueprints and
+data refs from `app-react` (same string IDs, different objects — old refs may not
+attach). Existing `app-config.yaml` needs no changes. See
+[Migrating from the standalone package](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/README.md#migrating-from-red-hat-developer-hubbackstage-plugin-global-header).
+
 The Old Frontend System `/legacy` export and Scalprum mount-point integration have been removed.
 
 Deployers can also add menu items directly via `app-config.yaml` without writing any plugin code. See [Config-Driven Menu Items](new-frontend-system.md#add-items-from-app-configyaml).

@@ -296,6 +296,40 @@ default header implementation lives in
 `@red-hat-developer-hub/backstage-plugin-app-defaults`; this package only
 exports the contracts.
 
+### Migrating from `@red-hat-developer-hub/backstage-plugin-global-header`
+
+The standalone global-header package is discontinued. Plugins that contributed
+header items **must** import blueprints, data refs, and hooks from this package
+instead:
+
+```typescript
+// Before (standalone package — do not use)
+import {
+  GlobalHeaderMenuItemBlueprint,
+  globalHeaderMenuItemDataRef,
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
+
+// After
+import {
+  GlobalHeaderMenuItemBlueprint,
+  globalHeaderMenuItemDataRef,
+  useGlobalHeaderMenuItems,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+```
+
+`globalHeaderComponentDataRef` (`global-header.component`) and
+`globalHeaderMenuItemDataRef` (`global-header.menu-item`) keep the same string
+IDs as the old package, but they are **different JavaScript objects**. If
+Backstage matches extension inputs by object identity, contributions built
+against the discontinued package’s refs will not attach to the app-defaults
+header module. Switching the import to `app-react` is required — matching the
+string ID alone is not enough.
+
+**Existing `app-config.yaml` does not need changes.** Deployer config such as
+`globalHeader.components`, `globalHeader.menuItems`, and `app.extensions`
+overrides for `gh-component:*` / `gh-menu-item:*` keeps working as before;
+only plugin **code** that imported the discontinued package must update.
+
 `GlobalHeaderProvider` stores its React context on `globalThis` so Module
 Federation bundles that load a second copy of this module still share one
 provider. **Custom header or dropdown UI must use**

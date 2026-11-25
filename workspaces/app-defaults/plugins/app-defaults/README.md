@@ -177,6 +177,16 @@ Extension APIs for contributing items (`GlobalHeaderComponentBlueprint`,
 `GlobalHeaderMenuItemBlueprint`, context hooks) live in
 `@red-hat-developer-hub/backstage-plugin-app-react`.
 
+**Migration:** `@red-hat-developer-hub/backstage-plugin-global-header` is
+discontinued. Plugins that still import its blueprints or data refs
+(`globalHeaderComponentDataRef` / `globalHeaderMenuItemDataRef`) must switch
+those imports to `app-react`. The string IDs are unchanged, but the ref
+objects differ — contributions wired to the old refs may not attach to this
+module. **Existing `app-config.yaml` (`globalHeader.*`, related
+`app.extensions` overrides) needs no changes** — only plugin code imports.
+See the
+[app-react migration note](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/README.md#migrating-from-red-hat-developer-hubbackstage-plugin-global-header).
+
 ### Enable in an app
 
 With the feature loader (typical RHDH / sample app path):

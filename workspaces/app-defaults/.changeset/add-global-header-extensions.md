@@ -25,10 +25,12 @@ of camelCase ids such as `manage_accounts`) so remotes that still pass ligature 
 render on hosts that do not load the Material Icons font.
 
 **BREAKING:** `@red-hat-developer-hub/backstage-plugin-global-header` is discontinued
-(the standalone `workspaces/global-header` workspace is removed). Migrate imports to
-`@red-hat-developer-hub/backstage-plugin-app-defaults` and
+(the standalone `workspaces/global-header` workspace is removed). Migrate plugin
+code imports to `@red-hat-developer-hub/backstage-plugin-app-defaults` and
 `@red-hat-developer-hub/backstage-plugin-app-react`. Building-block UI that used
-`/components` now lives at `/global-header-components`.
+`/components` now lives at `/global-header-components`. Existing
+`app-config.yaml` (`globalHeader.*`, related `app.extensions` overrides) needs
+no changes.
 
 **BREAKING:** The app-defaults feature loader now registers the global header masthead
 by default. Disable `app-root-wrapper:app/global-header` if you do not want it.

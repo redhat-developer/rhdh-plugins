@@ -68,6 +68,12 @@ and `globalHeaderPlugin` individually is equivalent: the **module** provides the
 wrapper; the **plugin** provides the default toolbar and menu items. Extension
 blueprints live in `@red-hat-developer-hub/backstage-plugin-app-react`.
 
+If you are migrating from the discontinued
+`@red-hat-developer-hub/backstage-plugin-global-header` package, update plugin
+**code** imports to `app-react` / `app-defaults` (see the
+[app-react migration note](../../plugins/app-react/README.md#migrating-from-red-hat-developer-hubbackstage-plugin-global-header)).
+Existing `app-config.yaml` does not need changes.
+
 ## Add a toolbar component
 
 Import `GlobalHeaderComponentBlueprint` from the root and call `.make()`.
