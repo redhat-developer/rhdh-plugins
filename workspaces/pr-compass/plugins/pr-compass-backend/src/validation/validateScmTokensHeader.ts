@@ -42,15 +42,17 @@ export function validateScmTokensHeader(
   let parsed: unknown;
   try {
     parsed = JSON.parse(rawTokenHeader);
-  } catch (e) {
+  } catch {
     throw new InputError(
-      `Invalid ${SCM_TOKENS_HEADER} header: ${(e as Error).message}`,
+      `Invalid '${SCM_TOKENS_HEADER}' header: must be a JSON object`,
     );
   }
 
   const result = schema.safeParse(parsed);
   if (!result.success) {
-    throw new InputError(`Invalid '${SCM_TOKENS_HEADER}' header`);
+    throw new InputError(
+      `Invalid '${SCM_TOKENS_HEADER}' header: must be an object mapping source IDs to non-empty token strings`,
+    );
   }
 
   return result.data;

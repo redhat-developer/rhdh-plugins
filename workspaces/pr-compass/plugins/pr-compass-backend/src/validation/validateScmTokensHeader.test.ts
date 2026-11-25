@@ -49,25 +49,35 @@ describe('validateScmTokensHeader', () => {
     expect(validateScmTokensHeader(oversized, logger)).toBeUndefined();
   });
 
+  it('rejects invalid JSON', () => {
+    expect(() => validateScmTokensHeader('{', logger)).toThrow(InputError);
+    expect(() => validateScmTokensHeader('{', logger)).toThrow(
+      "Invalid 'x-scm-tokens' header: must be a JSON object",
+    );
+  });
+
   it.each([
-    ['not json', 'nonsense'],
     ['a bare string', '"ghu_abc"'],
     ['a number', '42'],
     ['a non-string value', '{"github:github.com":42}'],
     ['an empty token', '{"github:github.com":""}'],
   ])('rejects %s', (_name, raw) => {
     expect(() => validateScmTokensHeader(raw, logger)).toThrow(InputError);
+    expect(() => validateScmTokensHeader(raw, logger)).toThrow(
+      "Invalid 'x-scm-tokens' header: must be an object mapping source IDs to non-empty token strings",
+    );
   });
 
-  it('never echoes a token back in the error', () => {
-    const validate = () =>
-      validateScmTokensHeader(
-        '{"github:github.com":42,"gitlab:gitlab.com":"ghu_secret"}',
-        logger,
-      );
-
-    expect(validate).toThrow("Invalid 'x-scm-tokens' header");
-    expect(validate).not.toThrow('42');
-    expect(validate).not.toThrow('ghu_secret');
+  it.each([
+    'ghu_secret',
+    '{"github:github.com":"ghu_secret"',
+    '{"github:github.com":42,"gitlab:gitlab.com":"ghu_secret"}',
+  ])('does not expose tokens', raw => {
+    expect(() => validateScmTokensHeader(raw, logger)).toThrow(
+      "Invalid 'x-scm-tokens' header",
+    );
+    expect(() => validateScmTokensHeader(raw, logger)).not.toThrow(
+      'ghu_secret',
+    );
   });
 });
