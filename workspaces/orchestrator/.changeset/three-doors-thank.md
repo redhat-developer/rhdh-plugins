@@ -4,4 +4,4 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator': patch
 ---
 
-reduce Data Index queries for workflow pages
+Reduce Data Index queries for workflow pages.
