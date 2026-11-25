@@ -234,7 +234,7 @@ export class DefaultApi extends BaseAPI {
   getInstanceInitiators(
     searchRequest?: SearchRequest,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<string[], any, {}>>;
+  ): Promise<AxiosResponse<string[], any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
