@@ -170,6 +170,11 @@ const templateUnitEvaluatorBackend = (configApi: ConfigApi, key: string) => {
   throw new Error(`Unknown template key "${key}" in "backend"`);
 };
 
+/**
+ * Returns a unit evaluator for Active widget template placeholders.
+ *
+ * @public
+ */
 export const useTemplateUnitEvaluator = () => {
   const app = useApp();
   const apiHolder = useApiHolder();

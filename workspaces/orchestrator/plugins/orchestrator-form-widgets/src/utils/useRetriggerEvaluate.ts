@@ -20,6 +20,11 @@ import { evaluateTemplateProps } from './evaluateTemplate';
 
 const EMPTY = [] as string[];
 
+/**
+ * Evaluates fetch:retrigger dependency expressions against form data.
+ *
+ * @public
+ */
 export const useRetriggerEvaluate = (
   templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
   formData = {} as JsonObject,

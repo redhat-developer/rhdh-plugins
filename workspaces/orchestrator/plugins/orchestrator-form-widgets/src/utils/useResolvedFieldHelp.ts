@@ -20,6 +20,11 @@ import { useFieldHelpLocale } from './useFieldHelpLocale';
 /**
  * Resolves `ui:fieldHelp` for the active RHDH language.
  */
+/**
+ * Resolves ui:fieldHelp content for the current locale.
+ *
+ * @public
+ */
 export const useResolvedFieldHelp = (
   fieldHelp: unknown,
 ): FieldHelpContent | undefined => {

@@ -81,8 +81,12 @@ describe('FormWidgetsApi', () => {
         ActiveText: expect.any(Function),
         ActiveDropdown: expect.any(Function),
         ActiveMultiSelect: expect.any(Function),
+        ActiveBoolean: expect.any(Function),
       }),
     );
+    expect(
+      (receivedProps[0].widgets as Record<string, unknown>).ExampleActiveWidget,
+    ).toBeUndefined();
     expect(receivedProps[0].customValidate).toEqual(expect.any(Function));
     expect(receivedProps[0].getExtraErrors).toEqual(expect.any(Function));
     expect(receivedProps[0].getExtraErrorsForField).toEqual(
@@ -95,5 +99,83 @@ describe('FormWidgetsApi', () => {
         setIsChangedByUser: expect.any(Function),
       }),
     );
+  });
+
+  it('merges additionalWidgets into the built-in registry', async () => {
+    await import('./FormDecoratorContent');
+
+    const ExtraWidget = () => <div data-testid="extra-widget" />;
+    const api = new FormWidgetsApi({
+      additionalWidgets: {
+        ExtraWidget: ExtraWidget as any,
+      },
+    });
+    const receivedProps: Record<string, unknown>[] = [];
+
+    const DummyForm = (props: Record<string, unknown>) => {
+      receivedProps.push(props);
+      return <div data-testid="dummy-form" />;
+    };
+
+    const decorator = api.getFormDecorator();
+    const Decorated = decorator(
+      DummyForm as ComponentType<any>,
+    ) as ComponentType<any>;
+
+    render(
+      <Decorated
+        formData={{ current: { step: {} } }}
+        getIsChangedByUser={() => false}
+        setIsChangedByUser={() => {}}
+      />,
+    );
+
+    await act(async () => {});
+
+    expect(receivedProps).toHaveLength(1);
+    expect(receivedProps[0].widgets).toEqual(
+      expect.objectContaining({
+        SchemaUpdater: expect.any(Function),
+        ActiveBoolean: expect.any(Function),
+        ExtraWidget,
+      }),
+    );
+  });
+
+  it('lets additionalWidgets override a built-in widget name', async () => {
+    await import('./FormDecoratorContent');
+
+    const OverrideBoolean = () => <div data-testid="override-boolean" />;
+    const api = new FormWidgetsApi({
+      additionalWidgets: {
+        ActiveBoolean: OverrideBoolean as any,
+      },
+    });
+    const receivedProps: Record<string, unknown>[] = [];
+
+    const DummyForm = (props: Record<string, unknown>) => {
+      receivedProps.push(props);
+      return <div data-testid="dummy-form" />;
+    };
+
+    const decorator = api.getFormDecorator();
+    const Decorated = decorator(
+      DummyForm as ComponentType<any>,
+    ) as ComponentType<any>;
+
+    render(
+      <Decorated
+        formData={{ current: { step: {} } }}
+        getIsChangedByUser={() => false}
+        setIsChangedByUser={() => {}}
+      />,
+    );
+
+    await act(async () => {});
+
+    expect(receivedProps).toHaveLength(1);
+    expect(
+      (receivedProps[0].widgets as Record<string, unknown>).ActiveBoolean,
+    ).toBe(OverrideBoolean);
   });
 });

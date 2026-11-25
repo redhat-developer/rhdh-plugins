@@ -25,6 +25,11 @@ import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { useDebounce } from 'react-use';
 import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
 
+/**
+ * Fetches data and evaluates a text template for ActiveText-like widgets.
+ *
+ * @public
+ */
 export const useFetchAndEvaluate = (
   template: string,
   formData: JsonObject,

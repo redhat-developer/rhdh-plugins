@@ -15,6 +15,10 @@
  */
 export * from './useRequestInit';
 export * from './evaluateTemplate';
+export type {
+  evaluateTemplateProps,
+  evaluateTemplateStringProps,
+} from './evaluateTemplate';
 export * from './useRetriggerEvaluate';
 export * from './useTemplateUnitEvaluator';
 export * from './safeSet';
@@ -25,6 +29,7 @@ export * from './applySelector';
 export * from './useProcessingState';
 export * from './resolveDropdownDefault';
 export * from './useClearOnRetrigger';
+export type { UseClearOnRetriggerArgs } from './useClearOnRetrigger';
 export * from './validateSingleField';
 export * from './useGetExtraErrorsForField';
 export * from './resolveFieldHelp';

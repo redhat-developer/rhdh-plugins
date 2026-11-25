@@ -44,6 +44,11 @@ const areRetriggerDependenciesSatisfied = (
   );
 };
 
+/**
+ * Fetches data for an Active widget from ui:props configuration.
+ *
+ * @public
+ */
 export const useFetch = (
   formData: JsonObject,
   uiProps: UiProps,

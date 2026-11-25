@@ -38,6 +38,11 @@ const CLOSE_DELAY_MS = 200;
 /** Vertical gap between the "?" and the help paper (matches prototype). */
 const HELP_OFFSET_PX = 12;
 
+/**
+ * Props for {@link FieldHelp}.
+ *
+ * @public
+ */
 export type FieldHelpProps = {
   content: FieldHelpContent;
   /** Used for the accessible name of the help control. */
@@ -47,6 +52,8 @@ export type FieldHelpProps = {
 /**
  * Shared on-demand field help: "?" beside the label, Paper above on hover.
  * Uses theme Paper (not inverse Tooltip) so light/dark match the prototype.
+ *
+ * @public
  */
 export const FieldHelp = ({ content, fieldLabel }: FieldHelpProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -158,6 +165,8 @@ export const FieldHelp = ({ content, fieldLabel }: FieldHelpProps) => {
 
 /**
  * Label row with optional help icon (for inline use, e.g. checkbox labels).
+ *
+ * @public
  */
 export const FieldLabelWithHelp = ({
   label,
@@ -194,6 +203,8 @@ export const FieldLabelWithHelp = ({
 /**
  * Places the field label and "?" above the control (matches design).
  * When help is missing, renders children unchanged so floating labels stay as-is.
+ *
+ * @public
  */
 export const FieldWithHelpLayout = ({
   label,

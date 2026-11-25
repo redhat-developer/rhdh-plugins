@@ -21,6 +21,11 @@ import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { UiProps } from '../uiPropTypes';
 import { UNDEFINED_VALUE } from './constants';
 
+/**
+ * Shared props for template evaluation helpers.
+ *
+ * @public
+ */
 export type evaluateTemplateProps = {
   template?: JsonValue;
   key: string;
@@ -36,6 +41,11 @@ export type evaluateTemplateProps = {
   iteration?: number;
 };
 
+/**
+ * Props for string-template evaluation helpers.
+ *
+ * @public
+ */
 export type evaluateTemplateStringProps = Omit<
   evaluateTemplateProps,
   'template'
@@ -43,6 +53,9 @@ export type evaluateTemplateStringProps = Omit<
   template?: JsonPrimitive;
 };
 
+/**
+ * @internal
+ */
 export const evaluateTemplateString = async (
   props: evaluateTemplateStringProps,
 ): Promise<JsonValue> => {
@@ -127,8 +140,11 @@ export const evaluateTemplateString = async (
 };
 
 /**
- * Substitutes `$${{…}}` in a fetch response selector (JSONata string) using the same rules as
- * `fetch:body` / `fetch:url`, then returns a plain string for JSONata evaluation against the response.
+ * Substitutes template placeholders in a fetch response selector (JSONata string) using the same
+ * rules as `fetch:body` / `fetch:url`, then returns a plain string for JSONata evaluation against
+ * the response.
+ *
+ * @public
  */
 export const evaluateFetchResponseSelectorTemplate = async (
   props: evaluateTemplateStringProps,
@@ -137,7 +153,7 @@ export const evaluateFetchResponseSelectorTemplate = async (
   try {
     evaluated = await evaluateTemplateString(props);
   } catch {
-    // Malformed `$${{…}}` or evaluator errors while editing should not break fetch widgets.
+    // Malformed template placeholders or evaluator errors while editing should not break fetch widgets.
     return '';
   }
   if (typeof evaluated === 'string') {
@@ -154,6 +170,9 @@ export const evaluateFetchResponseSelectorTemplate = async (
   return '';
 };
 
+/**
+ * @internal
+ */
 export const evaluateTemplate = async (
   props: evaluateTemplateProps,
 ): Promise<JsonValue> => {
@@ -212,6 +231,9 @@ export const evaluateTemplate = async (
   );
 };
 
+/**
+ * @internal
+ */
 export const useEvaluateTemplate = ({
   template,
   key,

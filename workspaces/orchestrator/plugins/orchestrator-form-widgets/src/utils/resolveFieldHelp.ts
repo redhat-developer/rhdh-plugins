@@ -17,6 +17,8 @@
 /**
  * Optional external documentation link shown in field help.
  * Authors set this via `ui:fieldHelp` in the workflow form schema.
+ *
+ * @public
  */
 export type FieldHelpLink = {
   /** Link text. Required to show the link (no default). */
@@ -27,6 +29,8 @@ export type FieldHelpLink = {
 
 /**
  * Resolved help content for a single locale.
+ *
+ * @public
  */
 export type FieldHelpContent = {
   /** Optional popover title. */

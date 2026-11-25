@@ -136,6 +136,31 @@ export const testFactoryPlugin = createPlugin({
 });
 ```
 
+### Adding custom Active widgets without replacing built-ins
+
+To keep the built-in Active widgets and add your own, construct `FormWidgetsApi` with `additionalWidgets` and register that as `orchestratorFormApiRef` (legacy `createApiFactory` or NFS `ApiBlueprint`):
+
+```typescript
+import {
+  FormWidgetsApi,
+  ExampleActiveWidget,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/active';
+
+export const formApiFactory = createApiFactory({
+  api: orchestratorFormApiRef,
+  deps: {},
+  factory() {
+    return new FormWidgetsApi({
+      additionalWidgets: { ExampleActiveWidget },
+    });
+  },
+});
+```
+
+Only one `orchestratorFormApiRef` implementation is active at a time. Your plugin should be the provider of that API (instead of the default `orchestrator-form-widgets` factory), while still depending on the package for widgets and the `./active` authoring API.
+
+See [Creating custom Active widgets](./orchestratorFormWidgets.md#creating-custom-active-widgets) for hooks, types, and a full schema example.
+
 ### Schema example
 
 For a schema example referencing custom `ui:widgets`, look [here](https://github.com/rhdhorchestrator/backstage-orchestrator-workflows/blob/main/workflows/schemas/dynamic_schema__main-schema.json)

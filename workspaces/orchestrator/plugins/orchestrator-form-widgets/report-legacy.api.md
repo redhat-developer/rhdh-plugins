@@ -5,13 +5,30 @@
 ```ts
 import { ApiFactory } from '@backstage/frontend-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { JsonObject } from '@backstage/types';
+import { JSONSchema7 } from 'json-schema';
 import { OrchestratorFormApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { Widget } from '@rjsf/utils';
+
+// @public
+export type ActiveWidget = Widget<
+  JsonObject,
+  JSONSchema7,
+  OrchestratorFormContextProps
+>;
 
 // @public
 export class FormWidgetsApi implements OrchestratorFormApi {
+  constructor(options?: FormWidgetsApiOptions);
   getFormDecorator: OrchestratorFormApi['getFormDecorator'];
   getReviewComponent: OrchestratorFormApi['getReviewComponent'];
 }
+
+// @public
+export type FormWidgetsApiOptions = {
+  additionalWidgets?: Record<string, ActiveWidget>;
+};
 
 // @public
 export const orchestratorFormApiFactory: ApiFactory<

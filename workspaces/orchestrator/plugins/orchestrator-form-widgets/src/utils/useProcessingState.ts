@@ -26,6 +26,11 @@ import { useCallback, useEffect, useState } from 'react';
  * @param handleFetchEnded - Optional callback to notify when processing ends
  * @returns Object containing processing state management
  */
+/**
+ * Tracks fetch/processing state and notifies the Orchestrator form context.
+ *
+ * @public
+ */
 export const useProcessingState = (
   fetchLoading: boolean,
   handleFetchStarted?: () => void,
