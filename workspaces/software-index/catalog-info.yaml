@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: software-index
+  title: Software Index
+  description: |
+    Workspace for Backstage plugins that will use Container Catalog/Pyxis data
+    to help product and engineering teams discover Red Hat product and container
+    ownership, inspect image health, and receive container health notifications.
+  annotations:
+    github.com/project-slug: redhat-developer/rhdh-plugins
+spec:
+  type: backstage-plugin
+  owner: mmarcin
+  lifecycle: experimental
+  subcomponentOf: rhdh-plugins
