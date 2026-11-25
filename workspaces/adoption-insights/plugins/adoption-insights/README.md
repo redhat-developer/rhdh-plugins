@@ -154,17 +154,33 @@ Shows org-wide most-used plugins/extensions from Adoption Insights.
 
 **Settings / layout props**
 
-| Prop                 | Type                            | Default | Description                                                                  |
-| -------------------- | ------------------------------- | ------- | ---------------------------------------------------------------------------- |
-| `mode`               | `auto` \| `hybrid` \| `curated` | `auto`  | Content selection mode                                                       |
-| `displayCount`       | number                          | `3`     | Number of rows to show                                                       |
-| `title`              | string                          | —       | Optional card title override                                                 |
-| `items`              | `{ id, title?, href?, … }[]`    | —       | Curated list (`curated`) or pins (`hybrid`); ignored in `auto`               |
-| `pluginDestinations` | `{ [pluginId]: '/path' }`       | —       | Extra / overriding routes for ranked rows (and curated items without `href`) |
+| Prop                 | Type                               | Default | Description                                                    |
+| -------------------- | ---------------------------------- | ------- | -------------------------------------------------------------- |
+| `mode`               | `auto` \| `hybrid` \| `curated`    | `auto`  | Content selection mode                                         |
+| `displayCount`       | number                             | `3`     | Number of rows to show                                         |
+| `title`              | string                             | —       | Optional card title override                                   |
+| `items`              | `{ id, title?, href?, … }[]`       | —       | Curated list (`curated`) or pins (`hybrid`); ignored in `auto` |
+| `pluginDestinations` | `{ [pluginId]: '/path' \| false }` | —       | Override or disable a row link (`false` = plain text)          |
 
-Rows link only when a destination is known. Built-in destinations cover common OOTB / supported plugins (Catalog, Catalog Graph, Bulk Import, RBAC, Tech Radar, …). Unknown `plugin_id` values stay plain text unless you add them via `pluginDestinations` (or set `items[].href` in curated/hybrid).
+Rows link when a destination is known. Resolution order:
+
+1. Widget `pluginDestinations` (or `items[].href` for curated/hybrid pins)
+2. App-config `adoptionInsights.pluginDestinations.<pluginId>` (string or `false`)
+3. The route the plugin mounted in the NFS app tree (matches `page:<id>` / `page:app/<id>`; skips shared shell ids like `app` / `root` that host many pages)
+4. Built-in fallback map for historical / unmounted plugin ids
+
+Unknown or disabled `plugin_id` values stay plain text. Analytics events from the app shell (`pluginId: app`) are not linked to an arbitrary page such as Learning Paths.
 
 Configure **mode**, **display count**, **title**, **items**, and **pluginDestinations** via app-config `widgetLayout` props (admin-controlled — no in-card Edit settings UI). On an editable homepage you can still add the widget from the catalog; content options come from `widgetLayout` / defaults.
+
+Optional global overrides (also under app-config):
+
+```yaml
+adoptionInsights:
+  pluginDestinations:
+    catalog: /software-catalog # admin remapped path
+    legacy-plugin: false # never link this id
+```
 
 ##### Admin-controlled modes (examples)
 

@@ -19,8 +19,10 @@ import { useCallback, useMemo } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { adoptionInsightsApiRef } from '../../api';
+import { usePluginDestinationMap } from '../../hooks/usePluginDestination';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
+  normalizePluginId,
   PopularContentListCard,
   resolvePopularContentConfig,
   resolvePopularContentItems,
@@ -28,7 +30,7 @@ import {
   useAdoptionInsightsRanking,
 } from '../popularContent';
 import {
-  applyPluginDestinations,
+  applyResolvedDestinations,
   mapPluginTrendsToPopularContentItems,
 } from './mapPlugins';
 
@@ -38,8 +40,11 @@ export type TopPluginsCardProps = {
   displayCount?: number | string;
   limit?: number | string;
   items?: unknown;
-  /** Admin map of plugin_id → route path (overrides built-in destinations). */
-  pluginDestinations?: Record<string, string>;
+  /**
+   * Admin map of plugin_id → route path (or `false` to disable the link).
+   * Wins over app-config / app-tree / static fallback for this card.
+   */
+  pluginDestinations?: Record<string, string | false>;
   [key: string]: unknown;
 };
 
@@ -76,12 +81,9 @@ export function TopPluginsCard(props: TopPluginsCardProps) {
         limit: options.limit,
         grouping: options.grouping,
       });
-      return mapPluginTrendsToPopularContentItems(
-        response?.data ?? [],
-        config.pluginDestinations,
-      );
+      return mapPluginTrendsToPopularContentItems(response?.data ?? []);
     },
-    [api, config.pluginDestinations],
+    [api],
   );
 
   const ranking = useAdoptionInsightsRanking({
@@ -90,16 +92,24 @@ export function TopPluginsCard(props: TopPluginsCardProps) {
     fetchRanking,
   });
 
+  const rankedItems = useMemo(
+    () =>
+      resolvePopularContentItems({
+        config,
+        ranked: ranking.items,
+      }),
+    [config, ranking.items],
+  );
+
+  const destinationMap = usePluginDestinationMap(
+    rankedItems.map(item => item.id),
+    { widgetOverrides: config.pluginDestinations },
+  );
+
   const items = useMemo(
     () =>
-      applyPluginDestinations(
-        resolvePopularContentItems({
-          config,
-          ranked: ranking.items,
-        }),
-        config.pluginDestinations,
-      ),
-    [config, ranking.items],
+      applyResolvedDestinations(rankedItems, destinationMap, normalizePluginId),
+    [rankedItems, destinationMap],
   );
 
   return (

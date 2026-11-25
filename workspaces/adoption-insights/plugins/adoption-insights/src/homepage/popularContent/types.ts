@@ -80,9 +80,11 @@ export type PopularContentCardConfig = {
   items?: PopularContentConfigItem[];
   /**
    * Extra / overriding `plugin_id` → app path map for ranked rows (and curated
-   * items that omit `href`). Keys are normalized like built-in destinations.
+   * items that omit `href`). Use `false` to disable the link. Keys are
+   * normalized like built-in destinations. When unset, destinations resolve
+   * from app-config, the NFS app tree, then the static fallback map.
    */
-  pluginDestinations?: Record<string, string>;
+  pluginDestinations?: Record<string, string | false>;
 };
 
 export const DEFAULT_POPULAR_CONTENT_DISPLAY_COUNT = 3;

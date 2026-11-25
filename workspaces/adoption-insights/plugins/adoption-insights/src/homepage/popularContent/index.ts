@@ -30,6 +30,7 @@ export {
 } from './resolvePopularContentConfig';
 export { resolvePopularContentItems } from './resolvePopularContentItems';
 export {
+  DEFAULT_PLUGIN_DESTINATIONS,
   normalizePluginId,
   parsePluginDestinations,
   resolvePluginDestination,

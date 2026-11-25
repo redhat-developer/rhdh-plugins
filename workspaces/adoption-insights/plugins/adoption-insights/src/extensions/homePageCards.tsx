@@ -70,7 +70,7 @@ function lazyTopPluginsWidget(
  * - `displayCount`: number of rows (default `3`)
  * - `title`: overridable card title
  * - `items`: curated list or hybrid pins `[{ id, title?, href? }]`
- * - `pluginDestinations`: `{ [pluginId]: '/path' }` overrides / custom routes
+ * - `pluginDestinations`: `{ [pluginId]: '/path' | false }` overrides / disable
  */
 export const topPluginsCardWidget = HomePageWidgetBlueprint.make({
   name: 'top-plugins-card',

@@ -20,7 +20,7 @@ import {
 } from '../pluginDestinations';
 
 describe('resolvePluginDestination', () => {
-  it('resolves known OOTB and supported overlay plugins', () => {
+  it('resolves known OOTB and supported overlay plugins from the fallback map', () => {
     expect(resolvePluginDestination('catalog-graph')).toBe('/catalog-graph');
     expect(resolvePluginDestination('bulk-import')).toBe('/bulk-import');
     expect(resolvePluginDestination('Bulk Import')).toBe('/bulk-import');
@@ -28,13 +28,19 @@ describe('resolvePluginDestination', () => {
     expect(resolvePluginDestination('tech-radar')).toBe('/tech-radar');
   });
 
-  it('lets admin overrides win over the built-in map', () => {
+  it('lets admin overrides win over the fallback map', () => {
     expect(
       resolvePluginDestination('catalog', { catalog: '/custom-catalog' }),
     ).toBe('/custom-catalog');
     expect(
       resolvePluginDestination('my-plugin', { 'my-plugin': '/my-plugin' }),
     ).toBe('/my-plugin');
+  });
+
+  it('disables links when the override is false', () => {
+    expect(
+      resolvePluginDestination('catalog', { catalog: false }),
+    ).toBeUndefined();
   });
 
   it('returns undefined for unknown plugins without overrides', () => {
@@ -53,6 +59,15 @@ describe('parsePluginDestinations', () => {
       'my-plugin': '/my-plugin',
       catalog: '/catalog-alt',
     });
+  });
+
+  it('accepts false to disable a destination', () => {
+    expect(
+      parsePluginDestinations({
+        catalog: false,
+        ok: '/ok',
+      }),
+    ).toEqual({ catalog: false, ok: '/ok' });
   });
 
   it('drops invalid entries', () => {

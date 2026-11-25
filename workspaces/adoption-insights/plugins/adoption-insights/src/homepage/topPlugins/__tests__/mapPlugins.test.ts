@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import { normalizePluginId } from '../../popularContent';
 import {
-  applyPluginDestinations,
+  applyResolvedDestinations,
   mapPluginTrendsToPopularContentItems,
 } from '../mapPlugins';
 
 describe('mapPluginTrendsToPopularContentItems', () => {
-  it('maps plugin trends with display name, metrics, and destinations', () => {
+  it('maps plugin trends with display name and metrics, without hrefs', () => {
     const mapped = mapPluginTrendsToPopularContentItems([
       {
         plugin_id: 'catalog',
@@ -47,7 +48,6 @@ describe('mapPluginTrendsToPopularContentItems', () => {
         id: 'catalog',
         title: 'Software Catalog',
         subtitle: 'catalog',
-        href: '/catalog',
         visitCount: 1053,
         trendPercentage: '8',
       },
@@ -55,7 +55,6 @@ describe('mapPluginTrendsToPopularContentItems', () => {
         id: 'bulk-import',
         title: 'Bulk Import',
         subtitle: 'bulk-import',
-        href: '/bulk-import',
         visitCount: 40,
         trendPercentage: '2',
       },
@@ -63,57 +62,38 @@ describe('mapPluginTrendsToPopularContentItems', () => {
         id: 'mystery',
         title: 'Mystery',
         subtitle: 'mystery',
-        href: undefined,
         visitCount: 1,
         trendPercentage: '0',
       },
     ]);
+    expect(mapped.every(item => item.href === undefined)).toBe(true);
     expect(mapped.every(item => item.icon === undefined)).toBe(true);
-  });
-
-  it('applies admin destination overrides', () => {
-    expect(
-      mapPluginTrendsToPopularContentItems(
-        [
-          {
-            plugin_id: 'mystery',
-            visit_count: 1,
-            trend_percentage: '0',
-            trend: [],
-          },
-        ],
-        { mystery: '/custom' },
-      ),
-    ).toMatchObject([
-      {
-        id: 'mystery',
-        title: 'Mystery',
-        subtitle: 'mystery',
-        href: '/custom',
-        visitCount: 1,
-        trendPercentage: '0',
-      },
-    ]);
   });
 });
 
-describe('applyPluginDestinations', () => {
-  it('fills missing hrefs and preserves explicit ones', () => {
+describe('applyResolvedDestinations', () => {
+  it('fills missing hrefs from the map and preserves explicit ones', () => {
     expect(
-      applyPluginDestinations(
+      applyResolvedDestinations(
         [
           { id: 'catalog-graph', title: 'Catalog Graph' },
           { id: 'custom', title: 'Custom', href: '/already' },
+          { id: 'mystery', title: 'Mystery' },
         ],
-        { custom: '/ignored' },
+        new Map([
+          ['catalog-graph', '/catalog-graph'],
+          ['custom', '/ignored'],
+        ]),
+        normalizePluginId,
       ),
-    ).toMatchObject([
+    ).toEqual([
       {
         id: 'catalog-graph',
         title: 'Catalog Graph',
         href: '/catalog-graph',
       },
       { id: 'custom', title: 'Custom', href: '/already' },
+      { id: 'mystery', title: 'Mystery' },
     ]);
   });
 });

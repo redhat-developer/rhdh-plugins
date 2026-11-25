@@ -17,18 +17,17 @@
 import { PluginTrend } from '../../types';
 import { PopularContentItem } from '../popularContent';
 import { resolvePluginDisplayName } from './pluginDisplayNames';
-import {
-  PluginDestinationOverrides,
-  resolvePluginDestination,
-} from '../popularContent/pluginDestinations';
 
 /**
  * Map Adoption Insights plugin trends into the shared Popular Content list model.
  * Rank numbers (via `showRank`) replace per-row icons in the Top Plugins card.
+ *
+ * Destinations are resolved at render time via {@link usePluginDestinationMap}
+ * (admin config → NFS app tree → static fallback). This mapper leaves `href`
+ * unset so the card can fill it from the live app.
  */
 export function mapPluginTrendsToPopularContentItems(
   plugins: PluginTrend[],
-  destinations?: PluginDestinationOverrides,
 ): PopularContentItem[] {
   return plugins
     .filter(plugin => typeof plugin.plugin_id === 'string' && plugin.plugin_id)
@@ -38,7 +37,6 @@ export function mapPluginTrendsToPopularContentItems(
         id,
         title: resolvePluginDisplayName(id),
         subtitle: id,
-        href: resolvePluginDestination(id, destinations),
         visitCount: plugin.visit_count,
         trendPercentage: plugin.trend_percentage,
       };
@@ -46,15 +44,19 @@ export function mapPluginTrendsToPopularContentItems(
 }
 
 /**
- * Fill missing `href` values from the destination map / admin overrides.
+ * Apply a pre-resolved destination map to list items.
  * Explicit item hrefs (curated / hybrid pins) are preserved.
  */
-export function applyPluginDestinations(
+export function applyResolvedDestinations(
   items: PopularContentItem[],
-  destinations?: PluginDestinationOverrides,
+  destinations: ReadonlyMap<string, string | undefined>,
+  normalizeId: (id: string) => string,
 ): PopularContentItem[] {
-  return items.map(item => ({
-    ...item,
-    href: item.href ?? resolvePluginDestination(item.id, destinations),
-  }));
+  return items.map(item => {
+    if (item.href) {
+      return item;
+    }
+    const href = destinations.get(normalizeId(item.id));
+    return href ? { ...item, href } : item;
+  });
 }

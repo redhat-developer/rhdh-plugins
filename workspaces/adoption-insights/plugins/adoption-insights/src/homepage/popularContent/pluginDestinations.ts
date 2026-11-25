@@ -15,16 +15,15 @@
  */
 
 /**
- * Best-effort map from Adoption Insights `plugin_id` values to OOTB RHDH routes.
- * Unknown plugins render non-clickable (no broken routes).
+ * Fallback map from Adoption Insights `plugin_id` values to OOTB RHDH routes.
  *
- * Covers core Backstage pages plus GA/TP frontend plugins from
- * `rhdh-plugin-export-overlays/default.packages.yaml` that expose a primary page.
- * Deployments can extend / override via widget `pluginDestinations` props.
+ * Not the source of truth for live apps — {@link usePluginDestination} prefers
+ * admin config and the NFS app tree, and only uses this map when a plugin is
+ * not mounted (historical rows, removed plugins, API-only packages).
  *
  * Keys are matched after {@link normalizePluginId}.
  */
-const KNOWN_PLUGIN_DESTINATIONS: Record<string, string> = {
+export const DEFAULT_PLUGIN_DESTINATIONS: Record<string, string> = {
   // Core Backstage / RHDH shell
   catalog: '/catalog',
   'catalog-graph': '/catalog-graph',
@@ -52,7 +51,10 @@ const KNOWN_PLUGIN_DESTINATIONS: Record<string, string> = {
   kubernetes: '/kubernetes',
 };
 
-export type PluginDestinationOverrides = Record<string, string>;
+/** @deprecated Use {@link DEFAULT_PLUGIN_DESTINATIONS}. */
+export const KNOWN_PLUGIN_DESTINATIONS = DEFAULT_PLUGIN_DESTINATIONS;
+
+export type PluginDestinationOverrides = Record<string, string | false>;
 
 export function normalizePluginId(pluginId: string): string {
   return pluginId.trim().toLowerCase().replace(/\s+/g, '-');
@@ -68,7 +70,7 @@ export function isAbsoluteAppPath(path: string): boolean {
 
 /**
  * Parse admin `pluginDestinations` from widget layout / settings props.
- * Only absolute app paths (starting with `/`, not `//`) are accepted.
+ * Absolute app paths override; `false` disables the row link.
  */
 export function parsePluginDestinations(
   value: unknown,
@@ -84,6 +86,11 @@ export function parsePluginDestinations(
     if (typeof rawId !== 'string' || rawId.trim() === '') {
       continue;
     }
+    const key = normalizePluginId(rawId);
+    if (rawPath === false) {
+      destinations[key] = false;
+      continue;
+    }
     if (typeof rawPath !== 'string') {
       continue;
     }
@@ -91,20 +98,27 @@ export function parsePluginDestinations(
     if (!isAbsoluteAppPath(path)) {
       continue;
     }
-    destinations[normalizePluginId(rawId)] = path;
+    destinations[key] = path;
   }
 
   return Object.keys(destinations).length > 0 ? destinations : undefined;
 }
 
 /**
- * Resolve a navigation path for a plugin id, or undefined when unknown.
- * Admin overrides win over the built-in map.
+ * Static fallback only (admin overrides → default map). Prefer
+ * {@link usePluginDestination} so mounted NFS routes win at runtime.
  */
 export function resolvePluginDestination(
   pluginId: string,
   overrides?: PluginDestinationOverrides,
 ): string | undefined {
   const key = normalizePluginId(pluginId);
-  return overrides?.[key] ?? KNOWN_PLUGIN_DESTINATIONS[key];
+  const override = overrides?.[key];
+  if (override === false) {
+    return undefined;
+  }
+  if (typeof override === 'string') {
+    return override;
+  }
+  return DEFAULT_PLUGIN_DESTINATIONS[key];
 }
