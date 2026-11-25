@@ -16,6 +16,8 @@ Creates a backport pull request when a pull request merged into `main` has one b
 
 Handles prior-version releases. Backport pull requests for legacy 1.10-and-earlier lines target a per-workspace branch such as `release-1.10/orchestrator`. From `release-2.1` onwards, they target a repository-wide `release-x.y` branch such as `release-2.1`. A `workspace/<workspace>` branch is not a valid backport target; neither is `release-2.1/<workspace>`.
 
+Prior-version publish jobs use npm trusted publishing without `RHDH_NPM_TOKEN`. Configure each published package for the `release_workspace_version.yml` workflow; the connection is per workflow filename, not per branch. Validate it with a successful publish within two days.
+
 The same release process applies to both branch layouts:
 
 1. Cherry-pick the fix onto a branch based on the appropriate release branch, include a changeset for published package changes, and merge the backport pull request after review and CI. Do not bump `package.json` versions manually. This merge does not publish to npm.
