@@ -48,6 +48,38 @@ export interface CombinedAuthorizationResult {
 }
 
 /**
+ * Max permissions per authorize() call. A full clusters×projects Cartesian
+ * product (e.g. 6×119) can exceed the RBAC backend HTTP body limit and
+ * return 413 Payload Too Large — so large batches are chunked.
+ */
+const AUTHORIZE_BATCH_SIZE = 100;
+
+/** @internal Visible for testing */
+export async function authorizeInBatches(
+  permissionsSvc: PermissionsService,
+  requests: AuthorizePermissionRequest[],
+  credentials: Awaited<ReturnType<HttpAuthService['credentials']>>,
+  batchSize: number = AUTHORIZE_BATCH_SIZE,
+): Promise<AuthorizePermissionResponse[]> {
+  if (requests.length === 0) {
+    return [];
+  }
+  if (requests.length <= batchSize) {
+    return permissionsSvc.authorize(requests, { credentials });
+  }
+
+  const decisions: AuthorizePermissionResponse[] = [];
+  for (let i = 0; i < requests.length; i += batchSize) {
+    const chunk = requests.slice(i, i + batchSize);
+    const chunkDecisions = await permissionsSvc.authorize(chunk, {
+      credentials,
+    });
+    decisions.push(...chunkDecisions);
+  }
+  return decisions;
+}
+
+/**
  * Checks if the user has ANY of the given permissions (OR logic).
  * Optimized to use a single batch authorization call instead of multiple parallel calls.
  *
@@ -204,10 +236,11 @@ export const filterAuthorizedClustersAndProjects = async (
       }
     }
 
-    // Batch check project-level permissions
-    const projectDecisions = await permissionsSvc.authorize(
+    // Chunked batch — avoids 413 Payload Too Large on large Cartesian products
+    const projectDecisions = await authorizeInBatches(
+      permissionsSvc,
       projectPermissionRequests,
-      { credentials },
+      credentials,
     );
 
     // Process project-level results

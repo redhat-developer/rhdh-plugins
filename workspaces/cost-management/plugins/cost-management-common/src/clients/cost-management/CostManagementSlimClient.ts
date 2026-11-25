@@ -365,10 +365,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   > {
+    // Backend (token): call HCC directly. Frontend: go through secure proxy.
     const url = await this.buildResourceTypeUrl(
       'openshift-projects',
       search,
       options?.limit,
+      options?.token ? 'direct' : 'proxy',
     );
 
     // If token provided externally (backend use), use it directly
@@ -394,10 +396,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
+    // Backend (token): call HCC directly. Frontend: go through secure proxy.
     const url = await this.buildResourceTypeUrl(
       'openshift-clusters',
       search,
       options?.limit,
+      options?.token ? 'direct' : 'proxy',
     );
 
     // If token provided externally (backend use), use it directly
@@ -486,12 +490,20 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   }
 
   /**
-   * Builds resource type URL routed through the backend secure proxy
+   * Builds resource-type URL.
+   *
+   * - `proxy`: frontend → Backstage secure proxy (`{pluginBase}/proxy/resource-types/...`)
+   * - `direct`: backend with SSO token → HCC
+   *   (`{costManagementProxyBaseUrl}/cost-management/v1/resource-types/...`)
+   *
+   * Backend discovery is configured to return the HCC API host (e.g.
+   * https://console.redhat.com/api), matching OptimizationsClient's direct path.
    */
   private async buildResourceTypeUrl(
     resourceType: string,
     search?: string,
     limit?: number,
+    mode: 'proxy' | 'direct' = 'proxy',
   ): Promise<string> {
     const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
 
@@ -505,7 +517,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     const queryString = params.toString();
     const queryPart = queryString ? `?${queryString}` : '';
 
-    return `${baseUrl}/proxy/resource-types/${resourceType}/${queryPart}`;
+    const pathPrefix =
+      mode === 'direct'
+        ? `/cost-management/v1/resource-types/${resourceType}/`
+        : `/proxy/resource-types/${resourceType}/`;
+
+    return `${baseUrl}${pathPrefix}${queryPart}`;
   }
 
   /**

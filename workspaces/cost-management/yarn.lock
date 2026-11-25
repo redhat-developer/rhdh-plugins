@@ -9538,6 +9538,7 @@ __metadata:
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/plugin-permission-common": "npm:^0.9.10"
+    "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/types": "npm:^1.2.2"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@types/lodash": "npm:^4.17.5"
