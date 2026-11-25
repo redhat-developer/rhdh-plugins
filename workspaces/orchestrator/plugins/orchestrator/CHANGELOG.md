@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.6
+
+### Patch Changes
+
+- e8d3cfc: Reduce Data Index queries for workflow pages.
+- Updated dependencies [e8d3cfc]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.4
+
 ## 6.2.5
 
 ### Patch Changes
