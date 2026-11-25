@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  Link,
-  sidebarConfig,
-  useSidebarOpenState,
-} from '@backstage/core-components';
+import { sidebarConfig, useSidebarOpenState } from '@backstage/core-components';
+import { Link } from '@backstage/ui';
 import Box from '@mui/material/Box';
 import {
   LogoFull,
@@ -40,12 +37,12 @@ export const SidebarLogo = () => {
       }}
     >
       <Link
-        to="/"
-        underline="none"
+        href="/"
         aria-label="Home"
         style={{
           width: sidebarConfig.drawerWidthClosed,
           marginLeft: 24,
+          textDecoration: 'none',
         }}
       >
         {isOpen ? <LogoFull /> : <LogoIcon />}
