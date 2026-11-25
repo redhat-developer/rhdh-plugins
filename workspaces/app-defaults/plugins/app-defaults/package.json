@@ -12,12 +12,6 @@
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
-    "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
-    "./catalog-module": "./src/catalogModuleExport.ts",
-    "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
-    "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
-    "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
-    "./docs-plugin-override": "./src/docsPluginOverrideExport.ts",
     "./learning-paths-module": "./src/learningPathsModuleExport.ts",
     "./package.json": "./package.json"
   },
@@ -37,24 +31,6 @@
       ],
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
-      ],
-      "catalog-plugin-override": [
-        "src/catalogPluginOverrideExport.ts"
-      ],
-      "catalog-module": [
-        "src/catalogModuleExport.ts"
-      ],
-      "catalog-graph-plugin-override": [
-        "src/catalogGraphPluginOverrideExport.ts"
-      ],
-      "scaffolder-plugin-override": [
-        "src/scaffolderPluginOverrideExport.ts"
-      ],
-      "api-docs-plugin-override": [
-        "src/apiDocsPluginOverrideExport.ts"
-      ],
-      "docs-plugin-override": [
-        "src/docsPluginOverrideExport.ts"
       ],
       "learning-paths-module": [
         "src/learningPathsModuleExport.ts"
@@ -78,7 +54,15 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-app-defaults",
       "@red-hat-developer-hub/backstage-plugin-app-react"
-    ]
+    ],
+    "features": {
+      "./app-defaults-module": "@backstage/FrontendModule",
+      "./app-layout-module": "@backstage/FrontendModule",
+      "./app-drawer-module": "@backstage/FrontendModule",
+      "./app-sidebar-module": "@backstage/FrontendModule",
+      "./app-defaults-translations-module": "@backstage/FrontendModule",
+      "./learning-paths-module": "@backstage/FrontendModule"
+    }
   },
   "sideEffects": false,
   "configSchema": "config.d.ts",

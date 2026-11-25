@@ -17,7 +17,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { SearchBarBase } from '@backstage/plugin-search-react';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { SearchBarBase, searchApiRef } from '@backstage/plugin-search-react';
 
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -61,6 +62,8 @@ export interface SearchBarProps {
  * @public
  */
 export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
+  const apiHolder = useApiHolder();
+  const searchApi = apiHolder.get(searchApiRef);
   const { t } = useTranslation();
   const [value, setValue] = useState('');
   const ref = useRef<HTMLInputElement | null>(null);
@@ -83,6 +86,10 @@ export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
   }, []);
 
   const clearLabel = t('search.clearButton');
+
+  if (!searchApi) {
+    return <></>;
+  }
 
   return (
     <StyledSearchBar

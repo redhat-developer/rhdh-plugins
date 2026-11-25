@@ -18,6 +18,7 @@ import type { ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { TestApiProvider } from '@backstage/test-utils';
+import { identityApiRef } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { mockUseTranslation } from '../../../test-utils/mockTranslations';
@@ -28,14 +29,6 @@ import {
 
 jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => mockUseTranslation(),
-}));
-
-jest.mock('@backstage/plugin-user-settings', () => ({
-  useUserProfile: () => ({
-    displayName: 'Test User',
-    backstageIdentity: { userEntityRef: 'user:default/test-user' },
-    loading: false,
-  }),
 }));
 
 jest.mock('../../../hooks/useGreeting', () => ({
@@ -74,15 +67,31 @@ const catalogUserEntity = {
   spec: { profile: { displayName: 'Catalog User' } },
 };
 
+const defaultIdentityApi = {
+  getProfileInfo: jest.fn().mockResolvedValue({ displayName: 'Test User' }),
+  getBackstageIdentity: jest
+    .fn()
+    .mockResolvedValue({ userEntityRef: 'user:default/test-user' }),
+  getCredentials: jest.fn().mockResolvedValue({}),
+  signOut: jest.fn().mockResolvedValue(undefined),
+};
+
 const renderWithProviders = (
   ui: ReactNode,
   getEntityByRef: jest.Mock = jest.fn().mockResolvedValue(catalogUserEntity),
-) =>
-  render(
-    <TestApiProvider apis={[[catalogApiRef, { getEntityByRef }]]}>
+  identityApi = defaultIdentityApi,
+  catalogApi: any = { getEntityByRef },
+) => {
+  const apis: any[] = [[identityApiRef, identityApi]];
+  if (catalogApi) {
+    apis.push([catalogApiRef, catalogApi]);
+  }
+  return render(
+    <TestApiProvider apis={apis}>
       <ThemeProvider theme={theme}>{ui}</ThemeProvider>
     </TestApiProvider>,
   );
+};
 
 describe('OnboardingSectionContent', () => {
   it('renders greeting and learning cards', async () => {
@@ -96,6 +105,22 @@ describe('OnboardingSectionContent', () => {
 
     expect(screen.getAllByTestId('onboarding-card').length).toBeGreaterThan(0);
     expect(screen.getByText('Get started')).toBeInTheDocument();
+    expect(screen.getByText('Go to Catalog')).toBeInTheDocument();
+  });
+
+  it('hides catalog learning card when catalogApi is not available', async () => {
+    renderWithProviders(
+      <OnboardingSectionContent />,
+      jest.fn(),
+      defaultIdentityApi,
+      null,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Get started')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Go to Catalog')).not.toBeInTheDocument();
   });
 });
 
@@ -110,16 +135,16 @@ describe('useOnboardingSection', () => {
   });
 
   it('prefers catalog display name over entity-ref profile displayName', async () => {
-    jest
-      .spyOn(require('@backstage/plugin-user-settings'), 'useUserProfile')
-      .mockReturnValue({
-        displayName: 'user:default/test-user',
-        backstageIdentity: { userEntityRef: 'user:default/test-user' },
-        loading: false,
-      });
+    const customIdentityApi = {
+      ...defaultIdentityApi,
+      getProfileInfo: jest.fn().mockResolvedValue({ displayName: 'user:default/test-user' }),
+      getBackstageIdentity: jest
+        .fn()
+        .mockResolvedValue({ userEntityRef: 'user:default/test-user' }),
+    };
 
     const getEntityByRef = jest.fn().mockResolvedValue(catalogUserEntity);
-    renderWithProviders(<HookHarness />, getEntityByRef);
+    renderWithProviders(<HookHarness />, getEntityByRef, customIdentityApi);
 
     await waitFor(() => {
       expect(screen.getByTestId('greeting')).toHaveTextContent(

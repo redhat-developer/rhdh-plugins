@@ -36,11 +36,9 @@ export const settingsMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'settings',
   params: {
     target: 'profile',
-    title: 'Settings',
-    titleKey: 'profile.settings',
-    link: '/settings',
-    icon: 'manageAccounts',
     priority: 100,
+    loader: () =>
+      import('../components/SettingsMenuItem').then(m => m.SettingsMenuItem),
   },
 });
 

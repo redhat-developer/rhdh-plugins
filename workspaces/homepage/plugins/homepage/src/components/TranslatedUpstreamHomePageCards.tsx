@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import {
   HomePageRecentlyVisited,
   HomePageStarredEntities,
@@ -35,8 +37,15 @@ export type CatalogStarredEntitiesCardProps = StarredEntitiesProps &
 export const CatalogStarredEntitiesCard = (
   props: CatalogStarredEntitiesCardProps,
 ) => {
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
   const { titleKey: _titleKey, title: _title, ...cardProps } = props;
   const title = useHomePageCardTitle('starredEntities.title', props);
+
+  if (!catalogApi) {
+    return <></>;
+  }
+
   return <HomePageStarredEntities {...cardProps} title={title} />;
 };
 

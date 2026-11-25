@@ -18,6 +18,8 @@ import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { TestApiProvider } from '@backstage/test-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { mockUseTranslation } from '../../../test-utils/mockTranslations';
 import { TemplateSectionContent } from '../TemplateSection';
@@ -68,13 +70,17 @@ jest.mock('../ViewMoreLink', () => ({
 const mockUseEntities = useEntities as jest.MockedFunction<typeof useEntities>;
 const theme = createTheme();
 
-const renderSection = () =>
+const renderSection = (
+  apis: any[] = [[catalogApiRef, { queryEntities: jest.fn() }]],
+) =>
   render(
-    <ThemeProvider theme={theme}>
-      <MemoryRouter>
-        <TemplateSectionContent />
-      </MemoryRouter>
-    </ThemeProvider>,
+    <TestApiProvider apis={apis}>
+      <ThemeProvider theme={theme}>
+        <MemoryRouter>
+          <TemplateSectionContent />
+        </MemoryRouter>
+      </ThemeProvider>
+    </TestApiProvider>,
   );
 
 describe('TemplateSectionContent', () => {
@@ -153,5 +159,10 @@ describe('TemplateSectionContent', () => {
 
     expect(screen.getByText('No templates added yet')).toBeInTheDocument();
     expect(screen.getByText('Register a template')).toBeInTheDocument();
+  });
+
+  it('renders nothing when catalogApi is not available', () => {
+    const { container } = renderSection([]);
+    expect(container).toBeEmptyDOMElement();
   });
 });

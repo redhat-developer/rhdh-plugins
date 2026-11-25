@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { createContext, useContext, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  type Context,
+  type ReactNode,
+} from 'react';
 
 import type {
   GlobalHeaderComponentData,
@@ -28,9 +34,9 @@ interface GlobalHeaderContextValue {
 
 const CONTEXT_KEY = '__global_header_context__' as keyof typeof globalThis;
 
-function getOrCreateContext(): React.Context<GlobalHeaderContextValue> {
+function getOrCreateContext(): Context<GlobalHeaderContextValue> {
   const existing = (globalThis as any)[CONTEXT_KEY];
-  if (existing) return existing as React.Context<GlobalHeaderContextValue>;
+  if (existing) return existing as Context<GlobalHeaderContextValue>;
   const ctx = createContext<GlobalHeaderContextValue>({
     components: [],
     menuItems: [],
@@ -51,7 +57,7 @@ export const GlobalHeaderProvider = ({
   components,
   menuItems,
   children,
-}: GlobalHeaderContextValue & { children: React.ReactNode }) => {
+}: GlobalHeaderContextValue & { children: ReactNode }) => {
   const value = useMemo(
     () => ({ components, menuItems }),
     [components, menuItems],

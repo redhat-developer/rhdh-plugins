@@ -15,6 +15,8 @@
  */
 
 import { InfoCard } from '@backstage/core-components';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { RendererProps } from '@backstage/plugin-home-react';
 
 import { styled } from '@mui/material/styles';
@@ -38,10 +40,17 @@ const QuickAccessInfoCard = styled(InfoCard)({
  */
 export function createTranslatedCardRenderer(
   titleKey: string,
-  options?: { quickAccessStyle?: boolean },
+  options?: { quickAccessStyle?: boolean; requiresCatalog?: boolean },
 ) {
   return function TranslatedCardRenderer({ Content, title }: RendererProps) {
+    const apiHolder = useApiHolder();
+    const catalogApi = apiHolder.get(catalogApiRef);
     const { t } = useTranslation();
+
+    if (options?.requiresCatalog && !catalogApi) {
+      return null;
+    }
+
     const displayTitle = getTranslatedTextWithFallback(t, titleKey, title);
 
     if (options?.quickAccessStyle) {

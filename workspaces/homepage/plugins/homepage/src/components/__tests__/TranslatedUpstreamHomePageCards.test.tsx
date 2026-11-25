@@ -15,6 +15,8 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { TestApiProvider } from '@backstage/test-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import {
@@ -41,11 +43,25 @@ jest.mock('@backstage/plugin-home', () => ({
 
 describe('TranslatedUpstreamHomePageCards', () => {
   it('renders CatalogStarredEntitiesCard with translated title', () => {
-    render(<CatalogStarredEntitiesCard />);
+    render(
+      <TestApiProvider apis={[[catalogApiRef, {}]]}>
+        <CatalogStarredEntitiesCard />
+      </TestApiProvider>,
+    );
 
     expect(screen.getByTestId('starred')).toHaveTextContent(
       'Starred Catalog Entities',
     );
+  });
+
+  it('renders nothing for CatalogStarredEntitiesCard when catalogApi is not available', () => {
+    const { container } = render(
+      <TestApiProvider apis={[]}>
+        <CatalogStarredEntitiesCard />
+      </TestApiProvider>,
+    );
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders RecentlyVisitedCard with translated title', () => {
@@ -61,7 +77,11 @@ describe('TranslatedUpstreamHomePageCards', () => {
   });
 
   it('uses a non-default titleKey override when provided', () => {
-    render(<CatalogStarredEntitiesCard titleKey="featuredDocs.title" />);
+    render(
+      <TestApiProvider apis={[[catalogApiRef, {}]]}>
+        <CatalogStarredEntitiesCard titleKey="featuredDocs.title" />
+      </TestApiProvider>,
+    );
 
     expect(screen.getByTestId('starred')).toHaveTextContent('Featured Docs');
   });
