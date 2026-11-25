@@ -44,7 +44,7 @@ export interface ListPullRequestsOptions {
  * @public
  */
 export interface ListPullRequestsResult {
-  /** Pull requests matching the requested filters. */
+  /** Unique pull requests matching the requested filters. */
   items: PullRequest[];
   /** Whether the result was truncated because of the requested limit {@link ListPullRequestsOptions.limit} was reached. */
   truncated: boolean;
@@ -64,7 +64,7 @@ export interface PullRequestProvider {
    */
   readonly type: string;
 
-  /** Retrieves pull requests for the authenticated user from the given SCM host. */
+  /** Retrieves unique pull requests for the authenticated user from the given SCM host. */
   listPullRequests(
     options: ListPullRequestsOptions,
   ): Promise<ListPullRequestsResult>;

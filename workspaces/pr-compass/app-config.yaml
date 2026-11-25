@@ -50,5 +50,5 @@ permission:
         - name: user:development/guest
 
 prCompass:
-  # Stop gathering after this many pull requests from one host.
+  # Maximum number of pull requests requested from each source.
   maxPullRequests: 100

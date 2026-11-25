@@ -26,7 +26,7 @@ backend.add(
 
 ## Configuration
 
-Use `prCompass.maxPullRequests` to limit how many pull requests each source provider gathers per request. The default is `100`.
+`prCompass.maxPullRequests` is the maximum number of pull requests each provider will return per source and request. The default is `100`. Sources are queried in parallel, so the combined result can contain up to this limit for each source. Providers are responsible for honoring the limit and reporting whether their results were truncated.
 
 ```yaml
 prCompass:

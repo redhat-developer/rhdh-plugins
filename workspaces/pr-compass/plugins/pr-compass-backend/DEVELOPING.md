@@ -16,7 +16,7 @@ From `workspaces/pr-compass`, start the harness:
 yarn workspace @red-hat-developer-hub/backstage-plugin-pr-compass-backend start
 ```
 
-The harness loads the package's `app-config.yaml` and listens on port 7007. Stop it with Ctrl-C. To exercise truncation, set `prCompass.maxPullRequests` below 3 in the harness configuration; the limit applies per provider.
+The harness loads the package's `app-config.yaml` and listens on port 7007. Stop it with Ctrl-C. To exercise truncation, set `prCompass.maxPullRequests` below 3 in the harness configuration; the limit applies per source.
 
 Mocked authentication accepts the Backstage mock user token. The read permission is allowed by default. List the available sources with:
 

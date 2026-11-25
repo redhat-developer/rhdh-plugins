@@ -30,7 +30,7 @@ export interface PullRequestServiceOptions {
   sourceResolver: SourceResolver;
   providersRegistry: PullRequestProvidersRegistry;
   logger: LoggerService;
-  /** Stop gathering once this many distinct pull requests are collected. */
+  /** Maximum number of pull requests requested from each source. */
   maxPullRequests: number;
 }
 
