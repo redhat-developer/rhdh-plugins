@@ -85,6 +85,13 @@ test.describe('CustomTheme should be applied', () => {
     await expect(page).toHaveTitle(/My Company Catalog/);
   });
 
+  test('Verify Red Hat fonts are injected with webpack-resolved URLs', async ({
+    page,
+  }) => {
+    const themeVerifier = new ThemeVerifier(page);
+    await themeVerifier.verifyRedHatFontsInjected();
+  });
+
   test('Verify accessibility of the test pages', async ({
     page,
   }, testInfo: TestInfo) => {
