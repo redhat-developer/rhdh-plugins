@@ -297,6 +297,9 @@ jobs:
   release:
     name: LEGACY - Publish legacy workspace
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'true' && needs.check-merged-pr.outputs.is_repository_release == 'false'
     concurrency:
@@ -344,11 +347,7 @@ jobs:
         run: yarn build:all
 
       - name: publish
-        run: |
-          yarn config set -H 'npmAuthToken' "$NODE_AUTH_TOKEN"
-          yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.RHDH_NPM_TOKEN }}
+        run: yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
 
       - name: Create tag
         working-directory: ${{ github.workspace }}/scripts/ci
@@ -360,6 +359,9 @@ jobs:
   repository-release:
     name: Publish workspace
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing
     needs:
       - check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'true' && needs.check-merged-pr.outputs.is_repository_release == 'true'
@@ -411,11 +413,7 @@ jobs:
         run: yarn build:all
 
       - name: publish
-        run: |
-          yarn config set -H 'npmAuthToken' "$NODE_AUTH_TOKEN"
-          yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.RHDH_NPM_TOKEN }}
+        run: yarn workspaces foreach -A -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
 
       - name: Create tag
         working-directory: ${{ github.workspace }}/scripts/ci
