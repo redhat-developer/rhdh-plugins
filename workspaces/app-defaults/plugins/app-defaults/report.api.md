@@ -15,7 +15,7 @@ import { JSX as JSX_3 } from 'react/jsx-runtime';
 import { NavContentComponent } from '@backstage/plugin-app-react';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
-import type { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
