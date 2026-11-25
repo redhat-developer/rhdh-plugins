@@ -7,6 +7,8 @@ This workspace contains the Boost plugin family for Red Hat Developer Hub.
 | Plugin                         | Package                                                                  | Description                                                                |
 | ------------------------------ | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
 | ai-catalog                     | `@red-hat-developer-hub/backstage-plugin-ai-catalog`                     | Frontend plugin — AI Catalog browse page and entity extensions             |
+| agentic-chat-backend           | `@red-hat-developer-hub/backstage-plugin-agentic-chat-backend`           | Runs Catalog agents through LCore and proxies conversation history         |
+| agentic-chat-common            | `@red-hat-developer-hub/backstage-plugin-agentic-chat-common`            | Shared chat permission, request schema, and types                          |
 | boost-backend                  | `@red-hat-developer-hub/backstage-plugin-boost-backend`                  | Backend plugin — chat, agent lifecycle, MCP, admin APIs                    |
 | ai-catalog-common              | `@red-hat-developer-hub/backstage-plugin-ai-catalog-common`              | Shared types and permissions                                               |
 | boost-node                     | `@red-hat-developer-hub/backstage-plugin-boost-node`                     | Node library — service refs and extension points                           |
