@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
   createExtensionInput,
   createFrontendModule,
@@ -21,11 +22,32 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 import { BUIProvider } from '@backstage/ui';
+import type { ReactNode } from 'react';
 
 import {
   ApplicationDrawer,
   appDrawerContentDataRef,
+  type AppDrawerContent,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+import { applyDefaultSidebarPinState } from '../sidebar/applyDefaultSidebarPinState';
+
+function AppLayoutRoot(props: {
+  children?: ReactNode;
+  contents: AppDrawerContent[];
+}) {
+  const { children, contents } = props;
+  const configApi = useApi(configApiRef);
+  // Synchronous seed: SidebarPage initializes pin state from localStorage
+  // during its first render, so this must run before children mount.
+  applyDefaultSidebarPinState(configApi);
+
+  return (
+    <BUIProvider useAnalytics={useAnalytics}>
+      <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
+    </BUIProvider>
+  );
+}
 
 /**
  * App-root layout wrapper that provides BUI routing and analytics context to
@@ -33,6 +55,9 @@ import {
  *
  * The wrapper keeps the existing `app-root-wrapper:app/drawer` extension ID so
  * existing `AppDrawerContentBlueprint` contributions continue to attach.
+ *
+ * It also seeds the sidebar pin default from `app.sidebar.defaultPinned`
+ * before `SidebarPage` (a child of this wrapper) reads localStorage.
  *
  * @public
  */
@@ -45,9 +70,7 @@ export const appLayoutExtension = AppRootWrapperBlueprint.makeWithOverrides({
     const contents = inputs.drawers.map(d => d.get(appDrawerContentDataRef));
     return originalFactory({
       component: ({ children }) => (
-        <BUIProvider useAnalytics={useAnalytics}>
-          <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
-        </BUIProvider>
+        <AppLayoutRoot contents={contents}>{children}</AppLayoutRoot>
       ),
     });
   },

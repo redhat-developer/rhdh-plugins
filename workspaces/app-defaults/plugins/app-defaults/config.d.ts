@@ -39,6 +39,13 @@ export interface Config {
        */
       logo?: boolean;
       /**
+       * Default sidebar pin state for users who have not saved a preference
+       * in localStorage. When unset or invalid, the sidebar stays pinned
+       * (current product fallback). A saved user preference always wins.
+       * @visibility frontend
+       */
+      defaultPinned?: boolean;
+      /**
        * Items without a group render at the top level. Other items render
        * inside the group with the matching id.
        * @visibility frontend

@@ -13,6 +13,7 @@ The module provides:
     sidebar:
       settings: true
       logo: true
+      defaultPinned: false
     extensions:
       - sidebar-element:app/notifications: false
       - sidebar-spacer:app/bottom:
@@ -20,7 +21,7 @@ The module provides:
             priority: -20
   ```
 
-- Sidebar items and groups declared in `app-config.yaml` under `app.sidebar`, merged with the contributed ones (see [Sidebar items from app-config](#sidebar-items-from-app-config))
+- Sidebar items and groups declared in `app-config.yaml` under `app.sidebar`, merged with the contributed ones (see [Sidebar items from app-config](#sidebar-items-from-app-config)). Optional org default for pin state: [Default sidebar pin state](#default-sidebar-pin-state)
 - Extensible scaffolder template card (`templateCardExtension`)
 - Localized page layout (`component:app/core-page-layout`, replacing the default of `@backstage/plugin-app`): the page header title, tabs and breadcrumbs that `PageBlueprint` / `SubPageBlueprint` pass as plain English strings (e.g. Settings, Scaffolder, DevTools) are looked up in the `@red-hat-developer-hub/backstage-plugin-app-react` translations — titles under `pages.<title>` (shared with the sidebar), tab labels under `pageTabs.<title>`. Unknown titles keep their English label; add a key to the app-react translations (and each locale) to localize a new one
 - Common RHDH icon catalog via `IconBundleBlueprint` (`icon-bundle:app/common`) — same IDs as the legacy `CommonIcons` map (`home`, `group`, `category`, `extension`, `school`, `add`, `developerHub`, …)
@@ -83,6 +84,24 @@ The frontend then requests `{proxyBaseUrl}/custom-hub/learning-paths`.
 #### Fallback when the proxy is unavailable
 
 When the proxy request fails, the page uses bundled demo data from `src/learning-paths/data/data.json` (included in the plugin bundle at build time).
+
+## Default sidebar pin state
+
+Admins can set the default sidebar pin state for users who have not saved their own preference:
+
+```yaml
+app:
+  sidebar:
+    defaultPinned: false
+```
+
+Precedence:
+
+1. The user's saved preference in localStorage (`sidebarPinState`)
+2. `app.sidebar.defaultPinned` when set to a boolean
+3. Pinned (`true`) — the existing Backstage / RHDH product fallback
+
+Existing saved preferences are never overwritten. When the key is unset or invalid, behavior matches today (sidebar pinned). Users can still change the pin state from the UI; that choice is stored in localStorage and takes precedence on later visits.
 
 ## Sidebar items from app-config
 
