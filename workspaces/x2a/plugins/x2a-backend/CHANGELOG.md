@@ -1,5 +1,39 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 2.1.0
+
+### Minor Changes
+
+- 5a6d789: Show migration progress, module errors, and token totals for the projects a user can already see, and sort the Conversion Hub table by modules in error.
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- c1ea707: Add an Edit in Codespaces action beside GitHub migrated sources, using the target branch and Ansible devcontainer configuration. Copy the generated Ansible devcontainer configuration into the target repository and include it in the migration commit. Also match Ansible role-name sanitization in migration jobs and prefer rebased job output when resolving repository conflicts.
+- 7e2889e: Use separate naming rules for converter-generated migration-plan filenames and Ansible role paths based on PR https://github.com/x2ansible/x2a-convertor/pull/311
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- a60871e: Fix project creation failing when an LLM credential in `x2a.credentials.llm` is not a string.
+
+  Values under `x2a.credentials` are read from app-config without schema coercion, so an
+  unquoted YAML scalar such as `MAX_TOKENS: 32000` reached the Kubernetes API as a number
+  and made it reject the entire project Secret with `cannot unmarshal number into Go struct
+field Secret.stringData of type string`. The user saw only a generic HTTP 400 during
+  project creation. String, boolean, and finite numeric `stringData` values are
+  now coerced to strings. Null or undefined values (from an env var that was never
+  substituted) are dropped. Nested values and integers too large to represent
+  exactly are rejected instead of being written into the Secret.
+
+- 5210da4: Fix migrated source artifact paths to be relative to the target repository and reuse the normalized Ansible role path across migrate and publish phases.
+- 4891c02: Add optional SMP-like Kubernetes Job deployment patches for X2A jobs.
+- Updated dependencies [c1ea707]
+- Updated dependencies [5a6d789]
+- Updated dependencies [1f60858]
+- Updated dependencies [aa44c81]
+- Updated dependencies [4891c02]
+- Updated dependencies [a2facc9]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.1.0
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.1.0
+
 ## 2.0.1
 
 ### Patch Changes

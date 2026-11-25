@@ -313,6 +313,7 @@ export async function consumeSnapshot(
     defaultOwner,
     defaultLifecycle,
     logger,
+    response.headers.get('X-Npx-Skill-Registry'),
   );
 
   logger.info(
@@ -394,7 +395,20 @@ function mapRecordsToEntities(
   defaultOwner: string,
   defaultLifecycle: string,
   logger: LoggerService,
+  registryHeader: string | null,
 ): MappedSkillEntity[] {
+  const registry =
+    registryHeader && URL.canParse(registryHeader)
+      ? new URL(registryHeader)
+      : undefined;
+  const registryBase =
+    registry?.protocol === 'https:' &&
+    !registry.username &&
+    !registry.password &&
+    !registry.search &&
+    !registry.hash
+      ? registryHeader
+      : null;
   const mapped: MappedSkillEntity[] = [];
   const seenNames = new Map<string, IdentityTuple>();
 
@@ -429,6 +443,7 @@ function mapRecordsToEntities(
         namespace,
         defaultOwner,
         defaultLifecycle,
+        registryBase,
       );
       mapped.push({ tuple, catalogName, digest: record.digest, entity });
     } catch (error) {
@@ -451,6 +466,7 @@ function buildEntity(
   namespace: string,
   defaultOwner: string,
   defaultLifecycle: string,
+  registryBase: string | null,
 ): Entity {
   const version = resolveVersion(record.version, record.digest);
 
@@ -485,20 +501,18 @@ function buildEntity(
   // before any records are mapped, so no per-entity validation is needed.
   if (sourceType === 'oci') {
     annotations[ANNOTATION_OCI_SKILL_REF] = record.sourceUri;
-
-    // TechDocs annotation for OCI entities per design D5/D8.
-    // Constructed from trusted connector/source configuration and the
-    // record's verified digest. The provider does not download or
-    // extract Markdown. npx entities do not receive this annotation.
-    annotations[
-      'backstage.io/techdocs-ref'
-    ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
-      sourceId,
-    )}/${encodeURIComponent(record.digest)}`;
   } else if (sourceType === 'npx') {
     const npxRef = `${record.sourceUri}#${record.digest}`;
     annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;
+    annotations['rhdh.io/npx-skill-key'] = record.key;
+    if (registryBase) annotations['rhdh.io/npx-skill-registry'] = registryBase;
   }
+
+  annotations[
+    'backstage.io/techdocs-ref'
+  ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
+    sourceId,
+  )}/${encodeURIComponent(record.digest)}`;
 
   // Build tags
   let metadataTags: string[] | undefined;

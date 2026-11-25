@@ -1,0 +1,61 @@
+# Generate an apply-ready OpenSpec change without implementing it.
+#
+# This is intentionally registered as the internal agent "spec-generate",
+# not "spec". Fullsend v0.45's built-in slash router therefore ignores
+# /fs-spec and this CEL trigger is the single dispatch path.
+
+base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/code.yaml#sha256=bd1d925cbfac3f95d785e3c7abe6edc9ac649818b921f85fa7168ef9b6b77583
+
+agent: rhdh/agents/spec-generate.md
+model: claude-opus-4-6
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+
+# The stock code publisher expects the sandbox agent to leave its commit on a
+# feature branch. The spec agent can still finish on the checked-out target
+# branch, so this trusted wrapper creates the scoped branch before delegating
+# to the pinned stock publisher.
+post_script: rhdh/scripts/post-spec-generate.sh
+
+# Deliberately omit openspec-apply-change. The stock code base contributes
+# commit/result handling; these are the only OpenSpec authoring skills.
+skills:
+  - https://github.com/redhat-developer/rhdh-skills/tree/a7632c8d2e696cc7489fc1a226db674efe57ccc6/skills/refinement/openspec-ff-change#sha256=683d4636797fa133c029f7e7b491186d9842421bf91f49bcc990239fc4ddfbe9
+  - https://github.com/redhat-developer/rhdh-skills/tree/a7632c8d2e696cc7489fc1a226db674efe57ccc6/skills/reference/rhdh-spec-driven-schema#sha256=1fff2f2f5e4e6f9d89d2a8fc1bca206db825d8f7d8edebe2f3661740ceb458cd
+
+allowed_remote_resources:
+  - https://raw.githubusercontent.com/fullsend-ai/agents/
+  - https://github.com/redhat-developer/rhdh-skills/
+allow_runtime_fetch: true
+
+host_files:
+  - src: rhdh/env/openspec.env
+    dest: /sandbox/workspace/.env.d/openspec.env
+  # Custom harness dispatch carries slash-command guidance in the normalized
+  # payload rather than exporting HUMAN_INSTRUCTION to the role job.
+  - src: dispatch/event-payload.json
+    dest: /sandbox/workspace/.fullsend-event.json
+    optional: true
+
+# Stock code.yaml interpolates this runner variable. GitHub dispatch sets it,
+# while the Jira poller does not, so provide the repository's target branch.
+env:
+  sandbox:
+    ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-4-6
+    TIMEOUT_SECONDS: '3000'
+  runner:
+    CODE_ALLOWED_TARGET_BRANCHES: 'main'
+    # Directory resource digest for the pinned stock code harness above. The
+    # wrapper delegates to its post-code.sh after normalizing the branch.
+    SPEC_GENERATE_BASE_SCRIPTS_SHA256: '4db593f33ca767a71bc3f0cf32904bd8e701379beb3b8c14973e895cc9e2e3c0'
+
+timeout_minutes: 50
+
+trigger: >
+  event.transition.kind == "comment_added"
+    && has(event.transition.comment.command)
+    && event.transition.comment.command == "/fs-spec"
+    && event.entity.kind == "work_item"
+    && !has(event.state.change_proposal)
+    && !(event.transition.comment.body == "/fs-spec audit"
+      || event.transition.comment.body.startsWith("/fs-spec audit ")
+      || event.transition.comment.body.startsWith("/fs-spec audit\n"))

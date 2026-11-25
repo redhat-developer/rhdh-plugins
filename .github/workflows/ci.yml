@@ -136,7 +136,11 @@ jobs:
         run: yarn backstage-cli repo build --all
 
       - name: lint
-        run: yarn backstage-cli repo lint --since origin/main
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          git fetch --no-tags origin "+${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+          yarn backstage-cli repo lint --since "origin/${PR_BASE_REF}"
 
       - name: publish check
         run: yarn backstage-cli repo fix --check --publish
@@ -183,6 +187,23 @@ jobs:
       - name: run playwright tests
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
         run: yarn playwright test
+
+      - name: Upload scoped CI failure evidence
+        if: ${{ failure() && !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fullsend-ci-evidence-${{ matrix.workspace }}-node-${{ matrix.node-version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: warn
+          include-hidden-files: true
+          path: |
+            ${{ runner.temp }}/test-results/${{ matrix.workspace }}/**
+            workspaces/${{ matrix.workspace }}/playwright-report/**
+            workspaces/${{ matrix.workspace }}/test-results/**
+            workspaces/${{ matrix.workspace }}/e2e-test-report*/**
+            workspaces/${{ matrix.workspace }}/e2e-test-results*/**
+            workspaces/${{ matrix.workspace }}/node_modules/.cache/e2e-test-report*/**
+            workspaces/${{ matrix.workspace }}/node_modules/.cache/e2e-test-results*/**
 
       - name: ensure clean working directory
         run: |

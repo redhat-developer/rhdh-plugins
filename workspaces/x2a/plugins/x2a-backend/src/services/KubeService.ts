@@ -278,20 +278,20 @@ export class KubeService implements KubeServiceApi {
   /**
    * Creates a Kubernetes job for running an X2A migration phase
    * This method orchestrates the creation of both secrets and the job:
-   * 1. Creates/updates project secret (LLM + AAP credentials)
-   * 2. Creates the K8s job
-   * 3. Creates ephemeral job secret (Git credentials) owned by the job
+   * 1. Builds and validates the K8s job locally
+   * 2. Creates/updates project secret (LLM + AAP credentials)
+   * 3. Creates the K8s job
+   * 4. Creates ephemeral job secret (Git credentials) owned by the job
+   * 5. Creates rules ConfigMap if rules are present
+   * 6. Creates adversarial agents ConfigMap if agents are present
    */
   async createJob(params: JobCreateParams): Promise<{ k8sJobName: string }> {
     this.#logger.info(
       `Creating job for project ${params.projectId}, phase: ${params.phase}`,
     );
 
-    // Step 1: Create/update project secret (LLM + AAP)
-    await this.createProjectSecret(params.projectId, params.aapCredentials);
-
-    // Step 2: Create the Kubernetes job
-    // The adversarial agents ConfigMap is only relevant for adversarial phases
+    // Build and validate locally before making any Kubernetes changes.
+    // The adversarial agents ConfigMap is only relevant for adversarial phases.
     const isAdversarialPhase = Phase.from(params.phase).isAdversarial();
     const adversarialAgentsConfigMapName =
       isAdversarialPhase &&
@@ -305,6 +305,11 @@ export class KubeService implements KubeServiceApi {
       this.#config,
       adversarialAgentsConfigMapName,
     );
+
+    // Step 2: Create/update project secret (LLM + AAP)
+    await this.createProjectSecret(params.projectId, params.aapCredentials);
+
+    // Step 3: Create the Kubernetes job
     const k8sJobName = job.metadata?.name || '';
 
     const createdJob = await this.#batchV1Api.createNamespacedJob({
@@ -322,7 +327,7 @@ export class KubeService implements KubeServiceApi {
       throw new Error(`Job ${k8sJobName} created without UID`);
     }
 
-    // Step 3: Create ephemeral job secret owned by the job
+    // Step 4: Create ephemeral job secret owned by the job
     // The pod will wait for the secret to appear before starting
     const ownerReference: V1OwnerReference = {
       apiVersion: 'batch/v1',
@@ -343,7 +348,7 @@ export class KubeService implements KubeServiceApi {
         ownerReference,
       );
 
-      // Step 4: Create rules ConfigMap if rules are present
+      // Step 5: Create rules ConfigMap if rules are present
       const rulesConfigMap = JobResourceBuilder.buildRulesConfigMap(
         params.jobId,
         params.projectId,
@@ -359,7 +364,7 @@ export class KubeService implements KubeServiceApi {
         });
       }
 
-      // Step 5: Create adversarial agents ConfigMap if agents are present
+      // Step 6: Create adversarial agents ConfigMap if agents are present
       const adversarialAgentsConfigMap = adversarialAgentsConfigMapName
         ? JobResourceBuilder.buildAdversarialAgentsConfigMap(
             adversarialAgentsConfigMapName,
@@ -613,6 +618,7 @@ export const kubeServiceFactory = createServiceFactory({
         imageTag:
           rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
         imagePullPolicy: rawConfig?.kubernetes?.imagePullPolicy,
+        deploymentPatch: rawConfig?.kubernetes?.deploymentPatch,
         ttlSecondsAfterFinished:
           rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
           DEFAULT_TTL_SECONDS_AFTER_FINISHED,

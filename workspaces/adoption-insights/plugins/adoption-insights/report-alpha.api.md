@@ -69,6 +69,13 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'table.headers.executions': string;
     readonly 'table.headers.trend': string;
     readonly 'table.headers.entity': string;
+    readonly 'table.headers.totalEstimatedTimeSaved': string;
+    readonly 'table.timeSaved.minute_one': string;
+    readonly 'table.timeSaved.minute_other': string;
+    readonly 'table.timeSaved.hour_one': string;
+    readonly 'table.timeSaved.hour_other': string;
+    readonly 'table.timeSaved.day_one': string;
+    readonly 'table.timeSaved.day_other': string;
     readonly 'table.pagination.topN': string;
     readonly 'filter.all': string;
     readonly 'filter.selectKind': string;

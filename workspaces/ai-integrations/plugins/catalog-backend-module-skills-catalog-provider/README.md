@@ -76,7 +76,9 @@ Each entity carries:
 - `backstage.io/source-location` — connector source URI
 - `backstage.io/managed-by-location` — connector source URI
 - `backstage.io/managed-by-origin-location` — connector source URI
-- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`). Not set on npx entities. (OCI sources only)
+- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI and npx skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`).
+- `rhdh.io/npx-skill-registry` — registry base URL for a well-known npx index.
+- `rhdh.io/npx-skill-key` — original index entry name that Boost passes to `--skill`.
 - `rhdh.io/ai-asset-category` — always `skill`
 - `rhdh.io/ai-asset-version` — resolved skill version
 - `rhdh.io/ai-asset-source` — `<sourceType>/<sourceId>`
@@ -92,6 +94,12 @@ Each configured source has its own location key for catalog mutations. A failure
 ### Delta mutation
 
 When a source returns a ready snapshot, the provider computes a reconciliation plan against committed ownership state and applies a `type: 'delta'` mutation scoped to that source's location key. Only changed entities are upserted and only entities absent from the new snapshot are removed. Sources that return loading or failed status, or that encounter errors during polling, are skipped — their previously-committed entities remain in the catalog.
+
+### Owner and lifecycle defaults
+
+Owner and lifecycle are resolved independently for each record. A valid `owner` or `lifecycle` hint from the source (for OCI skills, `metadata.owner` and `metadata.lifecycle` in the skill Markdown frontmatter) takes precedence; a missing, blank, or invalid hint uses `defaultOwner` or `defaultLifecycle` respectively.
+
+When `defaultOwner` or `defaultLifecycle` changes, the next accepted `ready` or `partial` snapshot after a backend restart updates every existing entity whose effective `spec.owner` or `spec.lifecycle` changed, even if the skill digest and connector observation are unchanged. Fields resolved from a valid hint are unaffected. Subsequent identical refreshes emit no mutations, and `loading`, `failed`, or stale snapshots still preserve committed entities. Configuration is read at backend startup.
 
 ### Error handling
 

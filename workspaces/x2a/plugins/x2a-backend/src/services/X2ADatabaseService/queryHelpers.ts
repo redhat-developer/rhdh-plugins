@@ -40,7 +40,10 @@ const SORT_COLUMN_MAP: Record<string, string> = {
   startedAt: 'started_at',
 };
 
-const NON_DB_SORT_FIELDS: ReadonlySet<string> = new Set(['status']);
+const NON_DB_SORT_FIELDS: ReadonlySet<string> = new Set([
+  'status',
+  'moduleErrors',
+]);
 
 /**
  * Map REST sort param to database column name.

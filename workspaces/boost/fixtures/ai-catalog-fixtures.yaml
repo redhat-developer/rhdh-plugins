@@ -105,6 +105,32 @@ spec:
 
 ---
 # ---------------------------------------------------------------------------
+# AiResource / OCI skill
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: skill-9fcff220c97888266089c9abb084c92bd3a2c1ef88fd4335347de797
+  title: Document Reviewer
+  description: Reviews technical documents for clarity, completeness, and consistency. Identifies gaps, ambiguities, and structural issues. Provides actionable feedback organized by severity.
+  tags:
+    - review
+    - documents
+    - writing
+    - quality
+  annotations:
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: '1.0.0'
+    rhdh.io/ai-asset-source: oci/skillimage-skills
+    rhdh.io/oci-skill-ref: oci://quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac
+    backstage.io/source-location: url:oci://quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac
+spec:
+  type: skill
+  lifecycle: experimental
+  owner: team-ai-platform
+
+---
+# ---------------------------------------------------------------------------
 # AiResource / rule
 # ---------------------------------------------------------------------------
 apiVersion: backstage.io/v1alpha1

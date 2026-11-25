@@ -51,12 +51,38 @@ export const createMockProjects = (
   });
 };
 
+export const emptyPortfolio = {
+  modules: {
+    total: 0,
+    finished: 0,
+    waiting: 0,
+    pending: 0,
+    running: 0,
+    error: 0,
+    cancelled: 0,
+    removed: 0,
+  },
+  projectCounts: {
+    created: 0,
+    initializing: 0,
+    initialized: 0,
+    inProgress: 0,
+    completed: 0,
+    failed: 0,
+  },
+  inputTokens: 0,
+  outputTokens: 0,
+  tokensReported: false,
+};
+
 export const createMockResponse = (
   items: Project[],
   totalCount: number,
+  portfolio: ProjectsGet200Response['portfolio'] = emptyPortfolio,
 ): ProjectsGet200Response => ({
   items,
   totalCount,
+  portfolio,
 });
 
 /**

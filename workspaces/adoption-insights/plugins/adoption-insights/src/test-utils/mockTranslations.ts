@@ -39,7 +39,14 @@ const flattenedMessages = flattenMessages(adoptionInsightsMessages);
 
 // Simple mock translation function
 export const mockT = (key: string, params?: any) => {
-  let message = flattenedMessages[key] || key;
+  let resolvedKey = key;
+  if (params && typeof params.count === 'number') {
+    const suffix = params.count === 1 ? '_one' : '_other';
+    if (flattenedMessages[`${key}${suffix}`]) {
+      resolvedKey = `${key}${suffix}`;
+    }
+  }
+  let message = flattenedMessages[resolvedKey] || resolvedKey;
 
   // Simple interpolation: replace {{param}} with values
   if (params) {

@@ -10,10 +10,6 @@ workspace/app-defaults:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/app-defaults/**']
 
-workspace/augment:
-  - changed-files:
-      - any-glob-to-any-file: ['workspaces/augment/**']
-
 workspace/bulk-import:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/bulk-import/**']

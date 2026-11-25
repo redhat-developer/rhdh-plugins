@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
 import type {
   NavContentNavItem,
@@ -45,6 +46,27 @@ const navItems = (items: NavContentNavItem[]): NavContentNavItems => ({
 const HomeIcon = () => <span data-testid="home-icon" />;
 
 describe('AppSidebar', () => {
+  it('passes target and rel for external _blank links', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'help',
+            title: 'Help',
+            to: 'https://example.com/help',
+            target: '_blank',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: /help/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/help');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('renders items in priority order with links', async () => {
     await renderInTestApp(
       <AppSidebar
@@ -66,6 +88,60 @@ describe('AppSidebar', () => {
     expect(links.map(l => l.textContent)).toEqual(['High', 'Low']);
     expect(links[0]).toHaveAttribute('href', '/high');
     expect(screen.getByTestId('home-icon')).toBeInTheDocument();
+  });
+
+  it('shows a hover tooltip only when the sidebar label is truncated', async () => {
+    const user = userEvent.setup();
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'insights',
+            title: 'Adoption Insights',
+            to: '/adoption-insights',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: 'Adoption Insights' });
+    // Focusable merges onto this Box wrapper (tabindex=-1) — that is the trigger.
+    const wrapper = link.parentElement ?? link;
+    const label = wrapper.querySelector(
+      'span[class*="MuiTypography-subtitle2"]',
+    ) as HTMLElement;
+    expect(label).toBeTruthy();
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    Object.defineProperty(label, 'clientWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=true
+    });
+    await user.hover(wrapper);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    await user.unhover(wrapper);
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 200,
+    });
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=false
+    });
+    await user.unhover(wrapper);
+    await user.hover(wrapper);
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Adoption Insights',
+      );
+    });
   });
 
   it('renders onClick items as buttons and invokes the handler', async () => {
@@ -167,6 +243,29 @@ describe('AppSidebar', () => {
     expect(screen.queryByText('Users')).not.toBeInTheDocument();
     fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
     expect(screen.getByText('Users')).toBeInTheDocument();
+  });
+
+  it('passes target and rel for external _blank links in flyout submenus', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'docs',
+            title: 'Docs',
+            to: 'https://example.com/docs',
+            target: '_blank',
+            group: 'tools',
+          },
+        ]}
+        groups={[{ id: 'tools', title: 'Tools', variant: 'flyout' }]}
+      />,
+    );
+
+    fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
+    const link = screen.getByRole('link', { name: /docs/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/docs');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('skips groups without items and without a link', async () => {

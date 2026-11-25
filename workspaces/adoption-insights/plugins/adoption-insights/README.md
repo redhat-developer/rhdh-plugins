@@ -19,6 +19,18 @@ You can also serve the plugin in isolation from the plugin directory:
 
 Before installing the frontend plugin, ensure that the Adoption Insights backend is integrated into your Backstage instance. Follow the [Adoption Insights backend plugin README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights-backend/README.md) for setup instructions.
 
+### Estimated time saved
+
+The Top templates card includes a **Total Est. Time Saved** column. The backend stores that total from each template's `backstage.io/time-saved` annotation. The value is an ISO 8601 duration, for example `PT8H` (8 hours) or `PT15M` (15 minutes):
+
+```yaml
+metadata:
+  annotations:
+    backstage.io/time-saved: PT8H
+```
+
+A missing or invalid annotation is stored as no estimate. The column then shows `--`, including when the summed total is zero. Updating the annotation does not change minutes already stored for earlier runs.
+
 ### Installation
 
 Install the package in your frontend:

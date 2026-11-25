@@ -91,4 +91,3 @@ spec:
     - run-diagnostics
     - search-knowledge-base
   toolUseBehavior: run_llm_again
-  executionMode: subprocess

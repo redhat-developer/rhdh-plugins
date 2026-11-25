@@ -181,12 +181,26 @@ export const x2aPluginMessages = {
       },
     },
   },
+  portfolio: {
+    noModules: 'No modules have been discovered yet.',
+    published: '{{n}} of {{m}} modules published',
+    modulesInError: '{{count}} modules in error',
+    inputTokens: '{{count}} input tokens',
+    outputTokens: '{{count}} output tokens',
+    expand: 'Expand portfolio summary',
+    collapse: 'Collapse portfolio summary',
+    modules: 'Modules',
+    projects: 'Projects',
+  },
   table: {
     columns: {
       name: 'Name',
       status: 'Status',
       statusSortDisabledTooltip:
         'Sorting by status is not available when the project count exceeds {{threshold}}',
+      inError: 'In error',
+      inErrorSortDisabledTooltip:
+        'Sorting by module errors is not available when the project count exceeds {{threshold}}',
       sourceRepo: 'Source Repository',
       targetRepo: 'Target Repository',
       createdAt: 'Created At',
@@ -378,6 +392,23 @@ export const x2aPluginMessages = {
     },
   },
   scaffolder: {
+    repoUrlPicker: {
+      pickerUnavailable:
+        'The repository picker could not be loaded. This is a plugin compatibility issue, please report it.',
+      authError:
+        'Could not obtain a {{provider}} access token: {{error}}. Check that the "{{provider}}" auth provider is configured for this instance.',
+      authRetry: 'Retry',
+      hostsHiddenUnset:
+        '{{provider}} hosts are not offered ({{hosts}}): no host is set for the {{provider}} sign-in. An administrator has to set {{configKey}}.',
+      hostsHiddenOther:
+        '{{provider}} hosts other than {{authHost}} are not offered ({{hosts}}): the {{provider}} sign-in is set up for {{authHost}} only.',
+      hostsHiddenNotListed:
+        '{{provider}} hosts are not offered ({{hosts}}): the {{provider}} sign-in is set up for {{authHost}}, which is not in the integrations configuration.',
+      hostRefusedOther:
+        'The {{provider}} sign-in is set up for {{authHost}}, not {{host}}. Its access token is not sent to other hosts.',
+      hostRefusedUnset:
+        'No host is set for the {{provider}} sign-in, so no {{provider}} access token can be used for {{host}}. An administrator has to set {{configKey}}.',
+    },
     rulesAcceptance: {
       loadingRules: 'Loading rules...',
       noRulesConfigured: 'No rules configured.',

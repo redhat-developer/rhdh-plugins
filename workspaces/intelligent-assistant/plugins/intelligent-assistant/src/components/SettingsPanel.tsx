@@ -25,6 +25,7 @@ import {
 import type { SettingsTab } from '../hooks/useSettingsPanelUrlState';
 import { useTranslation } from '../hooks/useTranslation';
 import { McpServersSettings } from './McpServersSettings';
+import { PreferencesSettings } from './PreferencesSettings';
 import { SavedPromptsSettings } from './SavedPromptsSettings';
 
 export type { SettingsTab };
@@ -34,7 +35,10 @@ type SettingsPanelProps = {
   onTabChange: (tab: SettingsTab) => void;
   onClose: () => void;
   backgroundColor?: string;
+  isPinningChatsEnabled: boolean;
+  onPinnedChatsToggle: (enabled: boolean) => void;
   isSavedPromptsEnabled: boolean;
+  onSavedPromptsToggle: (enabled: boolean) => void;
   onEnableSavedPrompts: () => void;
   onApplySavedPromptToInput: (content: string) => void;
   onSendSavedPromptDirectly: (content: string) => void;
@@ -45,8 +49,11 @@ type SettingsPanelProps = {
   savedPromptsError?: string | null;
   onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
   onRequestSavedPromptDelete?: (prompt: SavedPrompt) => void;
-  /** When false, hides the MCP tab and shows saved prompts only. */
+  /** When false, hides the MCP tab. */
   showMcpSettings?: boolean;
+  screenContextAdminEnabled?: boolean;
+  isScreenContextSharingEnabled?: boolean;
+  onScreenContextSharingToggle?: (enabled: boolean) => void;
   isCompact?: boolean;
   /** Compact mode host for PatternFly Modal portal (overlay/docked). */
   appendTo?: () => HTMLElement;
@@ -105,7 +112,10 @@ export const SettingsPanel = ({
   onTabChange,
   onClose,
   backgroundColor,
+  isPinningChatsEnabled,
+  onPinnedChatsToggle,
   isSavedPromptsEnabled,
+  onSavedPromptsToggle,
   onEnableSavedPrompts,
   onApplySavedPromptToInput,
   onSendSavedPromptDirectly,
@@ -117,15 +127,17 @@ export const SettingsPanel = ({
   onCreateSavedPrompt,
   onRequestSavedPromptDelete,
   showMcpSettings = true,
+  screenContextAdminEnabled = false,
+  isScreenContextSharingEnabled = false,
+  onScreenContextSharingToggle,
   isCompact = false,
   appendTo,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
   const showMcpTab = showMcpSettings;
-  const showSavedPromptsTab = true;
-  const showTabBar = showMcpTab && showSavedPromptsTab;
-  const effectiveTab = showMcpTab ? activeTab : 'saved-prompts';
+  const effectiveTab =
+    !showMcpTab && activeTab === 'mcp-servers' ? 'preferences' : activeTab;
 
   return (
     <div
@@ -145,30 +157,44 @@ export const SettingsPanel = ({
         />
       </div>
 
-      {showTabBar && (
-        <div className={classes.tabBar}>
-          {showMcpTab && (
-            <Button
-              variant="plain"
-              className={`${classes.tabButton} ${effectiveTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
-              onClick={() => onTabChange('mcp-servers')}
-            >
-              {t('mcp.settings.title')}
-            </Button>
-          )}
-          {showSavedPromptsTab && (
-            <Button
-              variant="plain"
-              className={`${classes.tabButton} ${effectiveTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
-              onClick={() => onTabChange('saved-prompts')}
-            >
-              {t('savedPrompts.tab.title')}
-            </Button>
-          )}
-        </div>
-      )}
+      <div className={classes.tabBar}>
+        <Button
+          variant="plain"
+          className={`${classes.tabButton} ${effectiveTab === 'preferences' ? classes.tabButtonActive : ''}`}
+          onClick={() => onTabChange('preferences')}
+        >
+          {t('settings.preferences.tab.title')}
+        </Button>
+        {showMcpTab && (
+          <Button
+            variant="plain"
+            className={`${classes.tabButton} ${effectiveTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
+            onClick={() => onTabChange('mcp-servers')}
+          >
+            {t('mcp.settings.title')}
+          </Button>
+        )}
+        <Button
+          variant="plain"
+          className={`${classes.tabButton} ${effectiveTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
+          onClick={() => onTabChange('saved-prompts')}
+        >
+          {t('savedPrompts.tab.title')}
+        </Button>
+      </div>
 
       <div className={classes.tabContent}>
+        {effectiveTab === 'preferences' && (
+          <PreferencesSettings
+            isPinningChatsEnabled={isPinningChatsEnabled}
+            onPinnedChatsToggle={onPinnedChatsToggle}
+            isSavedPromptsEnabled={isSavedPromptsEnabled}
+            onSavedPromptsToggle={onSavedPromptsToggle}
+            screenContextAdminEnabled={screenContextAdminEnabled}
+            isScreenContextSharingEnabled={isScreenContextSharingEnabled}
+            onScreenContextSharingToggle={onScreenContextSharingToggle}
+          />
+        )}
         {effectiveTab === 'mcp-servers' && showMcpTab && (
           <McpServersSettings
             backgroundColor={backgroundColor}

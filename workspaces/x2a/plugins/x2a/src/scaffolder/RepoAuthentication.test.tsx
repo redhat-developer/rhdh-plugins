@@ -77,6 +77,13 @@ const CROSS_PROVIDER_CSV = toDataUrl(
     'Cross Project,https://github.com/org/source,main,https://gitlab.com/org/target,main',
 );
 
+// Same provider on two hosts: the target wins the per-provider dedupe, so the
+// source host must still reach authenticate or it would escape the host guard.
+const SAME_PROVIDER_TWO_HOSTS_CSV = toDataUrl(
+  'name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
+    'Two Hosts,https://gitlab.other.com/org/source,main,https://gitlab.com/org/target,main',
+);
+
 const flushAsync = () => new Promise(r => setTimeout(r, 0));
 
 const validatorContext = {
@@ -265,7 +272,7 @@ describe('RepoAuthentication', () => {
 
     it('should authenticate multiple distinct providers', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.resolve([{ token: `token-for-${provider}`, provider }]);
       });
 
@@ -291,7 +298,7 @@ describe('RepoAuthentication', () => {
 
     it('should authenticate both providers when a single row has cross-provider source and target', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.resolve([{ token: `token-for-${provider}`, provider }]);
       });
 
@@ -313,6 +320,53 @@ describe('RepoAuthentication', () => {
           }),
         );
       });
+    });
+
+    it('should bind each provider token request to the host of the repository', async () => {
+      await renderComponent({
+        formContext: { formData: { csvContent: MIXED_CSV } },
+      });
+
+      await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledTimes(2));
+      const hostsByProvider = Object.fromEntries(
+        mockAuthenticate.mock.calls.map(([requests]) => [
+          requests[0].descriptor.provider,
+          requests.map((r: { host: string }) => r.host),
+        ]),
+      );
+      expect(hostsByProvider).toEqual({
+        github: ['github.com'],
+        gitlab: ['gitlab.com'],
+      });
+    });
+
+    it('should request the token for every host a provider is used with, including a deduplicated source', async () => {
+      await renderComponent({
+        formContext: { formData: { csvContent: SAME_PROVIDER_TWO_HOSTS_CSV } },
+      });
+
+      await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledTimes(1));
+      const requests = mockAuthenticate.mock.calls[0][0];
+      expect(requests.map((r: { host: string }) => r.host).sort()).toEqual([
+        'gitlab.com',
+        'gitlab.other.com',
+      ]);
+    });
+
+    it('should report an error row and store no token when a host is refused', async () => {
+      mockAuthenticate.mockRejectedValue(
+        new Error(
+          'The GitLab auth provider is configured for gitlab.com, not gitlab.other.com.',
+        ),
+      );
+      await renderComponent({
+        formContext: { formData: { csvContent: SAME_PROVIDER_TWO_HOSTS_CSV } },
+      });
+
+      expect(
+        await screen.findByText(/not gitlab\.other\.com/),
+      ).toBeInTheDocument();
+      expect(mockSetSecrets).not.toHaveBeenCalled();
     });
 
     it('should not call authenticate when csvContent is absent', async () => {
@@ -733,7 +787,7 @@ describe('RepoAuthentication', () => {
 
     it('should display per-provider error messages inline in each row', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.reject(new Error(`${provider} auth failed`));
       });
 
@@ -763,7 +817,7 @@ describe('RepoAuthentication', () => {
 
     it('should retain other provider errors when retrying one provider', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.reject(new Error(`${provider} auth failed`));
       });
 
@@ -818,7 +872,7 @@ describe('RepoAuthentication', () => {
 
     it('should render rows for multiple distinct providers', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.resolve([{ token: `token-for-${provider}`, provider }]);
       });
 
@@ -840,7 +894,7 @@ describe('RepoAuthentication', () => {
 
     it('should show Read-only access for source-only providers', async () => {
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         return Promise.resolve([{ token: `token-for-${provider}`, provider }]);
       });
 
@@ -1016,7 +1070,7 @@ describe('RepoAuthentication', () => {
       let resolveGithub!: (value: unknown) => void;
 
       mockAuthenticate.mockImplementation(descriptors => {
-        const provider = descriptors[0]?.provider ?? 'unknown';
+        const provider = descriptors[0]?.descriptor?.provider ?? 'unknown';
         if (provider === 'github') {
           return new Promise(r => {
             resolveGithub = r;
