@@ -16,6 +16,210 @@
 
 export interface Config {
   app?: {
+    branding?: {
+      /**
+       * Base64 URI for the full logo.
+       * If the value is a string it is used as the logo for all themes.
+       * You can also specify a theme for each theme-id or variant (light/dark).
+       * @deepVisibility frontend
+       */
+      fullLogo?: string | { [themeIdOrVariant: string]: string };
+      /**
+       * Base64 URI for the icon logo (collapsed sidebar / compact masthead).
+       * If the value is a string it is used as the logo for all themes.
+       * You can also specify a theme for each theme-id or variant (light/dark).
+       * @deepVisibility frontend
+       */
+      iconLogo?: string | { [themeIdOrVariant: string]: string };
+      /**
+       * Fallback width for the full logo.
+       * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).
+       * @visibility frontend
+       */
+      fullLogoWidth?: string | number;
+      /**
+       * Theme configuration.
+       * @deepVisibility frontend
+       */
+      theme?: {
+        [key: string]: {
+          /**
+           * Optional key to load different defaults.
+           * Fallbacks to the latest 'rhdh' theme if not defined.
+           */
+          variant?: 'rhdh' | 'backstage';
+
+          /**
+           * Light or dark theme.
+           * Automatically selects 'dark' if the theme name contains the keyword "dark".
+           */
+          mode?: 'light' | 'dark';
+
+          /**
+           * Palette configuration. Accepts standard Backstage/MUI palette options
+           * plus an optional 'rhdh' key for RHDH-specific palette extensions.
+           */
+          palette?: {
+            rhdh?: {
+              general?: {
+                pageInset?: string;
+                pageInsetBackgroundColor?: string;
+                disabled?: string;
+                disabledBackground?: string;
+                paperBackgroundImage?: string;
+                paperBorderColor?: string;
+                popoverBoxShadow?: string;
+                cardBackgroundColor?: string;
+                cardBorderColor?: string;
+                mainSectionBackgroundColor?: string;
+                formControlBackgroundColor?: string;
+                sidebarBackgroundColor?: string;
+                sidebarDividerColor?: string;
+                sidebarItemSelectedBackgroundColor?: string;
+                tableTitleColor?: string;
+                tableSubtitleColor?: string;
+                tableColumnTitleColor?: string;
+                tableRowHover?: string;
+                tableBorderColor?: string;
+                tableBackgroundColor?: string;
+                tabsLinkHoverBackgroundColor?: string;
+                contrastText?: string;
+                appBarBackgroundScheme?: 'light' | 'dark';
+                appBarBackgroundColor?: string;
+                appBarForegroundColor?: string;
+                appBarBackgroundImage?: string;
+                starredItemsColor?: string;
+              };
+              primary?: {
+                main?: string;
+                focusVisibleBorder?: string;
+              };
+              secondary?: {
+                main?: string;
+                focusVisibleBorder?: string;
+              };
+              cards?: {
+                headerTextColor?: string;
+                headerBackgroundColor?: string;
+                headerBackgroundImage?: string;
+              };
+            };
+            [key: string]: unknown;
+          };
+
+          /** Font family for the theme. */
+          fontFamily?: string;
+
+          /** Base HTML font size in pixels. */
+          htmlFontSize?: number;
+
+          /** Typography configuration for headings and base font settings. */
+          typography?: {
+            htmlFontSize?: number;
+            fontFamily?: string;
+            h1?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+            h2?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+            h3?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+            h4?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+            h5?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+            h6?: {
+              fontFamily?: string;
+              fontSize?: number | string;
+              fontWeight?: number;
+              marginBottom?: number;
+            };
+          };
+
+          /** Default page theme name. */
+          defaultPageTheme?: string;
+
+          /** Page theme configurations keyed by theme name. */
+          pageTheme?: {
+            [key: string]: {
+              backgroundColor?: string | string[];
+              colors?: string | string[];
+              shape?: string;
+              backgroundImage?: string;
+              fontColor?: string;
+            };
+          };
+
+          /** UI component style options. */
+          options?: {
+            components?: 'rhdh' | 'backstage' | 'mui';
+            rippleEffect?: 'on' | 'off';
+            paper?: 'patternfly' | 'mui';
+            buttons?: 'patternfly' | 'mui';
+            inputs?: 'patternfly' | 'mui';
+            checkbox?: 'patternfly' | 'mui';
+            accordions?: 'patternfly' | 'mui';
+            sidebars?: 'patternfly' | 'mui';
+            pages?: 'patternfly' | 'mui';
+            headers?: 'patternfly' | 'mui';
+            toolbars?: 'patternfly' | 'mui';
+            dialogs?: 'patternfly' | 'mui';
+            cards?: 'patternfly' | 'mui';
+            tables?: 'patternfly' | 'mui';
+            tabs?: 'patternfly' | 'mui';
+            appBar?: 'patternfly' | 'mui';
+            breadcrumbs?: 'patternfly' | 'mui';
+          };
+
+          /**
+           * Structured BUI token overrides mapping to --bui-* CSS custom properties.
+           */
+          bui?: {
+            tokens?: {
+              primary?: string;
+              warning?: string;
+              error?: string;
+              success?: string;
+              info?: string;
+              fontFamily?: string;
+              fontFamilyMonospace?: string;
+              borderColor?: string;
+              backgroundColor?: string;
+              foregroundPrimary?: string;
+              foregroundSecondary?: string;
+              foregroundDisabled?: string;
+              focusRing?: string;
+              shadow?: string;
+            };
+          };
+        };
+      };
+      /**
+       * Raw CSS string injected as global styles. Use at your own risk --
+       * BUI class names may change between Backstage releases.
+       * @visibility frontend
+       */
+      customCSS?: string;
+    };
     /**
      * Sidebar entries declared by deployers and merged with entries
      * contributed through SidebarItemBlueprint and SidebarItemGroupBlueprint.

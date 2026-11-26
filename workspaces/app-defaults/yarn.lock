@@ -1002,6 +1002,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axe-core/playwright@npm:^4.14.0":
+  version: 4.14.1
+  resolution: "@axe-core/playwright@npm:4.14.1"
+  dependencies:
+    axe-core: "npm:~4.14.1"
+  peerDependencies:
+    playwright-core: ">= 1.0.0"
+  checksum: 10c0/9a9b8ed241f9e96bb5b3bef6d2946b77feb8e7b2efb2ec9cf91ae76e27bae4184de15c7771ee3e86baa1ae9a8789c27d16e6b736b1429083fb662e749cabaf3c
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^2.0.0, @azure/abort-controller@npm:^2.1.2":
   version: 2.1.2
   resolution: "@azure/abort-controller@npm:2.1.2"
@@ -5885,6 +5896,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/app-defaults@workspace:."
   dependencies:
+    "@axe-core/playwright": "npm:^4.14.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/cli-defaults": "npm:^0.1.5"
     "@backstage/e2e-test-utils": "npm:^0.1.2"
@@ -9575,6 +9587,8 @@ __metadata:
     "@backstage/plugin-techdocs": "npm:^1.18.0"
     "@backstage/plugin-techdocs-common": "npm:^0.1.1"
     "@backstage/test-utils": "npm:^1.7.21"
+    "@backstage/theme": "npm:^0.7.3"
+    "@backstage/types": "npm:^1.2.2"
     "@backstage/ui": "npm:^0.17.1"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:5.18.0"
@@ -9582,6 +9596,7 @@ __metadata:
     "@remixicon/react": "npm:>=4.6.0 <4.9.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^16.0.0"
+    "@testing-library/user-event": "npm:^14.6.13"
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"
     cross-fetch: "npm:^4.0.0"
@@ -9691,24 +9706,6 @@ __metadata:
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
   checksum: 10c0/8eb307e3943409a8eb204b06d964caec5174909b16a47c4ea6f43a0c2fa06af716fd002510e02c3b3732d32fb04910d1b5aa63e43d33cbb5cebe5cfc0c381471
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.4.1"
-  dependencies:
-    "@backstage/frontend-plugin-api": "npm:^0.18.0"
-    "@backstage/plugin-app-react": "npm:^0.2.6"
-    "@mui/icons-material": "npm:^5.17.1"
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.9
-    "@backstage/theme": ^0.7.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/1e5eff0cc01228cf87015dcaf78f43ab295680d8cc919f1dd45011185c91cf22ada5bd0dca03cee8293d478bb85c5fcf7dc27912b6371843b5ad86a3a2ec8a7f
   languageName: node
   linkType: hard
 
@@ -12320,12 +12317,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/user-event@npm:^14.0.0":
-  version: 14.6.1
-  resolution: "@testing-library/user-event@npm:14.6.1"
+"@testing-library/user-event@npm:^14.0.0, @testing-library/user-event@npm:^14.6.13":
+  version: 14.6.13
+  resolution: "@testing-library/user-event@npm:14.6.13"
   peerDependencies:
     "@testing-library/dom": ">=7.21.4"
-  checksum: 10c0/75fea130a52bf320d35d46ed54f3eec77e71a56911b8b69a3fe29497b0b9947b2dc80d30f04054ad4ce7f577856ae3e5397ea7dff0ef14944d3909784c7a93fe
+  checksum: 10c0/29cb1c17275ac8b0be3800fbcbcfd3b87c2fc7134aa91df4dc404e3962c4204e720c2286d654d15669eb9e0ee9428a9e246e162149ef9704ea6082b5e303ba85
   languageName: node
   linkType: hard
 
@@ -14383,7 +14380,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-app-integrations": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.2.1"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^16.0.0"
@@ -14819,10 +14815,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0":
-  version: 4.11.1
-  resolution: "axe-core@npm:4.11.1"
-  checksum: 10c0/1e6997454b61c7c9a4d740f395952835dcf87f2c04fd81577217d68634d197d602c224f9e8f17b22815db4c117a2519980cfc8911fc0027c54a6d8ebca47c6a7
+"axe-core@npm:^4.10.0, axe-core@npm:~4.14.1":
+  version: 4.14.1
+  resolution: "axe-core@npm:4.14.1"
+  checksum: 10c0/6b36ab43136ee603ff56f2f3d8a983b67a6d1e973d59ff61c62be4a3d855641f918595ce8b6d2a52c97dee9a80a3925a35d7a812f3ab3bd48d474fb6ad9080ca
   languageName: node
   linkType: hard
 

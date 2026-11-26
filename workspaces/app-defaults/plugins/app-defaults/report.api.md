@@ -264,6 +264,12 @@ export const localizedPageLayoutExtension: OverridableExtensionDefinition<{
   }>;
 }>;
 
+// @public (undocumented)
+export const LogoFull: (props: React.ComponentProps<'svg'>) => JSX_3.Element;
+
+// @public (undocumented)
+export const LogoIcon: (props: React.ComponentProps<'svg'>) => JSX_3.Element;
+
 // @public
 export type LogoURLs =
   | {
@@ -272,6 +278,9 @@ export type LogoURLs =
     }
   | string
   | undefined;
+
+// @public
+export const rhdhThemeModule: FrontendModule;
 
 // @public
 export const useBrandingFullLogo: (logo?: LogoURLs) => string | undefined;
