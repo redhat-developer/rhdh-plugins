@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { SCM_TOKENS_HEADER, validateScmTokensHeader } from '../validation';
 
@@ -23,9 +22,7 @@ import { SCM_TOKENS_HEADER, validateScmTokensHeader } from '../validation';
  * `res.locals.scmTokens`. Register before the permission check and any
  * auditing.
  */
-export function createScmTokensMiddleware(
-  logger: LoggerService,
-): RequestHandler {
+export function createScmTokensMiddleware(): RequestHandler {
   return (req: Request, res: Response, next: NextFunction) => {
     const raw = req.headers[SCM_TOKENS_HEADER];
     const rawStr = Array.isArray(raw) ? raw[0] : raw;
@@ -33,7 +30,7 @@ export function createScmTokensMiddleware(
 
     if (rawStr) {
       try {
-        res.locals.scmTokens = validateScmTokensHeader(rawStr, logger);
+        res.locals.scmTokens = validateScmTokensHeader(rawStr);
       } catch (e) {
         next(e);
         return;

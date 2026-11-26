@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import { SCM_TOKENS_MAX_BYTES, SCM_TOKENS_HEADER } from './constants';
 
 /** Parses the `x-scm-tokens` header into a source id to token map. */
 export function validateScmTokensHeader(
-  rawTokenHeader: string | undefined,
-  logger: LoggerService,
-): Record<string, string> | undefined {
-  if (!rawTokenHeader) {
-    return undefined;
-  }
-
+  rawTokenHeader: string,
+): Record<string, string> {
   if (rawTokenHeader.length > SCM_TOKENS_MAX_BYTES) {
-    logger.warn(
-      `'${SCM_TOKENS_HEADER}' header exceeds maximum allowed size, ignoring`,
+    throw new InputError(
+      `Invalid '${SCM_TOKENS_HEADER}' header: must not exceed ${SCM_TOKENS_MAX_BYTES} bytes`,
     );
-    return undefined;
   }
 
   const schema = z.record(

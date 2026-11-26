@@ -16,7 +16,6 @@
 
 import type {
   HttpAuthService,
-  LoggerService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { NotAllowedError } from '@backstage/errors';
@@ -34,20 +33,18 @@ export interface PrCompassRouterOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   sourceResolver: SourceResolver;
-  logger: LoggerService;
 }
 
 export async function createRouter(
   options: PrCompassRouterOptions,
 ): Promise<express.Router> {
-  const { pullRequestService, sourceResolver, httpAuth, permissions, logger } =
-    options;
+  const { pullRequestService, sourceResolver, httpAuth, permissions } = options;
 
   const router = Router();
 
   router.use(express.json());
 
-  router.use(createScmTokensMiddleware(logger));
+  router.use(createScmTokensMiddleware());
 
   router.get('/health', (_req, res) => {
     res.json({ status: 'ok' });

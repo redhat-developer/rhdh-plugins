@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { InputError } from '@backstage/errors';
 import type { Request, Response } from 'express';
-import { SCM_TOKENS_HEADER } from '../validation';
+import { SCM_TOKENS_HEADER, SCM_TOKENS_MAX_BYTES } from '../validation';
 import { createScmTokensMiddleware, getScmTokens } from '.';
-
-const logger = mockServices.logger.mock();
 
 describe('createScmTokensMiddleware', () => {
   function run(headerValue?: string) {
@@ -32,7 +29,7 @@ describe('createScmTokensMiddleware', () => {
     const res = { locals: {} } as unknown as Response;
     const next = jest.fn();
 
-    createScmTokensMiddleware(logger)(req, res, next);
+    createScmTokensMiddleware()(req, res, next);
 
     return { req, res, next };
   }
@@ -58,7 +55,14 @@ describe('createScmTokensMiddleware', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('still removes the header when the value is invalid', () => {
+  it('removes an oversized header and forwards the error', () => {
+    const { req, next } = run('x'.repeat(SCM_TOKENS_MAX_BYTES + 1));
+
+    expect(req.headers[SCM_TOKENS_HEADER]).toBeUndefined();
+    expect(next).toHaveBeenCalledWith(expect.any(InputError));
+  });
+
+  it('removes the header even when the value is invalid', () => {
     const { req, next } = run('nonsense');
 
     expect(req.headers[SCM_TOKENS_HEADER]).toBeUndefined();

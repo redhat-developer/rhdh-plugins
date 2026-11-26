@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { InputError } from '@backstage/errors';
+import { SCM_TOKENS_MAX_BYTES } from './constants';
 import { validateScmTokensHeader } from './validateScmTokensHeader';
-
-const logger = mockServices.logger.mock();
 
 describe('validateScmTokensHeader', () => {
   it('parses a source ID to token map', () => {
-    expect(
-      validateScmTokensHeader('{"github:github.com":"ghu_abc"}', logger),
-    ).toEqual({ 'github:github.com': 'ghu_abc' });
+    expect(validateScmTokensHeader('{"github:github.com":"ghu_abc"}')).toEqual({
+      'github:github.com': 'ghu_abc',
+    });
   });
 
   it('accepts several sources', () => {
     expect(
       validateScmTokensHeader(
         '{"github:github.com":"ghu_abc","gitlab:gitlab.corp":"glpat_xyz"}',
-        logger,
       ),
     ).toEqual({
       'github:github.com': 'ghu_abc',
@@ -39,19 +36,35 @@ describe('validateScmTokensHeader', () => {
     });
   });
 
-  it('returns undefined when the header is absent', () => {
-    expect(validateScmTokensHeader(undefined, logger)).toBeUndefined();
+  it('accepts a header at the size limit', () => {
+    const prefix = '{"github:github.com":"';
+    const suffix = '"}';
+    const token = 'x'.repeat(
+      SCM_TOKENS_MAX_BYTES - prefix.length - suffix.length,
+    );
+
+    expect(validateScmTokensHeader(`${prefix}${token}${suffix}`)).toEqual({
+      'github:github.com': token,
+    });
   });
 
-  it('ignores an oversized header rather than parsing it', () => {
-    const oversized = JSON.stringify({ 'github:github.com': 'x'.repeat(5000) });
+  it('rejects an oversized header without exposing its contents', () => {
+    const prefix = '{"github:github.com":"ghu_secret';
+    const suffix = '"}';
+    const oversized = `${prefix}${'x'.repeat(
+      SCM_TOKENS_MAX_BYTES - prefix.length - suffix.length + 1,
+    )}${suffix}`;
 
-    expect(validateScmTokensHeader(oversized, logger)).toBeUndefined();
+    expect(() => validateScmTokensHeader(oversized)).toThrow(InputError);
+    expect(() => validateScmTokensHeader(oversized)).toThrow(
+      `Invalid 'x-scm-tokens' header: must not exceed ${SCM_TOKENS_MAX_BYTES} bytes`,
+    );
+    expect(() => validateScmTokensHeader(oversized)).not.toThrow('ghu_secret');
   });
 
   it('rejects invalid JSON', () => {
-    expect(() => validateScmTokensHeader('{', logger)).toThrow(InputError);
-    expect(() => validateScmTokensHeader('{', logger)).toThrow(
+    expect(() => validateScmTokensHeader('{')).toThrow(InputError);
+    expect(() => validateScmTokensHeader('{')).toThrow(
       "Invalid 'x-scm-tokens' header: must be a JSON object",
     );
   });
@@ -62,8 +75,8 @@ describe('validateScmTokensHeader', () => {
     ['a non-string value', '{"github:github.com":42}'],
     ['an empty token', '{"github:github.com":""}'],
   ])('rejects %s', (_name, raw) => {
-    expect(() => validateScmTokensHeader(raw, logger)).toThrow(InputError);
-    expect(() => validateScmTokensHeader(raw, logger)).toThrow(
+    expect(() => validateScmTokensHeader(raw)).toThrow(InputError);
+    expect(() => validateScmTokensHeader(raw)).toThrow(
       "Invalid 'x-scm-tokens' header: must be an object mapping source IDs to non-empty token strings",
     );
   });
@@ -73,11 +86,9 @@ describe('validateScmTokensHeader', () => {
     '{"github:github.com":"ghu_secret"',
     '{"github:github.com":42,"gitlab:gitlab.com":"ghu_secret"}',
   ])('does not expose tokens', raw => {
-    expect(() => validateScmTokensHeader(raw, logger)).toThrow(
+    expect(() => validateScmTokensHeader(raw)).toThrow(
       "Invalid 'x-scm-tokens' header",
     );
-    expect(() => validateScmTokensHeader(raw, logger)).not.toThrow(
-      'ghu_secret',
-    );
+    expect(() => validateScmTokensHeader(raw)).not.toThrow('ghu_secret');
   });
 });

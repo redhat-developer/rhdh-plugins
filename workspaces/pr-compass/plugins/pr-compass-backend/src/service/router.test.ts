@@ -30,7 +30,7 @@ import { pr } from '../../__fixtures__';
 import { PullRequestProvidersRegistry } from '../providers/PullRequestProvidersRegistry';
 import { PullRequestService } from './PullRequestService';
 import { createRouter } from './router';
-import { SCM_TOKENS_HEADER } from '../validation';
+import { SCM_TOKENS_HEADER, SCM_TOKENS_MAX_BYTES } from '../validation';
 import { SourceResolver } from './SourceResolver';
 
 const GITHUB_TOKENS = JSON.stringify({ 'github:github.com': 'dummy_token' });
@@ -74,7 +74,6 @@ describe('createRouter', () => {
       sourceResolver,
       httpAuth: mockServices.httpAuth(),
       permissions,
-      logger,
     });
     app = express();
     app.use(router);
@@ -233,6 +232,18 @@ describe('createRouter', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('rejects an oversized token header', async () => {
+      const res = await request(app)
+        .get('/pull-requests')
+        .set(SCM_TOKENS_HEADER, 'x'.repeat(SCM_TOKENS_MAX_BYTES + 1));
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain(
+        `must not exceed ${SCM_TOKENS_MAX_BYTES} bytes`,
+      );
+      expect(provider.listPullRequests).not.toHaveBeenCalled();
+    });
   });
 
   describe('GET /sources', () => {
@@ -269,7 +280,6 @@ describe('createRouter', () => {
         sourceResolver,
         httpAuth: mockServices.httpAuth(),
         permissions,
-        logger,
       });
       app = express();
       app.use(router);

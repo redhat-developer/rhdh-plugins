@@ -85,7 +85,6 @@ export const prCompassPlugin = createBackendPlugin({
             sourceResolver: sources,
             httpAuth,
             permissions,
-            logger,
           }),
         );
 

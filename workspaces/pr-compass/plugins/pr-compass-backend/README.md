@@ -70,6 +70,8 @@ Provide SCM tokens in the `x-scm-tokens` header as a JSON-encoded map from sourc
 X-SCM-Tokens: {"github:github.com":"ghu_..."}
 ```
 
+The header value must not exceed 4,096 bytes.
+
 | Response field     | Meaning                                                               |
 | ------------------ | --------------------------------------------------------------------- |
 | `items`            | Pull requests on the requested page.                                  |
