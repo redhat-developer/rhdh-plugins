@@ -1,6 +1,6 @@
-base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/fix.yaml#sha256=20741c3ef52e41f4a5e5a78b02a91859b9300172798eea3dd448896b1f369066
+base: https://raw.githubusercontent.com/fullsend-ai/agents/41f89529863ea6c26e804a348f56953423d294a3/harness/fix.yaml#sha256=41344ad24d492eaa3824cfca4d13d3799c091fa2271b9c54326efadb12e33785
 agent: rhdh/agents/fix.md
-image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:0.57.1
 policy: rhdh/policies/ci-fix.yaml
 role: coder
 slug: fullsend-ai-ci-repair
