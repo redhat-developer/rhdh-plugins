@@ -15,9 +15,9 @@
  */
 
 export { GlobalHeaderComponentBlueprint } from './extensions/GlobalHeaderComponentBlueprint';
-export type { ToolbarComponentParams } from './extensions/GlobalHeaderComponentBlueprint';
+export type { GlobalHeaderComponentParams } from './extensions/GlobalHeaderComponentBlueprint';
 export { GlobalHeaderMenuItemBlueprint } from './extensions/GlobalHeaderMenuItemBlueprint';
-export type { MenuItemParams } from './extensions/GlobalHeaderMenuItemBlueprint';
+export type { GlobalHeaderMenuItemParams } from './extensions/GlobalHeaderMenuItemBlueprint';
 export {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,

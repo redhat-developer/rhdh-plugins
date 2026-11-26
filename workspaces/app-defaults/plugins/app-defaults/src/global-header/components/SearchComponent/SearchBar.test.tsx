@@ -204,4 +204,25 @@ describe('SearchBar', () => {
       expect(navigate).toHaveBeenCalledWith('/search?query=example');
     });
   });
+
+  it('navigates to the highlighted result on Enter key press', async () => {
+    const { navigate, rerender } = setup();
+    const input = screen.getByPlaceholderText('Search...');
+    typeAndSearch('example', rerender);
+    await waitFor(() => {
+      expect(screen.getByText('Example Result')).toBeInTheDocument();
+    });
+
+    fireEvent.keyDown(input, {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    });
+    fireEvent.keyDown(input, {
+      key: 'Enter',
+      code: 'Enter',
+    });
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith('/example-path');
+    });
+  });
 });

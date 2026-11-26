@@ -179,7 +179,7 @@ export interface DrawerPanelProps {
 // @public
 export const GlobalHeaderComponentBlueprint: ExtensionBlueprint<{
   kind: 'gh-component';
-  params: ToolbarComponentParams;
+  params: GlobalHeaderComponentParams;
   output: ExtensionDataRef<
     GlobalHeaderComponentData,
     'global-header.component',
@@ -223,9 +223,23 @@ export const globalHeaderComponentDataRef: ConfigurableExtensionDataRef<
 >;
 
 // @public
+export interface GlobalHeaderComponentParams {
+  component?: ComponentType<any>;
+  icon?: string;
+  layout?: Record<string, unknown>;
+  link?: string;
+  loader?: () => Promise<ComponentType<any>>;
+  onClick?: () => void;
+  priority?: number;
+  title?: string;
+  titleKey?: string;
+  tooltip?: string;
+}
+
+// @public
 export const GlobalHeaderMenuItemBlueprint: ExtensionBlueprint<{
   kind: 'gh-menu-item';
-  params: MenuItemParams;
+  params: GlobalHeaderMenuItemParams;
   output: ExtensionDataRef<
     GlobalHeaderMenuItemData,
     'global-header.menu-item',
@@ -287,14 +301,7 @@ export const globalHeaderMenuItemDataRef: ConfigurableExtensionDataRef<
 >;
 
 // @public
-export function GlobalHeaderProvider(props: {
-  components: GlobalHeaderComponentData[];
-  menuItems: GlobalHeaderMenuItemData[];
-  children: ReactNode;
-}): JSX_2.Element;
-
-// @public
-export interface MenuItemParams {
+export interface GlobalHeaderMenuItemParams {
   component?: ComponentType<any>;
   icon?: string;
   link?: string;
@@ -310,6 +317,13 @@ export interface MenuItemParams {
   title?: string;
   titleKey?: string;
 }
+
+// @public
+export function GlobalHeaderProvider(props: {
+  components: GlobalHeaderComponentData[];
+  menuItems: GlobalHeaderMenuItemData[];
+  children: ReactNode;
+}): JSX_2.Element;
 
 // @public
 export const SidebarDividerBlueprint: ExtensionBlueprint<{
@@ -644,20 +658,6 @@ export const templateCardExtension: OverridableExtensionDefinition<{
 
 // @public
 export const templateCardModule: FrontendModule;
-
-// @public
-export interface ToolbarComponentParams {
-  component?: ComponentType<any>;
-  icon?: string;
-  layout?: Record<string, unknown>;
-  link?: string;
-  loader?: () => Promise<ComponentType<any>>;
-  onClick?: () => void;
-  priority?: number;
-  title?: string;
-  titleKey?: string;
-  tooltip?: string;
-}
 
 // @public
 export const useAppDrawer: () => AppDrawerApi;

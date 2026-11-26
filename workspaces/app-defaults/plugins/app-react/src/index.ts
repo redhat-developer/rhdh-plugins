@@ -72,6 +72,6 @@ export {
 export type {
   GlobalHeaderComponentData,
   GlobalHeaderMenuItemData,
-  MenuItemParams,
-  ToolbarComponentParams,
+  GlobalHeaderMenuItemParams,
+  GlobalHeaderComponentParams,
 } from './globalHeader';

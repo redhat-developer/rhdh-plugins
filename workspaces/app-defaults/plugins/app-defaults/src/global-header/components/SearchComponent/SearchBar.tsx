@@ -113,7 +113,7 @@ export const SearchBar = (props: SearchBarProps) => {
                   navigate(searchLink);
                 } else if (currentHighlight !== -1) {
                   navigate(
-                    results[highlightedIndex]?.document?.location ?? searchLink,
+                    results[currentHighlight]?.document?.location ?? searchLink,
                   );
                 }
                 setHighlightedIndex(-1);

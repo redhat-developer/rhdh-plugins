@@ -367,7 +367,7 @@ import {
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
 - `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` / `SidebarElementData` types
-- `GlobalHeaderComponentData` / `GlobalHeaderMenuItemData` / `MenuItemParams` / `ToolbarComponentParams` types
+- `GlobalHeaderComponentData` / `GlobalHeaderMenuItemData` / `GlobalHeaderMenuItemParams` / `GlobalHeaderComponentParams` types
 
 ### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
 

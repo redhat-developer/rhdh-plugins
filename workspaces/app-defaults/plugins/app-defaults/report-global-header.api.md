@@ -5,11 +5,11 @@
 ```ts
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { GlobalHeaderComponentData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderComponentParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItemParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { ToolbarComponentParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 // @public
 const globalHeaderPlugin: OverridableFrontendPlugin<
@@ -31,7 +31,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/company-logo': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -48,7 +48,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/divider': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -65,7 +65,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/help-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -82,7 +82,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/notification-button': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -99,7 +99,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/profile-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -116,7 +116,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/search': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -133,7 +133,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/self-service-button': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -150,7 +150,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/spacer': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -167,7 +167,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/starred-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -184,7 +184,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-menu-item:global-header/app-launcher-devhub': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -215,7 +215,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/app-launcher-rhdh-local': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -246,7 +246,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/logout': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -277,7 +277,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/my-profile': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -308,7 +308,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/settings': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -339,7 +339,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/support-button': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -370,7 +370,7 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
   }
 >;

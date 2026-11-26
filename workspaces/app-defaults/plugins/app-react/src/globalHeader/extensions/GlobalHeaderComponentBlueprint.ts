@@ -31,14 +31,14 @@ import {
 /**
  * Params accepted by {@link GlobalHeaderComponentBlueprint}.
  *
- * Prefer {@link ToolbarComponentParams.loader} so the implementation is loaded
+ * Prefer {@link GlobalHeaderComponentParams.loader} so the implementation is loaded
  * asynchronously. Supply data fields (`icon`, `title`, `link` / `onClick`) with
  * no loader/component for the built-in header icon-button tier rendered by the
  * default global-header implementation.
  *
  * @public
  */
-export interface ToolbarComponentParams {
+export interface GlobalHeaderComponentParams {
   /** Icon identifier for data-driven toolbar buttons. */
   icon?: string;
   /** Display title for data-driven toolbar buttons. */
@@ -52,12 +52,12 @@ export interface ToolbarComponentParams {
   /** Click handler for data-driven toolbar buttons without a link. */
   onClick?: () => void;
   /**
-   * Async component loader. Prefer this over {@link ToolbarComponentParams.component}
+   * Async component loader. Prefer this over {@link GlobalHeaderComponentParams.component}
    * so the module graph stays off the NFS federation sync chunk.
    */
   loader?: () => Promise<ComponentType<any>>;
   /**
-   * Sync component. Kept for compatibility; prefer {@link ToolbarComponentParams.loader}.
+   * Sync component. Kept for compatibility; prefer {@link GlobalHeaderComponentParams.loader}.
    */
   component?: ComponentType<any>;
   /** Ordering priority. Higher values render first. */
@@ -67,7 +67,7 @@ export interface ToolbarComponentParams {
 }
 
 function resolveToolbarComponent(
-  params: ToolbarComponentParams,
+  params: GlobalHeaderComponentParams,
   node: AppNode,
 ): ComponentType<any> {
   if (params.loader) {
@@ -115,7 +115,7 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
   configSchema: {
     priority: z.number().optional(),
   },
-  *factory(params: ToolbarComponentParams, { config, node }) {
+  *factory(params: GlobalHeaderComponentParams, { config, node }) {
     const priority = config.priority ?? params.priority;
     const hasCustomUi = !!(params.loader || params.component);
 

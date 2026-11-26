@@ -11,10 +11,11 @@ import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { GlobalHeaderComponentData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderComponentParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItemParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { JSX as JSX_2 } from 'react';
 import { JSX as JSX_3 } from 'react/jsx-runtime';
-import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { NavContentComponent } from '@backstage/plugin-app-react';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
@@ -24,7 +25,6 @@ import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-
 import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
-import { ToolbarComponentParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -241,7 +241,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/company-logo': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -258,7 +258,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/divider': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -275,7 +275,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/help-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -292,7 +292,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/notification-button': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -309,7 +309,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/profile-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -326,7 +326,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/search': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -343,7 +343,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/self-service-button': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -360,7 +360,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/spacer': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -377,7 +377,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-component:global-header/starred-dropdown': OverridableExtensionDefinition<{
       kind: 'gh-component';
@@ -394,7 +394,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: ToolbarComponentParams;
+      params: GlobalHeaderComponentParams;
     }>;
     'gh-menu-item:global-header/app-launcher-devhub': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -425,7 +425,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/app-launcher-rhdh-local': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -456,7 +456,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/logout': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -487,7 +487,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/my-profile': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -518,7 +518,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/settings': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -549,7 +549,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
     'gh-menu-item:global-header/support-button': OverridableExtensionDefinition<{
       kind: 'gh-menu-item';
@@ -580,7 +580,7 @@ export const globalHeaderPlugin: OverridableFrontendPlugin<
         {}
       >;
       inputs: {};
-      params: MenuItemParams;
+      params: GlobalHeaderMenuItemParams;
     }>;
   }
 >;

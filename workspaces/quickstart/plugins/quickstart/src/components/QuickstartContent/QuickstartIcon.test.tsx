@@ -49,7 +49,7 @@ describe('QuickstartIcon', () => {
 
   it('maps waving_hand ligature to the quickstart system icon id', () => {
     mockGetSystemIcon.mockReturnValue(() => (
-      <HomeIcon data-testid="system-quickstart-icon" />
+      <span data-testid="system-quickstart-icon" />
     ));
 
     render(<QuickstartIcon icon="waving_hand" />);

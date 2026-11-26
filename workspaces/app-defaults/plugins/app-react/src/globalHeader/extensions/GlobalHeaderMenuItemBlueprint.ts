@@ -31,7 +31,7 @@ import {
 /**
  * Params accepted by {@link GlobalHeaderMenuItemBlueprint}.
  *
- * Prefer {@link MenuItemParams.loader} for custom menu item UI.
+ * Prefer {@link GlobalHeaderMenuItemParams.loader} for custom menu item UI.
  *
  * Items with a loader/component but **no** data fields (`title`, `link`, etc.)
  * are rendered directly by the dropdown — the component controls its own
@@ -42,7 +42,7 @@ import {
  *
  * @public
  */
-export interface MenuItemParams {
+export interface GlobalHeaderMenuItemParams {
   /** Dropdown target name that collects this item (for example `'help'`). */
   target: string;
   /** Display title for the item. */
@@ -60,11 +60,11 @@ export interface MenuItemParams {
   /** Click handler invoked when the item is selected. */
   onClick?: () => void;
   /**
-   * Async component loader. Prefer this over {@link MenuItemParams.component}.
+   * Async component loader. Prefer this over {@link GlobalHeaderMenuItemParams.component}.
    */
   loader?: () => Promise<ComponentType<any>>;
   /**
-   * Sync component. Kept for compatibility; prefer {@link MenuItemParams.loader}.
+   * Sync component. Kept for compatibility; prefer {@link GlobalHeaderMenuItemParams.loader}.
    */
   component?: ComponentType<any>;
   /** Ordering priority. Higher values render first. */
@@ -78,7 +78,7 @@ export interface MenuItemParams {
 }
 
 function resolveMenuItemComponent(
-  params: MenuItemParams,
+  params: GlobalHeaderMenuItemParams,
   node: AppNode,
 ): ComponentType<any> | undefined {
   if (params.loader) {
@@ -134,7 +134,7 @@ export const GlobalHeaderMenuItemBlueprint = createExtensionBlueprint({
     sectionLink: z.string().optional(),
     sectionLinkLabel: z.string().optional(),
   },
-  *factory(params: MenuItemParams, { config, node }) {
+  *factory(params: GlobalHeaderMenuItemParams, { config, node }) {
     const title = config.title ?? params.title;
     const titleKey =
       config.titleKey ?? (config.title ? undefined : params.titleKey);

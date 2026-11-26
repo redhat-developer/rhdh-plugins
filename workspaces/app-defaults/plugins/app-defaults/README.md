@@ -146,8 +146,8 @@ For advanced use cases — items that run an action instead of navigating (`onCl
 
 ## Usage
 
-- **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
-- **Static**: import `appDefaultsModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults`.
+- **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`. The feature loader also registers the three [global header](#global-header) modules (`globalHeaderModule`, `globalHeaderPlugin`, `globalHeaderTranslationsModule`).
+- **Static**: import `appDefaultsModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults`. For a full RHDH masthead when loading statically, also register the three [global header](#global-header) modules (or rely on the feature loader above).
 
 For apps that need only the app layout and drawer wrapper, import `appLayoutModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults/app-layout-module`. The previous `app-drawer-module` entry point remains available as a compatibility alias.
 

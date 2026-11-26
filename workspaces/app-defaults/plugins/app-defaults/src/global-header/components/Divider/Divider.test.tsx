@@ -20,8 +20,7 @@ import { Divider } from './Divider';
 
 describe('Divider', () => {
   it('render some default styles', () => {
-    const { debug, container } = render(<Divider />);
-    debug();
+    const { container } = render(<Divider />);
     expect(container.firstElementChild?.nodeName).toEqual('HR');
   });
 });
