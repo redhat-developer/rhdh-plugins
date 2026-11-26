@@ -29,13 +29,17 @@ export interface Config {
        * as is); only its host is used. A non-default port is part of the host
        * (`host:8443`).
        * There is no default: when unset, no host of that type can be
-       * authenticated. Bitbucket Cloud is always `bitbucket.org`.
+       * authenticated. Bitbucket Cloud has a single valid host,
+       * `bitbucket.org`; set `bitbucket: bitbucket.org` to offer and
+       * authenticate it. Any other value does not match, so Bitbucket stays
+       * hidden and its tokens are refused.
        *
        * @deepVisibility frontend
        */
       authHosts?: {
         github?: string;
         gitlab?: string;
+        bitbucket?: string;
       };
     };
   };

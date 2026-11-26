@@ -215,7 +215,11 @@ describe('X2ARepoUrlPicker', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStockPickerState.hidden = false;
-    authHosts = { github: 'github.com', gitlab: 'gitlab.corp.example.com' };
+    authHosts = {
+      github: 'github.com',
+      gitlab: 'gitlab.corp.example.com',
+      bitbucket: 'bitbucket.org',
+    };
     mockHostMap.mockReturnValue(
       new Map([
         ['github.com', 'github'],
@@ -227,6 +231,19 @@ describe('X2ARepoUrlPicker', () => {
 
   describe('allowedHosts', () => {
     it('passes configured GitHub/GitLab hosts, then bitbucket.org, as allowedHosts', async () => {
+      await renderPicker();
+
+      expect(mockStockPicker).toHaveBeenCalled();
+      expect(allowedHostsPassedToStockPicker()).toEqual([
+        'github.com',
+        'gitlab.corp.example.com',
+        'bitbucket.org',
+      ]);
+    });
+
+    it('offers bitbucket.org without credentials even when x2a.scm.authHosts.bitbucket is unset', async () => {
+      authHosts = { github: 'github.com', gitlab: 'gitlab.corp.example.com' };
+
       await renderPicker();
 
       expect(mockStockPicker).toHaveBeenCalled();
@@ -292,11 +309,11 @@ describe('X2ARepoUrlPicker', () => {
       ]);
     });
 
-    it('offers no GitHub or GitLab host when x2a.scm.authHosts is unset', async () => {
+    it('offers no host when x2a.scm.authHosts is unset', async () => {
       authHosts = undefined;
       await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      expect(allowedHostsPassedToStockPicker()).toEqual(['bitbucket.org']);
+      expect(allowedHostsPassedToStockPicker()).toEqual([]);
       // One notice per provider type whose hosts were left out.
       expect(
         screen.getAllByText(/^scaffolder\.repoUrlPicker\.hostsHiddenUnset/),
@@ -307,10 +324,7 @@ describe('X2ARepoUrlPicker', () => {
       authHosts = { github: 'github.com', gitlab: 'gitlab.elsewhere.example' };
       await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      expect(allowedHostsPassedToStockPicker()).toEqual([
-        'github.com',
-        'bitbucket.org',
-      ]);
+      expect(allowedHostsPassedToStockPicker()).toEqual(['github.com']);
       expect(
         screen.getByText(/^scaffolder\.repoUrlPicker\.hostsHiddenNotListed/),
       ).toHaveTextContent('"authHost":"gitlab.elsewhere.example"');
@@ -449,6 +463,19 @@ describe('X2ARepoUrlPicker', () => {
       expect(
         await screen.findByText(/^scaffolder\.repoUrlPicker\.hostRefusedUnset/),
       ).toHaveTextContent('"configKey":"x2a.scm.authHosts.gitlab"');
+      expect(mockAppGetCredentials).not.toHaveBeenCalled();
+    });
+
+    it('names the key to set when the selected host is Bitbucket and no auth host is configured', async () => {
+      authHosts = { github: 'github.com', gitlab: 'gitlab.corp.example.com' };
+
+      await renderPicker(credentialsUiSchema(), {
+        formData: 'bitbucket.org?workspace=ws&project=proj&repo=repo',
+      });
+
+      expect(
+        await screen.findByText(/^scaffolder\.repoUrlPicker\.hostRefusedUnset/),
+      ).toHaveTextContent('"configKey":"x2a.scm.authHosts.bitbucket"');
       expect(mockAppGetCredentials).not.toHaveBeenCalled();
     });
 
