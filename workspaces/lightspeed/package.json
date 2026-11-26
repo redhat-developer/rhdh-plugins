@@ -75,7 +75,9 @@
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
     "@backstage/frontend-plugin-api": "0.15.1",
     "infinispan": "0.13.0",
-    "@protobufjs/inquire": "1.1.0"
+    "@protobufjs/inquire": "1.1.0",
+    "parse5@npm:^7.0.0": "npm:8.1.1",
+    "parse5@npm:^7.1.2": "npm:8.1.1"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
