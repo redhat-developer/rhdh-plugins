@@ -56,6 +56,7 @@ export const extensionsMessages = {
     disabled: 'Disabled',
     partiallyInstalled: 'Partially installed',
     updateAvailable: 'Update available',
+    restartRequired: 'Restart required',
   },
 
   // Role labels
@@ -364,6 +365,8 @@ export const extensionsMessages = {
       "You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.",
     missingDynamicArtifact:
       'Cannot manage this {{type}}. To enable actions, a Catalog entity with the required spec.dynamicArtifact must be added.',
+    restartRequired:
+      'A platform restart is required for this change to take effect.',
   },
 
   // Accessibility

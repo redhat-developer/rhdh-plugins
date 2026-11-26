@@ -23,6 +23,18 @@ import {
 
 export type InstallationType = { [pluginName: string]: string };
 
+/** Remove a pending-restart entry; returns the same object if the key is absent. */
+export const withoutInstallationEntry = (
+  current: InstallationType,
+  key: string,
+): InstallationType => {
+  if (!(key in current)) {
+    return current;
+  }
+  const { [key]: _removed, ...rest } = current;
+  return rest;
+};
+
 type InstallationContextType = {
   installedPlugins: InstallationType;
   installedPackages: InstallationType;
@@ -67,7 +79,7 @@ export const useInstallationContext = () => useContext(InstallationContext);
 export const InstallationContextProvider = ({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }) => {
   const store = getStore();
   const [installedPlugins, setInstalledPluginsState] =

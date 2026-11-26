@@ -16,8 +16,13 @@
 
 import { BrowserRouter } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
-import { TestApiProvider, MockConfigApi } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  MockConfigApi,
+  mockApis,
+} from '@backstage/test-utils';
 import { configApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 
 import {
   ExtensionsPlugin,
@@ -26,6 +31,12 @@ import {
 
 import { PluginCard } from './PluginCard';
 import { rootRouteRef, pluginRouteRef } from '../routes';
+import {
+  InstallationContextProvider,
+  resetInstallationStore,
+  useInstallationContext,
+} from './InstallationContext';
+import { useEffect } from 'react';
 
 // Mock the route refs
 jest.mock('@backstage/core-plugin-api', () => ({
@@ -58,17 +69,46 @@ const mockPlugin: ExtensionsPlugin = {
 
 const mockConfig = new MockConfigApi({});
 
-const renderPluginCard = (plugin: ExtensionsPlugin) => {
+const PendingRestartSeeder = ({ pluginName }: { pluginName: string }) => {
+  const { setInstalledPlugins } = useInstallationContext();
+  useEffect(() => {
+    setInstalledPlugins({ [pluginName]: 'Plugin disabled' });
+  }, [pluginName, setInstalledPlugins]);
+  return null;
+};
+
+const renderPluginCard = (
+  plugin: ExtensionsPlugin,
+  options?: { withPendingRestart?: boolean },
+) => {
   return render(
-    <TestApiProvider apis={[[configApiRef, mockConfig]]}>
+    <TestApiProvider
+      apis={[
+        [configApiRef, mockConfig],
+        [translationApiRef, mockApis.translation()],
+      ]}
+    >
       <BrowserRouter>
-        <PluginCard plugin={plugin} />
+        <InstallationContextProvider>
+          <>
+            {options?.withPendingRestart ? (
+              <PendingRestartSeeder
+                pluginName={plugin.metadata.title ?? plugin.metadata.name}
+              />
+            ) : null}
+            <PluginCard plugin={plugin} />
+          </>
+        </InstallationContextProvider>
       </BrowserRouter>
     </TestApiProvider>,
   );
 };
 
 describe('PluginCard', () => {
+  beforeEach(() => {
+    resetInstallationStore();
+  });
+
   describe('Install Status Indicators', () => {
     it('should show "Installed" status for Installed plugin', () => {
       const pluginWithStatus = {
@@ -139,6 +179,24 @@ describe('PluginCard', () => {
       expect(screen.queryByText('Disabled')).not.toBeInTheDocument();
       expect(screen.queryByTestId('CheckCircleIcon')).not.toBeInTheDocument();
       expect(screen.queryByTestId('BlockIcon')).not.toBeInTheDocument();
+    });
+
+    it('should show Restart required when the plugin has a pending restart', async () => {
+      const pluginWithStatus = {
+        ...mockPlugin,
+        spec: {
+          ...mockPlugin.spec,
+          installStatus: ExtensionsPluginInstallStatus.Installed,
+        },
+      };
+
+      renderPluginCard(pluginWithStatus, { withPendingRestart: true });
+
+      expect(
+        await screen.findByTestId('restart-required-status'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Restart required')).toBeInTheDocument();
+      expect(screen.queryByText('Installed')).not.toBeInTheDocument();
     });
   });
 

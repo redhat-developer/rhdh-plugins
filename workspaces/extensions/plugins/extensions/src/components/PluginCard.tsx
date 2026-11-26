@@ -27,11 +27,9 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import {
   ExtensionsPlugin,
-  ExtensionsPluginInstallStatus,
   ExtensionsAnnotation,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
@@ -44,48 +42,14 @@ import {
   useCatalogSourceConfig,
   getCatalogSourceLabel,
 } from '../hooks/useCatalogSourceConfig';
+import { useInstallationContext } from './InstallationContext';
+import { PluginInstallStatusIndicator } from './PluginInstallStatusIndicator';
 
 export interface PluginCardSkeletonProps {
   animation?: 'pulse' | 'wave' | false;
 }
 
 export const PluginCardGrid = ItemCardGrid;
-
-const renderInstallStatus = (installStatus?: ExtensionsPluginInstallStatus) => {
-  if (
-    !installStatus ||
-    installStatus === ExtensionsPluginInstallStatus.NotInstalled
-  ) {
-    return null;
-  }
-
-  switch (installStatus) {
-    case ExtensionsPluginInstallStatus.Installed:
-    case ExtensionsPluginInstallStatus.UpdateAvailable:
-      return (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <CheckCircleOutlineIcon sx={{ fontSize: '16px', color: '#3E8635' }} />
-          <Typography variant="body2">Installed</Typography>
-        </Stack>
-      );
-
-    case ExtensionsPluginInstallStatus.Disabled:
-      return (
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography
-            variant="body2"
-            sx={{ fontSize: '16px', color: '#6A6E73', fontWeight: 'bold' }}
-          >
-            --
-          </Typography>
-          <Typography variant="body2">Disabled</Typography>
-        </Stack>
-      );
-
-    default:
-      return null;
-  }
-};
 
 export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
   <Card variant="outlined">
@@ -132,6 +96,7 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
   const getPluginPath = useRouteRef(pluginRouteRef);
   const sourcesConfig = useCatalogSourceConfig();
+  const { installedPlugins } = useInstallationContext();
 
   const pluginPath = `${getPluginPath({
     namespace: plugin.metadata.namespace!,
@@ -144,6 +109,9 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
     `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
       value,
     )}`;
+
+  const pluginKey = plugin.metadata.title ?? plugin.metadata.name;
+  const restartRequired = Boolean(installedPlugins[pluginKey]);
 
   return (
     <Card
@@ -192,7 +160,10 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                 {plugin.spec?.authors?.map((author, index) => (
                   <Fragment key={author.name}>
                     {index > 0 ? t('common.comma') : t('common.by')}
-                    <span style={{ display: 'inline-flex' }}>
+                    <Typography
+                      component="span"
+                      sx={{ display: 'inline-flex' }}
+                    >
                       <Link
                         key={author.name}
                         to={withFilter('author', author.name)}
@@ -201,7 +172,7 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                       >
                         {author.name}
                       </Link>
-                    </span>
+                    </Typography>
                   </Fragment>
                 ))}
                 {(() => {
@@ -223,7 +194,10 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                   const description =
                     sourceKey && sourcesConfig[sourceKey]?.description;
                   const link = (
-                    <span style={{ display: 'inline-flex' }}>
+                    <Typography
+                      component="span"
+                      sx={{ display: 'inline-flex' }}
+                    >
                       <Link
                         to={withFilter('catalog-source', sourceKey!)}
                         color="inherit"
@@ -231,13 +205,13 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                       >
                         {sourceLabel}
                       </Link>
-                    </span>
+                    </Typography>
                   );
                   const labelWithSeparator = (
-                    <span>
+                    <Typography component="span">
                       {plugin.spec?.authors && ' / '}
                       {link}
-                    </span>
+                    </Typography>
                   );
                   return description ? (
                     <Tooltip title={description} arrow>
@@ -287,7 +261,10 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
         <Link to={pluginPath} onClick={e => e.stopPropagation()}>
           {t('common.readMore')}
         </Link>
-        {renderInstallStatus(plugin.spec?.installStatus)}
+        <PluginInstallStatusIndicator
+          installStatus={plugin.spec?.installStatus}
+          restartRequired={restartRequired}
+        />
       </CardActions>
     </Card>
   );
