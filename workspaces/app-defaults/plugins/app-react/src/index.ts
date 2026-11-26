@@ -20,6 +20,10 @@
  * @packageDocumentation
  */
 
+export { AppHeaderBlueprint } from './header';
+export { appHeaderDataRef } from './header';
+export type { AppHeaderData } from './header';
+
 export { AppDrawerContentBlueprint } from './drawer';
 export { appDrawerContentDataRef } from './drawer';
 export { ApplicationDrawer } from './drawer';

@@ -15,46 +15,65 @@
  */
 
 import {
+  coreExtensionData,
+  createExtension,
   createExtensionInput,
   createFrontendModule,
-  useAnalytics,
 } from '@backstage/frontend-plugin-api';
-import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
-import { BUIProvider } from '@backstage/ui';
-
 import {
-  ApplicationDrawer,
   appDrawerContentDataRef,
+  appHeaderDataRef,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { AppLayout } from './AppLayout';
+
 /**
- * App-root layout wrapper that provides BUI routing and analytics context to
- * the application and hosts the extensible application drawer.
+ * Override of the Backstage `app/layout` extension that renders the RHDH
+ * {@link AppLayout}: all headers contributed via `AppHeaderBlueprint` on
+ * top, and the sidebar, the page content and the app drawer side by side
+ * below them.
  *
- * The wrapper keeps the existing `app-root-wrapper:app/drawer` extension ID so
- * existing `AppDrawerContentBlueprint` contributions continue to attach.
+ * Extension ID: `app/layout`. `AppHeaderBlueprint` attaches to the
+ * `headers` input and `AppDrawerContentBlueprint` to the `drawers` input,
+ * both from `@red-hat-developer-hub/backstage-plugin-app-react`, so plugins
+ * only need to declare their headers and drawers.
  *
  * @public
  */
-export const appLayoutExtension = AppRootWrapperBlueprint.makeWithOverrides({
-  name: 'drawer',
+export const appLayoutExtension = createExtension({
+  name: 'layout',
+  attachTo: { id: 'app/root', input: 'children' },
   inputs: {
+    nav: createExtensionInput([coreExtensionData.reactElement], {
+      singleton: true,
+    }),
+    content: createExtensionInput([coreExtensionData.reactElement], {
+      singleton: true,
+    }),
+    headers: createExtensionInput([appHeaderDataRef]),
     drawers: createExtensionInput([appDrawerContentDataRef]),
   },
-  factory(originalFactory, { inputs }) {
-    const contents = inputs.drawers.map(d => d.get(appDrawerContentDataRef));
-    return originalFactory({
-      component: ({ children }) => (
-        <BUIProvider useAnalytics={useAnalytics}>
-          <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
-        </BUIProvider>
+  output: [coreExtensionData.reactElement],
+  factory({ inputs }) {
+    const headers = inputs.headers.map(h => h.get(appHeaderDataRef));
+    const drawers = inputs.drawers.map(d => d.get(appDrawerContentDataRef));
+    return [
+      coreExtensionData.reactElement(
+        <AppLayout
+          headers={headers}
+          drawers={drawers}
+          nav={inputs.nav.get(coreExtensionData.reactElement)}
+          content={inputs.content.get(coreExtensionData.reactElement)}
+        />,
       ),
-    });
+    ];
   },
 });
 
 /**
- * Frontend module that provides the app-level layout and drawer wrapper.
+ * Frontend module that provides the RHDH app layout with the app headers and
+ * the app drawer. Registers the `app/layout` override that accepts header
+ * and drawer contributions via inputs.
  *
  * @public
  */
@@ -62,19 +81,3 @@ export const appLayoutModule = createFrontendModule({
   pluginId: 'app',
   extensions: [appLayoutExtension],
 });
-
-/**
- * Backward-compatible alias for the app layout wrapper extension.
- *
- * @deprecated Use `appLayoutExtension` instead.
- * @public
- */
-export const appDrawerExtension = appLayoutExtension;
-
-/**
- * Backward-compatible alias for the app layout module.
- *
- * @deprecated Use `appLayoutModule` instead.
- * @public
- */
-export const appDrawerModule = appLayoutModule;
