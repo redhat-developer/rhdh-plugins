@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 1.0.3
+
+### Patch Changes
+
+- 5cfaea9: Keep the Extensions side drawer open after enable/disable, show a Restart required status (with tooltip) on the drawer and plugin card until the platform is restarted, and clear that status when the change is reverted.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
