@@ -8,10 +8,12 @@ backend:
   listen:
     port: 7007
 
-# These integrations are used to discover sources.
-# The fixture providers for development setup return sample data without contacting SCM services.
-# Configure integrations here when using real providers.
-integrations: {}
+# Fixture providers return sample data without contacting SCM services.
+integrations:
+  github:
+    - host: github.com
+  gitlab:
+    - host: gitlab.com
 
 prCompass:
   maxPullRequests: 5
