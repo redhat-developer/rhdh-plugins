@@ -115,10 +115,11 @@ component_management:
         - workspaces/cost-management/
         - workspaces/extensions/
         - workspaces/scorecard/
-    # Community Plugins — 2 workspace(s)
+    # Community Plugins — 3 workspace(s)
     - component_id: community-plugins
       name: 'Community Plugins'
       paths:
+        - workspaces/theme/
         - workspaces/translations/
         - workspaces/x2a/
     # Dev-Preview Plugins — 5 workspace(s)
@@ -200,6 +201,8 @@ flag_management:
         - workspaces/scorecard/
     - name: e2e-theme
       paths:
+        - workspaces/app-defaults/e2e-tests/custom-theme.spec.ts
+        - workspaces/app-defaults/e2e-tests/utils/theme/
     - name: extensions
       paths:
         - workspaces/extensions/
@@ -232,6 +235,7 @@ flag_management:
         - workspaces/scorecard/
     - name: theme
       paths:
+        - workspaces/app-defaults/plugins/app-defaults/src/theme/
     - name: translations
       paths:
         - workspaces/translations/
