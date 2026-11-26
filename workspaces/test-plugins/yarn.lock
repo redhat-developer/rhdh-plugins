@@ -828,7 +828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-defaults@npm:^0.1.7, @backstage/cli-defaults@npm:^0.1.8":
+"@backstage/cli-defaults@npm:^0.1.8":
   version: 0.1.8
   resolution: "@backstage/cli-defaults@npm:0.1.8"
   dependencies:
@@ -1261,7 +1261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli@npm:^0.36.7":
+"@backstage/cli@npm:^0.36.8":
   version: 0.36.8
   resolution: "@backstage/cli@npm:0.36.8"
   dependencies:
@@ -1361,7 +1361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-app-api@npm:^1.20.6, @backstage/core-app-api@npm:^1.20.7":
+"@backstage/core-app-api@npm:^1.20.7":
   version: 1.20.7
   resolution: "@backstage/core-app-api@npm:1.20.7"
   dependencies:
@@ -1420,7 +1420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-components@npm:^0.18.15, @backstage/core-components@npm:^0.18.16":
+"@backstage/core-components@npm:^0.18.16":
   version: 0.18.16
   resolution: "@backstage/core-components@npm:0.18.16"
   dependencies:
@@ -1480,7 +1480,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/core-plugin-api@npm:^1.12.11, @backstage/core-plugin-api@npm:^1.13.0":
+"@backstage/core-plugin-api@npm:^1.13.0":
   version: 1.13.0
   resolution: "@backstage/core-plugin-api@npm:1.13.0"
   dependencies:
@@ -1503,7 +1503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/dev-utils@npm:^1.1.28":
+"@backstage/dev-utils@npm:^1.2.0":
   version: 1.2.0
   resolution: "@backstage/dev-utils@npm:1.2.0"
   dependencies:
@@ -1842,7 +1842,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/repo-tools@npm:^0.19.2":
+"@backstage/repo-tools@npm:^0.19.3":
   version: 0.19.3
   resolution: "@backstage/repo-tools@npm:0.19.3"
   dependencies:
@@ -1908,7 +1908,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/test-utils@npm:^1.7.23":
+"@backstage/test-utils@npm:^1.8.0":
   version: 1.8.0
   resolution: "@backstage/test-utils@npm:1.8.0"
   dependencies:
@@ -1941,7 +1941,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/theme@npm:^0.7.3, @backstage/theme@npm:^0.7.4":
+"@backstage/theme@npm:^0.7.4":
   version: 0.7.4
   resolution: "@backstage/theme@npm:0.7.4"
   dependencies:
@@ -1965,33 +1965,6 @@ __metadata:
   version: 1.2.2
   resolution: "@backstage/types@npm:1.2.2"
   checksum: 10c0/3c947cf83c058a56b0cfd90d91483e9a5c1c913f7978a0d5a3c0fd9b502d08e9bdf279afba626826eee84159e698ee4cdaa70040789ac47fc8a25df9f1925612
-  languageName: node
-  linkType: hard
-
-"@backstage/ui@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "@backstage/ui@npm:0.19.0"
-  dependencies:
-    "@backstage/version-bridge": "npm:^1.0.12"
-    "@braintree/sanitize-url": "npm:^7.1.2"
-    "@internationalized/date": "npm:^3.12.0"
-    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
-    "@tanstack/react-table": "npm:^8.21.3"
-    clsx: "npm:^2.1.1"
-    marked: "npm:^15.0.12"
-    react-aria: "npm:~3.53.0"
-    react-aria-components: "npm:~1.22.0"
-    react-stately: "npm:~3.51.0"
-    use-sync-external-store: "npm:^1.4.0"
-  peerDependencies:
-    "@types/react": ^18.0.0
-    react: ^18.0.0
-    react-dom: ^18.0.0
-    react-router-dom: ^6.30.2
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/b43342214431dba6ff4198dae3b0908263df4e9e7e2fb53ef2811c9aaf1f6c5b78bd96f3d23f08fe3ee6c4d84b1222559b197ceb96395a9a4347c3408ac05311
   languageName: node
   linkType: hard
 
@@ -2020,7 +1993,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/version-bridge@npm:^1.0.12, @backstage/version-bridge@npm:^1.1.0":
+"@backstage/version-bridge@npm:^1.1.0":
   version: 1.1.0
   resolution: "@backstage/version-bridge@npm:1.1.0"
   peerDependencies:
@@ -2935,9 +2908,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/test-plugins@workspace:."
   dependencies:
-    "@backstage/cli": "npm:^0.36.7"
-    "@backstage/cli-defaults": "npm:^0.1.7"
-    "@backstage/repo-tools": "npm:^0.19.2"
+    "@backstage/cli": "npm:^0.36.8"
+    "@backstage/cli-defaults": "npm:^0.1.8"
+    "@backstage/repo-tools": "npm:^0.19.3"
     "@changesets/cli": "npm:^2.27.1"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
     "@types/jest": "npm:^30.0.0"
@@ -5409,14 +5382,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-global-header-test@workspace:plugins/global-header-test"
   dependencies:
-    "@backstage/cli": "npm:^0.36.7"
-    "@backstage/core-app-api": "npm:^1.20.6"
-    "@backstage/core-components": "npm:^0.18.15"
-    "@backstage/core-plugin-api": "npm:^1.12.11"
-    "@backstage/dev-utils": "npm:^1.1.28"
-    "@backstage/test-utils": "npm:^1.7.23"
-    "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.19.0"
+    "@backstage/cli": "npm:^0.36.8"
+    "@backstage/core-app-api": "npm:^1.20.7"
+    "@backstage/core-components": "npm:^0.18.16"
+    "@backstage/core-plugin-api": "npm:^1.13.0"
+    "@backstage/dev-utils": "npm:^1.2.0"
+    "@backstage/test-utils": "npm:^1.8.0"
+    "@backstage/theme": "npm:^0.7.4"
+    "@backstage/ui": "npm:^0.20.0"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@mui/styled-engine": "npm:5.18.0"
@@ -22236,7 +22209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.4.0, use-sync-external-store@npm:^1.6.0, use-sync-external-store@npm:^1.7.0":
+"use-sync-external-store@npm:^1.6.0, use-sync-external-store@npm:^1.7.0":
   version: 1.7.0
   resolution: "use-sync-external-store@npm:1.7.0"
   peerDependencies:
