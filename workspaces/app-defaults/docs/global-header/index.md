@@ -23,6 +23,10 @@ The Old Frontend System `/legacy` export and Scalprum mount-point integration ha
 
 Deployers can also add menu items directly via `app-config.yaml` without writing any plugin code. See [Config-Driven Menu Items](new-frontend-system.md#add-items-from-app-configyaml).
 
+For branding the masthead logo (theme-specific images, sizing, fallbacks), see
+[Company logo](components/company-logo.md). To exercise the notifications button
+locally, see [Testing with the Notifications plugin](notifications.md).
+
 [^1]: Only when an entity is starred.
 [^2]: Only when the Support URL is configured in the `app-config.yaml`.
 [^3]: Only when the notifications plugin is installed.
