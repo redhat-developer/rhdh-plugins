@@ -42,6 +42,13 @@ intelligent-assistant:
   #     auth: dcr
   #   - name: test-mcp-server
   #     token: ${MCP_TOKEN_1}
+  #
+  # Prefer dedicated MCP token encryption keys (RHIDP-13539). Falls back to
+  # backend.auth.keys when unset. Production fails closed without either.
+  # mcp:
+  #   tokenEncryption:
+  #     keys:
+  #       - secret: ${LIGHTSPEED_MCP_TOKEN_SECRET}
   screen-context:
     enabled: true
   notebooks:
@@ -53,7 +60,7 @@ intelligent-assistant:
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
+  # information on the format. Also used as a fallback for MCP token encryption.
   # auth:
   #   keys:
   #     - secret: ${BACKEND_SECRET}

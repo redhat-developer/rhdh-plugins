@@ -16,7 +16,10 @@
 
 import { ConfigReader } from '@backstage/config';
 
-import { createTokenEncryptor } from './token-encryption';
+import {
+  createTokenEncryptor,
+  isPlaintextTokenStorageAllowed,
+} from './token-encryption';
 
 const mockLogger =
   /** @type {import('@backstage/backend-plugin-api').LoggerService} */ {
@@ -28,8 +31,68 @@ const mockLogger =
   };
 
 describe('createTokenEncryptor', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
   afterEach(() => {
     jest.clearAllMocks();
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  describe('with intelligent-assistant.mcp.tokenEncryption.keys configured', () => {
+    const dedicatedSecret = 'EXAMPLE-dedicated-EXAMPLE-dedicated!'; // notsecret
+    const config = new ConfigReader({
+      'intelligent-assistant': {
+        mcp: {
+          tokenEncryption: {
+            keys: [{ secret: dedicatedSecret }],
+          },
+        },
+      },
+    });
+
+    it('creates an enabled encryptor using the dedicated keys', () => {
+      const encryptor = createTokenEncryptor(config, mockLogger);
+      expect(encryptor.enabled).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'intelligent-assistant.mcp.tokenEncryption.keys',
+        ),
+      );
+    });
+
+    it('prefers dedicated keys over backend.auth.keys', () => {
+      const dualConfig = new ConfigReader({
+        'intelligent-assistant': {
+          mcp: {
+            tokenEncryption: {
+              keys: [{ secret: dedicatedSecret }],
+            },
+          },
+        },
+        backend: {
+          auth: {
+            keys: [{ secret: 'EXAMPLE-legacy-EXAMPLE-legacy-EXAMPLE!' }], // notsecret
+          },
+        },
+      });
+      const encryptor = createTokenEncryptor(dualConfig, mockLogger);
+      const encrypted = encryptor.encrypt('hello');
+
+      const dedicatedOnly = createTokenEncryptor(config, mockLogger);
+      expect(dedicatedOnly.decrypt(encrypted).plaintext).toBe('hello');
+
+      const legacyOnly = createTokenEncryptor(
+        new ConfigReader({
+          backend: {
+            auth: {
+              keys: [{ secret: 'EXAMPLE-legacy-EXAMPLE-legacy-EXAMPLE!' }], // notsecret
+            },
+          },
+        }),
+        mockLogger,
+      );
+      expect(legacyOnly.decrypt(encrypted).plaintext).toBeNull();
+    });
   });
 
   describe('with backend.auth.keys configured', () => {
@@ -46,6 +109,9 @@ describe('createTokenEncryptor', () => {
       expect(encryptor.enabled).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('Token encryption enabled'),
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining('backend.auth.keys'),
       );
     });
 
@@ -190,10 +256,11 @@ describe('createTokenEncryptor', () => {
     });
   });
 
-  describe('without backend.auth.keys (plaintext fallback)', () => {
+  describe('without encryption keys (plaintext fallback)', () => {
     const config = new ConfigReader({});
 
-    it('creates a disabled encryptor', () => {
+    it('creates a disabled encryptor outside production', () => {
+      process.env.NODE_ENV = 'test';
       const encryptor = createTokenEncryptor(config, mockLogger);
       expect(encryptor.enabled).toBe(false);
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -202,6 +269,7 @@ describe('createTokenEncryptor', () => {
     });
 
     it('passes through plaintext unchanged', () => {
+      process.env.NODE_ENV = 'development';
       const encryptor = createTokenEncryptor(config, mockLogger);
       const input = 'plain-val';
       expect(encryptor.encrypt(input)).toBe(input);
@@ -211,10 +279,89 @@ describe('createTokenEncryptor', () => {
     });
 
     it('returns null when encountering an encrypted value (no key to decrypt)', () => {
+      process.env.NODE_ENV = 'test';
       const encryptor = createTokenEncryptor(config, mockLogger);
       const result = encryptor.decrypt('enc:somedata');
       expect(result.plaintext).toBeNull();
       expect(result.needsReEncrypt).toBe(false);
     });
+  });
+
+  describe('fail-closed without encryption keys', () => {
+    it('throws in production when no keys are configured', () => {
+      process.env.NODE_ENV = 'production';
+      expect(() =>
+        createTokenEncryptor(new ConfigReader({}), mockLogger),
+      ).toThrow(/MCP user token encryption is required/);
+    });
+
+    it('throws when allowPlaintext is explicitly false', () => {
+      process.env.NODE_ENV = 'test';
+      expect(() =>
+        createTokenEncryptor(
+          new ConfigReader({
+            'intelligent-assistant': {
+              mcp: { tokenEncryption: { allowPlaintext: false } },
+            },
+          }),
+          mockLogger,
+        ),
+      ).toThrow(/MCP user token encryption is required/);
+    });
+
+    it('allows plaintext in production when allowPlaintext is true', () => {
+      process.env.NODE_ENV = 'production';
+      const encryptor = createTokenEncryptor(
+        new ConfigReader({
+          'intelligent-assistant': {
+            mcp: { tokenEncryption: { allowPlaintext: true } },
+          },
+        }),
+        mockLogger,
+      );
+      expect(encryptor.enabled).toBe(false);
+    });
+  });
+});
+
+describe('isPlaintextTokenStorageAllowed', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it('returns false in production by default', () => {
+    process.env.NODE_ENV = 'production';
+    expect(isPlaintextTokenStorageAllowed(new ConfigReader({}))).toBe(false);
+  });
+
+  it('returns true outside production by default', () => {
+    process.env.NODE_ENV = 'development';
+    expect(isPlaintextTokenStorageAllowed(new ConfigReader({}))).toBe(true);
+  });
+
+  it('honors explicit allowPlaintext override', () => {
+    process.env.NODE_ENV = 'production';
+    expect(
+      isPlaintextTokenStorageAllowed(
+        new ConfigReader({
+          'intelligent-assistant': {
+            mcp: { tokenEncryption: { allowPlaintext: true } },
+          },
+        }),
+      ),
+    ).toBe(true);
+
+    process.env.NODE_ENV = 'development';
+    expect(
+      isPlaintextTokenStorageAllowed(
+        new ConfigReader({
+          'intelligent-assistant': {
+            mcp: { tokenEncryption: { allowPlaintext: false } },
+          },
+        }),
+      ),
+    ).toBe(false);
   });
 });

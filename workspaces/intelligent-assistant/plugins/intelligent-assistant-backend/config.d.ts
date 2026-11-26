@@ -57,6 +57,39 @@ export interface Config {
       auth?: 'dcr';
     }>;
     /**
+     * MCP feature settings (token encryption at rest, etc.).
+     * @visibility backend
+     */
+    mcp?: {
+      /**
+       * Encryption of per-user MCP tokens stored in the Backstage database.
+       * @visibility backend
+       */
+      tokenEncryption?: {
+        /**
+         * Secrets used to encrypt MCP user tokens at rest (AES-256-GCM).
+         * Preferred over backend.auth.keys. The first entry is used for
+         * encryption; additional entries are accepted for decryption during
+         * key rotation.
+         * @visibility backend
+         */
+        keys?: Array<{
+          /**
+           * Shared secret used to derive the AES-256-GCM key.
+           * @visibility secret
+           */
+          secret: string;
+        }>;
+        /**
+         * Allow plaintext storage when no encryption keys are configured.
+         * When unset: allowed unless NODE_ENV is "production" (fail-closed).
+         * Set true only for exceptional non-encrypted deployments.
+         * @visibility backend
+         */
+        allowPlaintext?: boolean;
+      };
+    };
+    /**
      * Per-user rate limiting for Lightspeed API endpoints.
      * @visibility backend
      */
