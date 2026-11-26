@@ -104,8 +104,23 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
     menuItems: createExtensionInput([globalHeaderMenuItemDataRef]),
   },
   factory(originalFactory, { inputs }) {
+    const hasSearch = inputs.components.some(
+      input => input.node.spec.id === 'gh-component:global-header/search',
+    );
     const extensionComponents = inputs.components
-      .map(c => c.get(globalHeaderComponentDataRef))
+      .map(input => {
+        const component = input.get(globalHeaderComponentDataRef);
+        if (
+          !hasSearch &&
+          input.node.spec.id === 'gh-component:global-header/spacer'
+        ) {
+          return {
+            ...component,
+            layout: { ...component.layout, flexGrow: 1 },
+          };
+        }
+        return component;
+      })
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
     const extensionMenuItems = inputs.menuItems.map(m =>
