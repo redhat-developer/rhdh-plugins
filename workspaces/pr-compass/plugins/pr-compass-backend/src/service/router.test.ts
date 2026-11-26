@@ -36,7 +36,7 @@ import { SourceResolver } from './SourceResolver';
 const GITHUB_TOKENS = JSON.stringify({ 'github:github.com': 'dummy_token' });
 const PAGING_PULL_REQUESTS = Array.from({ length: 5 }, (_, i) =>
   pr({
-    id: `pr-${i + 1}`,
+    number: i + 1,
     badge: PullRequestBadges.InProgress,
     updatedAt: `2026-01-0${5 - i}T00:00:00Z`,
   }),
@@ -84,9 +84,9 @@ describe('createRouter', () => {
     it('returns a ranked page with per-source status', async () => {
       provider.listPullRequests.mockResolvedValue({
         items: [
-          pr({ id: 'c', badge: PullRequestBadges.MergeReady }),
-          pr({ id: 'a', badge: PullRequestBadges.NeedsReview }),
-          pr({ id: 'b', badge: PullRequestBadges.InProgress }),
+          pr({ number: 3, badge: PullRequestBadges.MergeReady }),
+          pr({ number: 1, badge: PullRequestBadges.NeedsReview }),
+          pr({ number: 2, badge: PullRequestBadges.InProgress }),
         ],
         truncated: false,
       });
@@ -97,9 +97,9 @@ describe('createRouter', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.items.map((p: PullRequest) => p.id)).toEqual([
-        'a',
-        'b',
-        'c',
+        'github.com/acme/repo#1',
+        'github.com/acme/repo#2',
+        'github.com/acme/repo#3',
       ]);
       expect(res.body).toMatchObject({
         page: 1,
@@ -199,8 +199,8 @@ describe('createRouter', () => {
         .set(SCM_TOKENS_HEADER, GITHUB_TOKENS);
 
       expect(res.body.items.map((p: PullRequest) => p.id)).toEqual([
-        'pr-3',
-        'pr-4',
+        'github.com/acme/repo#3',
+        'github.com/acme/repo#4',
       ]);
       expect(res.body).toMatchObject({ page: 2, pageSize: 2, total: 5 });
     });

@@ -30,6 +30,7 @@ export type PullRequest = {
   /** Repository in the form of `owner/repo`. */
   repo: string;
   number: number;
+  /** ISO 8601 UTC timestamp */
   updatedAt: string;
   badge: PullRequestBadge;
   author: ScmUser;

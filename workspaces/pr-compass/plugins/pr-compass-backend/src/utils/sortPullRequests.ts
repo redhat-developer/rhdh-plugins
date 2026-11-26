@@ -22,7 +22,7 @@ import {
 function comparePullRequests(a: PullRequest, b: PullRequest): number {
   return (
     pullRequestBadgePriority[a.badge] - pullRequestBadgePriority[b.badge] ||
-    b.updatedAt.localeCompare(a.updatedAt) ||
+    Date.parse(b.updatedAt) - Date.parse(a.updatedAt) ||
     a.id.localeCompare(b.id)
   );
 }

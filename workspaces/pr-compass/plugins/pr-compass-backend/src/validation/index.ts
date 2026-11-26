@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './validatePullRequests';
 export * from './validatePullRequestQuery';
 export * from './validateScmTokensHeader';
 export * from './constants';

@@ -58,6 +58,15 @@ describe('sortPullRequests', () => {
     expect(sorted.map(p => p.id)).toEqual(['newer', 'older']);
   });
 
+  it('orders timestamps by date', () => {
+    const sorted = sortPullRequests([
+      pr({ id: 'earlier', updatedAt: '2026-01-01T00:00:00Z' }),
+      pr({ id: 'later', updatedAt: '2026-01-01T00:00:00.500Z' }),
+    ]);
+
+    expect(sorted.map(p => p.id)).toEqual(['later', 'earlier']);
+  });
+
   it('is a total order, so paging cannot duplicate or skip rows', () => {
     const sameBadgeAndTime = [
       pr({

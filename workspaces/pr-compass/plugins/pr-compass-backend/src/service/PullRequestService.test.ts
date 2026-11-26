@@ -19,13 +19,14 @@ import { ConfigReader } from '@backstage/config';
 import {
   PullRequestBadges,
   SourceErrorCodes,
+  type PullRequest,
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
+import { PullRequestProvider } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 import { pr } from '../../__fixtures__';
 import { createMockPullRequestProvider } from '../../__fixtures__/mockPullRequestProvider';
 import { PullRequestProvidersRegistry } from '../providers/PullRequestProvidersRegistry';
 import { PullRequestService } from './PullRequestService';
 import { SourceResolver } from './SourceResolver';
-import { PullRequestProvider } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 
 const options = { filters: {}, page: 1, pageSize: 20 };
 
@@ -57,9 +58,9 @@ describe('PullRequestService', () => {
   it('sorts pull requests from all sources before paging', async () => {
     github.listPullRequests.mockResolvedValue({
       items: [
-        pr({ id: 'd', badge: PullRequestBadges.MergeReady }),
+        pr({ number: 4, badge: PullRequestBadges.MergeReady }),
         pr({
-          id: 'a',
+          number: 1,
           badge: PullRequestBadges.NeedsReview,
           updatedAt: '2026-01-01T00:00:00Z',
         }),
@@ -69,12 +70,12 @@ describe('PullRequestService', () => {
     gitlab.listPullRequests.mockResolvedValue({
       items: [
         pr({
-          id: 'c',
+          number: 3,
           provider: 'gitlab',
           badge: PullRequestBadges.InProgress,
         }),
         pr({
-          id: 'b',
+          number: 2,
           provider: 'gitlab',
           badge: PullRequestBadges.NeedsReview,
           updatedAt: '2026-01-01T00:00:00Z',
@@ -93,7 +94,10 @@ describe('PullRequestService', () => {
       },
     });
 
-    expect(result.items.map(item => item.id)).toEqual(['c', 'd']);
+    expect(result.items.map(item => item.id)).toEqual([
+      'gitlab.com/acme/repo#3',
+      'github.com/acme/repo#4',
+    ]);
     expect(result).toMatchObject({
       page: 2,
       pageSize: 2,
@@ -106,15 +110,15 @@ describe('PullRequestService', () => {
   });
 
   it.each([
-    [1, 2, ['pr-1', 'pr-2']],
-    [2, 2, ['pr-3', 'pr-4']],
-    [2, 3, ['pr-4']],
+    [1, 2, ['github.com/acme/repo#1', 'github.com/acme/repo#2']],
+    [2, 2, ['github.com/acme/repo#3', 'github.com/acme/repo#4']],
+    [2, 3, ['github.com/acme/repo#4']],
     [99, 2, []],
   ])('returns page %i with page size %i', async (page, pageSize, ids) => {
     github.listPullRequests.mockResolvedValue({
       items: Array.from({ length: 4 }, (_, i) =>
         pr({
-          id: `pr-${i + 1}`,
+          number: i + 1,
           badge: PullRequestBadges.InProgress,
           updatedAt: `2026-01-0${4 - i}T00:00:00Z`,
         }),
@@ -228,6 +232,43 @@ describe('PullRequestService', () => {
     expect(result.sources).toEqual([]);
     expect(github.listPullRequests).not.toHaveBeenCalled();
     expect(gitlab.listPullRequests).not.toHaveBeenCalled();
+  });
+
+  it('drops malformed pull requests from a provider', async () => {
+    github.listPullRequests.mockResolvedValue({
+      items: [
+        pr({ number: 1 }),
+        pr({
+          number: 2,
+          updatedAt: '2026-01-02T00:00:00+02:00',
+        }),
+        {
+          ...pr({ number: 3 }),
+          badge: 'ghu_secret',
+        } as unknown as PullRequest,
+        {
+          ...pr({ number: 4 }),
+          badge: 'ghu_secret',
+        } as unknown as PullRequest,
+      ],
+      truncated: false,
+    });
+    gitlab.listPullRequests.mockResolvedValue({ items: [], truncated: false });
+
+    const result = await service.list({
+      ...options,
+      scmTokens: {
+        'github:github.com': 'github-token',
+        'gitlab:gitlab.com': 'gitlab-token',
+      },
+    });
+
+    expect(result.total).toBe(1);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "Discarded 3 invalid pull request(s) from source 'github:github.com'",
+    );
+    expect(logger.warn.mock.calls[0][0]).not.toContain('ghu_secret');
   });
 
   it('reports a provider failure alongside another source success', async () => {

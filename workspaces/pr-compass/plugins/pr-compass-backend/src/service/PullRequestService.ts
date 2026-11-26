@@ -23,6 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
 import type { PullRequestFilters } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 import { sortPullRequests } from '../utils';
+import { validatePullRequests } from '../validation';
 import type { SourceResolver } from './SourceResolver';
 import type { PullRequestProvidersRegistry } from '../providers/PullRequestProvidersRegistry';
 
@@ -83,7 +84,13 @@ export class PullRequestService {
               filters,
               limit: this.maxPullRequests,
             });
-            gatheredPRs.push(...result.items);
+            const { valid, invalidCount } = validatePullRequests(result.items);
+            if (invalidCount > 0) {
+              this.logger.warn(
+                `Discarded ${invalidCount} invalid pull request(s) from source '${sourceId}'`,
+              );
+            }
+            gatheredPRs.push(...valid);
             return { sourceId, truncated: result.truncated };
           } catch (error) {
             this.logger.error(
