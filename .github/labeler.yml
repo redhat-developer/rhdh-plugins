@@ -49,8 +49,9 @@ workspace/repo-tools:
 workspace/scorecard:
   - 'Workspace\\s*scorecard'
 
-workspace/theme:
-  - 'Workspace\\s*theme'
+workspace/test-plugins:
+  - 'Workspace\\s*test-plugins'
+
 
 workspace/translations:
   - 'Workspace\\s*translations'

@@ -40,7 +40,6 @@ component_management:
     - component_id: community-plugins
       name: 'Community Plugins'
       paths:
-        - workspaces/theme/
         # ... (Community workspaces present in this repo)
 
     - component_id: dev-preview-plugins

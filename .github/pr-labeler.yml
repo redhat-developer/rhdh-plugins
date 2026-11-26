@@ -66,9 +66,10 @@ workspace/scorecard:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/scorecard/**']
 
-workspace/theme:
+workspace/test-plugins:
   - changed-files:
-      - any-glob-to-any-file: ['workspaces/theme/**']
+      - any-glob-to-any-file: ['workspaces/test-plugins/**']
+
 
 workspace/translations:
   - changed-files:

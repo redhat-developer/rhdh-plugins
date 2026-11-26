@@ -12,7 +12,6 @@
     "orchestrator",
     "quickstart",
     "scorecard",
-    "theme",
     "translations"
   ],
   "allowedPackageJsonPaths": [
@@ -25,11 +24,11 @@
     "workspaces/konflux/packages/app/package.json",
     "workspaces/konflux/plugins/konflux/package.json",
     "workspaces/mcp-integrations/packages/app/package.json",
-    "workspaces/theme/plugins/mui4-test/package.json",
+    "workspaces/test-plugins/plugins/mui4-test/package.json",
     "workspaces/x2a/plugins/x2a-dcr/package.json",
     "workspaces/x2a/plugins/x2a/package.json"
   ],
-  "allowedSourcePathPrefixes": ["workspaces/theme/plugins/mui4-test/"],
+  "allowedSourcePathPrefixes": ["workspaces/test-plugins/plugins/mui4-test/"],
   "allowedSourcePaths": [
     "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.tsx",
     "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.test.tsx",

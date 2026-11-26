@@ -66,3 +66,8 @@ site
 
 # Local git worktrees
 .worktrees/
+
+# Codecov uploader artifacts downloaded by codecov-action (repo root)
+/codecov
+/codecov.SHA256SUM
+/codecov.SHA256SUM.sig

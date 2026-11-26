@@ -115,11 +115,10 @@ component_management:
         - workspaces/cost-management/
         - workspaces/extensions/
         - workspaces/scorecard/
-    # Community Plugins — 3 workspace(s)
+    # Community Plugins — 2 workspace(s)
     - component_id: community-plugins
       name: 'Community Plugins'
       paths:
-        - workspaces/theme/
         - workspaces/translations/
         - workspaces/x2a/
     # Dev-Preview Plugins — 5 workspace(s)
@@ -201,7 +200,6 @@ flag_management:
         - workspaces/scorecard/
     - name: e2e-theme
       paths:
-        - workspaces/theme/
     - name: extensions
       paths:
         - workspaces/extensions/
@@ -234,7 +232,6 @@ flag_management:
         - workspaces/scorecard/
     - name: theme
       paths:
-        - workspaces/theme/
     - name: translations
       paths:
         - workspaces/translations/
