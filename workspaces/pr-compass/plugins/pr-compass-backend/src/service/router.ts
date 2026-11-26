@@ -44,9 +44,14 @@ export async function createRouter(
     options;
 
   const router = Router();
+
   router.use(express.json());
 
   router.use(createScmTokensMiddleware(logger));
+
+  router.get('/health', (_req, res) => {
+    res.json({ status: 'ok' });
+  });
 
   router.get('/sources', async (req, res) => {
     await httpAuth.credentials(req, { allow: ['user'] });

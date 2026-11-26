@@ -88,6 +88,11 @@ export const prCompassPlugin = createBackendPlugin({
             logger,
           }),
         );
+
+        httpRouter.addAuthPolicy({
+          path: '/health',
+          allow: 'unauthenticated',
+        });
       },
     });
   },

@@ -50,6 +50,10 @@ The PR Compass backend registers the following permission:
 
 ## API
 
+### `GET /health`
+
+Returns `{ "status": "ok" }` without authentication.
+
 ### `GET /pull-requests`
 
 Returns a page of pull requests and the outcome for each source. This endpoint requires the `pr-compass.pull-request.read` permission.

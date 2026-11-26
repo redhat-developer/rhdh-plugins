@@ -70,6 +70,15 @@ describe('prCompassPlugin (startTestBackend)', () => {
     server?.close();
   });
 
+  describe('GET /api/pr-compass/health', () => {
+    it('returns the health status without authentication', async () => {
+      const res = await request(server).get('/api/pr-compass/health');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: 'ok' });
+    });
+  });
+
   describe('GET /api/pr-compass/pull-requests', () => {
     it('serves a PR ranked page through a registered provider', async () => {
       const res = await request(server)
