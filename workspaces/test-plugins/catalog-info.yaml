@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: test-plugins
+  description: RHDH test and fixture plugins workspace
+spec:
+  type: library
+  owner: rhdh-ui
+  lifecycle: experimental

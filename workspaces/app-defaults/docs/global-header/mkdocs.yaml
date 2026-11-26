@@ -1,0 +1,14 @@
+site_name: RHDH Global Header
+docs_dir: .
+nav:
+  - About: index.md
+  - Configuration: configuration.md
+  - New Frontend System: new-frontend-system.md
+  - Notifications: notifications.md
+  - Components:
+      - Button and icons: components/button-and-icons.md
+      - Company logo: components/company-logo.md
+      - Divider: components/divider.md
+      - Spacer: components/spacer.md
+plugins:
+  - techdocs-core

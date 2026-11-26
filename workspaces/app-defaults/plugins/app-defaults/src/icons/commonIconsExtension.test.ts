@@ -33,6 +33,7 @@ const expectedIconIds = [
   'favorite',
   'bookmarks',
   'queryStats',
+  'query_stats',
   'chart',
   'business',
   'storefront',
@@ -45,10 +46,13 @@ const expectedIconIds = [
   'help',
   'support',
   'quickstart',
+  'waving_hand',
   'notifications',
   'manageAccounts',
+  'manage_accounts',
   'logout',
   'developerHub',
+  'developer_hub',
   'account',
   'admin',
 ];
@@ -78,5 +82,15 @@ describe('commonIconsExtension', () => {
 
     expect(icons.developerHub).toBe(commonIcons.developerHub);
     expect(icons.developerHub).toBeDefined();
+  });
+
+  it('aliases Material ligature ids to the same glyphs as canonical ids', () => {
+    const tester = createExtensionTester(commonIconsExtension);
+    const icons = tester.get(IconBundleBlueprint.dataRefs.icons);
+
+    expect(icons.waving_hand).toBe(icons.quickstart);
+    expect(icons.manage_accounts).toBe(icons.manageAccounts);
+    expect(icons.query_stats).toBe(icons.queryStats);
+    expect(icons.developer_hub).toBe(icons.developerHub);
   });
 });

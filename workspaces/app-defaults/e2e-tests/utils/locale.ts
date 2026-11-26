@@ -27,8 +27,9 @@ export async function switchToLocale(
   const e2eTranslations = getE2eTranslations(locale);
 
   if (baseLocale !== 'en') {
-    // Sidebar Settings is hidden when the global header is present.
-    await page.getByRole('button', { name: 'Settings' }).click();
+    // Sidebar Settings is hidden when the global header is present —
+    // open language settings via the profile menu (aria-label includes Settings).
+    await page.getByRole('button', { name: /Settings/i }).click();
     await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
     await page
@@ -36,10 +37,12 @@ export async function switchToLocale(
       .click();
   }
 
+  // Catalog is mounted at `/` with title Home (see app-config page:catalog).
+  // Scope to the scroll menu — the company logo also has aria-label Home.
   await page
-    .locator('nav[aria-label="sidebar nav"]')
+    .getByTestId('sidebar-menu-scroll')
     .getByRole('link', {
-      name: e2eTranslations.catalogSideBarTitle,
+      name: e2eTranslations.homeTitle,
       exact: true,
     })
     .click();

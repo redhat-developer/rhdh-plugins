@@ -170,7 +170,8 @@ flag_management:
         - workspaces/extensions/
     - name: e2e-global-header
       paths:
-        - workspaces/global-header/
+        - workspaces/app-defaults/e2e-tests/global-header.spec.ts
+        - workspaces/app-defaults/e2e-tests/utils/global-header/
     - name: e2e-homepage
       paths:
         - workspaces/homepage/
@@ -207,7 +208,7 @@ flag_management:
         - workspaces/extensions/
     - name: global-header
       paths:
-        - workspaces/global-header/
+        - workspaces/app-defaults/plugins/app-defaults/src/global-header/
     - name: homepage
       paths:
         - workspaces/homepage/

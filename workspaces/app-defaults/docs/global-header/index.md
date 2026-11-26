@@ -1,0 +1,32 @@
+# Global Header
+
+Red Hat Developer Hub includes a configurable and highly extensible global header plugin starting with RHDH 1.5.
+
+By default it includes a Search input field, Create, Starred[^1], Support[^2] and Notifications[^3] icon buttons and a user profile dropdown.
+
+The plugin uses the **New Frontend System (stable)**. Import from the package root
+(`@red-hat-developer-hub/backstage-plugin-app-defaults` / `@red-hat-developer-hub/backstage-plugin-app-react`). Extension blueprints
+(`GlobalHeaderComponentBlueprint`, `GlobalHeaderMenuItemBlueprint`) allow any
+plugin to contribute toolbar items and dropdown menu items. Building-block UI
+belongs on the `/global-header-components` package subpath so it stays off the
+root NFS sync chunk. See the
+[New Frontend System Guide](new-frontend-system.md) for full details,
+including architecture, code examples, and API reference.
+
+The standalone `@red-hat-developer-hub/backstage-plugin-global-header` package is
+discontinued. Plugins that contributed header items must import blueprints and
+data refs from `app-react` (same string IDs, different objects — old refs may not
+attach). Existing `app-config.yaml` needs no changes. See
+[Migrating from the standalone package](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/README.md#migrating-from-red-hat-developer-hubbackstage-plugin-global-header).
+
+The Old Frontend System `/legacy` export and Scalprum mount-point integration have been removed.
+
+Deployers can also add menu items directly via `app-config.yaml` without writing any plugin code. See [Config-Driven Menu Items](new-frontend-system.md#add-items-from-app-configyaml).
+
+For branding the masthead logo (theme-specific images, sizing, fallbacks), see
+[Company logo](components/company-logo.md). To exercise the notifications button
+locally, see [Testing with the Notifications plugin](notifications.md).
+
+[^1]: Only when an entity is starred.
+[^2]: Only when the Support URL is configured in the `app-config.yaml`.
+[^3]: Only when the notifications plugin is installed.

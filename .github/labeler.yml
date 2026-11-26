@@ -19,8 +19,6 @@ workspace/dcm:
 workspace/extensions:
   - 'Workspace\\s*extensions'
 
-workspace/global-header:
-  - 'Workspace\\s*global-header'
 
 workspace/homepage:
   - 'Workspace\\s*homepage'
@@ -48,6 +46,9 @@ workspace/repo-tools:
 
 workspace/scorecard:
   - 'Workspace\\s*scorecard'
+
+workspace/test-plugins:
+  - 'Workspace\\s*test-plugins'
 
 workspace/theme:
   - 'Workspace\\s*theme'

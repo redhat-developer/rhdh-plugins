@@ -33,6 +33,8 @@ export const quickstartLegacyIconAliases: Record<string, string> = {
   Catalog: 'category',
   SelfService: 'control_point',
   Learning: 'school',
+  // Material ligature → RHDH commonIcons id (host may not load Material font)
+  waving_hand: 'quickstart',
 };
 
 export const resolveQuickstartIconId = (icon: string): string =>
