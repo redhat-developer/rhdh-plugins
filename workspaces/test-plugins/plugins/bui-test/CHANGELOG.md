@@ -1,0 +1,72 @@
+# @red-hat-developer-hub/backstage-plugin-bui-test
+
+## 0.6.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+## 0.5.3
+
+### Patch Changes
+
+- 461f84f: Align `@remixicon/react` to `>=4.6.0 <4.9.0` to avoid the license change introduced in 4.9.0 (see Backstage 1.51 release notes).
+
+## 0.5.2
+
+### Patch Changes
+
+- 8c7f13a: Align BUI theme styling with PatternFly v6: add PageMainContainer for page inset, and close gaps for typography, forms, menus, tooltips, popovers, and buttons.
+
+## 0.5.1
+
+### Patch Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
+## 0.5.0
+
+### Minor Changes
+
+- 22d09cd: Backstage version bump to v1.52.1
+
+## 0.4.0
+
+### Minor Changes
+
+- 0b7c442: Backstage version bump to v1.49.2
+
+## 0.3.0
+
+### Minor Changes
+
+- 9476d25: Added NFS support.
+
+## 0.2.0
+
+### Minor Changes
+
+- f66ba99: Backstage version bump to v1.45.3
+
+## 0.1.0
+
+### Minor Changes
+
+- 11029f6: Backstage version bump to v1.44.2
+
+## 0.0.2
+
+### Patch Changes
+
+- fe339e6: Release all themes and test packages together to resolve build issues
+
+## 0.0.1
+
+### Patch Changes
+
+- 96b640e: Initial version
