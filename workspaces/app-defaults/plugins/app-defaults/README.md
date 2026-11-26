@@ -26,6 +26,28 @@ The module provides:
 - Common RHDH icon catalog via `IconBundleBlueprint` (`icon-bundle:app/common`) — same IDs as the legacy `CommonIcons` map (`home`, `group`, `category`, `extension`, `school`, `add`, `developerHub`, …)
 - **Plugin overrides** (via the default feature loader) for catalog, catalog-graph, API docs, TechDocs, and scaffolder — including empty-state pages and **RHDH catalog entity page defaults** (see below)
 - Learning Paths page at `/learning-paths` (`learningPathsModule`) with proxy-backed data and static JSON fallback
+- **RHDH theme** (`rhdhThemeModule`) — PatternFly-inspired light/dark `ThemeBlueprint` extensions, Red Hat fonts, and BUI tokens, loaded by the feature loader. OFS helpers (`getThemes`, `useThemes`, …) remain available from `@red-hat-developer-hub/backstage-plugin-app-defaults/theme-legacy`. Customize via `app.branding.theme` / `app.branding.customCSS` in `app-config.yaml`.
+
+## Theme
+
+The feature loader registers `rhdhThemeModule` (also exported as `./theme-module`). Standalone apps that do not use the feature loader can import it directly:
+
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+
+export default createApp({
+  features: [rhdhThemeModule /* ... */],
+});
+```
+
+Legacy (OFS) theme helpers:
+
+```tsx
+import { useThemes } from '@red-hat-developer-hub/backstage-plugin-app-defaults/theme-legacy';
+```
+
+`app.branding` config keys are unchanged. Hosts that already use the app-defaults feature loader pick up the theme with no additional import. `@red-hat-developer-hub/backstage-plugin-theme` is soft-deprecated; migrate off that package to app-defaults when ready.
 
 ## Customizing Learning Paths
 

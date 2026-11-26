@@ -12,6 +12,8 @@
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
+    "./theme-module": "./src/theme/themeModuleExport.ts",
+    "./theme-legacy": "./src/theme/legacyExports.ts",
     "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
     "./catalog-module": "./src/catalogModuleExport.ts",
     "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
@@ -37,6 +39,12 @@
       ],
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
+      ],
+      "theme-module": [
+        "src/theme/themeModuleExport.ts"
+      ],
+      "theme-legacy": [
+        "src/theme/legacyExports.ts"
       ],
       "catalog-plugin-override": [
         "src/catalogPluginOverrideExport.ts"
@@ -80,7 +88,19 @@
       "@red-hat-developer-hub/backstage-plugin-app-react"
     ]
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css",
+    "*.css.esm.js",
+    "**/*.css.esm.js",
+    "./src/theme/fonts.ts",
+    "./dist/theme/fonts.esm.js",
+    "./src/theme/index.ts",
+    "./dist/theme/index.esm.js",
+    "./src/theme/legacyExports.ts",
+    "./dist/theme/legacyExports.esm.js",
+    "./src/theme/themeModuleExport.ts",
+    "./dist/theme/themeModuleExport.esm.js"
+  ],
   "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start",
@@ -114,6 +134,7 @@
     "@backstage/plugin-search-react": "^1.11.8",
     "@backstage/plugin-techdocs": "^1.18.0",
     "@backstage/plugin-techdocs-common": "^0.1.1",
+    "@backstage/theme": "^0.7.3",
     "@backstage/ui": "^0.17.1",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0",
@@ -129,8 +150,10 @@
     "@backstage/cli": "^0.36.5",
     "@backstage/frontend-test-utils": "^0.6.3",
     "@backstage/test-utils": "^1.7.21",
+    "@backstage/types": "^1.2.2",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.6.13",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "cross-fetch": "^4.0.0",

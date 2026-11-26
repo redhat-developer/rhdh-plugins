@@ -201,7 +201,8 @@ flag_management:
         - workspaces/scorecard/
     - name: e2e-theme
       paths:
-        - workspaces/theme/
+        - workspaces/app-defaults/e2e-tests/custom-theme.spec.ts
+        - workspaces/app-defaults/e2e-tests/utils/theme/
     - name: extensions
       paths:
         - workspaces/extensions/
@@ -234,7 +235,7 @@ flag_management:
         - workspaces/scorecard/
     - name: theme
       paths:
-        - workspaces/theme/
+        - workspaces/app-defaults/plugins/app-defaults/src/theme/
     - name: translations
       paths:
         - workspaces/translations/

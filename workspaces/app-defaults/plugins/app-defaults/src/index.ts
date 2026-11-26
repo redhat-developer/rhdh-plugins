@@ -34,6 +34,7 @@ import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOv
 import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
 import { learningPathsModule } from './learning-paths';
+import rhdhThemeModule from './theme';
 
 export { appDefaultsModule };
 
@@ -72,10 +73,28 @@ export {
 export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
 
 /**
- * Feature loader that registers the RHDH app defaults module, the catalog
- * entity header layout that localizes the catalog tab titles, and all plugin
- * overrides (catalog, catalog graph, scaffolder, API docs, TechDocs) that add
- * empty-state pages when no entities are available.
+ * RHDH themes as NFS extensions (ThemeBlueprint).
+ * @public
+ */
+export { default as rhdhThemeModule } from './theme';
+
+/**
+ * Full-width Red Hat Developer Hub logo SVG.
+ * @public
+ */
+export { LogoFull } from './theme';
+
+/**
+ * Compact Red Hat Developer Hub logo SVG.
+ * @public
+ */
+export { LogoIcon } from './theme';
+
+/**
+ * Feature loader that registers the RHDH app defaults module, the RHDH theme
+ * module, the catalog entity header layout that localizes the catalog tab
+ * titles, and all plugin overrides (catalog, catalog graph, scaffolder, API
+ * docs, TechDocs) that add empty-state pages when no entities are available.
  *
  * @public
  */
@@ -84,6 +103,7 @@ export default createFrontendFeatureLoader({
     return [
       appDefaultsModule,
       appDefaultsTranslationsModule,
+      rhdhThemeModule,
       learningPathsModule,
       catalogPluginOverride,
       catalogModule,
