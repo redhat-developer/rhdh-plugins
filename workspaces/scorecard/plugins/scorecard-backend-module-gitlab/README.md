@@ -83,32 +83,34 @@ For self-hosted GitLab, point the source location at that host (for example `url
 
 ## Available Metrics
 
-| Metric ID                        | Description                                            | Type       | Time Window |
-| -------------------------------- | ------------------------------------------------------ | ---------- | ----------- |
-| `gitlab.openIssues`              | Currently open issues                                  | Number     | —           |
-| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                       | Number     | 7 days      |
-| `gitlab.closedIssues7d`          | Issues closed in the last 7 days                       | Number     | 7 days      |
-| `gitlab.openMergeRequests`       | Currently open merge requests                          | Number     | —           |
-| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days               | Number     | 7 days      |
-| `gitlab.closedMergeRequests7d`   | Merge requests closed or merged in the last 7 days     | Number     | 7 days      |
-| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days (`created_after`) | Number     | 7 days      |
-| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days                | Number     | 7 days      |
-| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                    | Number     | 7 days      |
-| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days            | Number (%) | 7 days      |
-| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours          | Number (%) | 24 hours    |
-| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                        | Number     | 7 days      |
-| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                     | Number     | 7 days      |
-| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                         | Number     | 7 days      |
-| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days                 | Number (%) | 7 days      |
-| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours               | Number (%) | 24 hours    |
+| Metric ID                        | Description                                         | Type       | Time Window |
+| -------------------------------- | --------------------------------------------------- | ---------- | ----------- |
+| `gitlab.openIssues`              | Currently open issues                               | Number     | —           |
+| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                    | Number     | 7 days      |
+| `gitlab.closedIssues7d`          | Issues closed in the last 7 days                    | Number     | 7 days      |
+| `gitlab.openMergeRequests`       | Currently open merge requests                       | Number     | —           |
+| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days            | Number     | 7 days      |
+| `gitlab.closedMergeRequests7d`   | Merge requests closed or merged in the last 7 days  | Number     | 7 days      |
+| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days (`started_at`) | Number     | 7 days      |
+| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days             | Number     | 7 days      |
+| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                 | Number     | 7 days      |
+| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days         | Number (%) | 7 days      |
+| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours       | Number (%) | 24 hours    |
+| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                     | Number     | 7 days      |
+| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                  | Number     | 7 days      |
+| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                      | Number     | 7 days      |
+| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days              | Number (%) | 7 days      |
+| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours            | Number (%) | 24 hours    |
 
 Success ratio metrics are `successful / (successful + failed)` as a percentage. Pending, running, and canceled pipelines/jobs are ignored. When there are no successful or failed items in the window, the ratio metric is omitted and stored as a calculation error.
 
 Closed issues/MRs (`gitlab.closedIssues7d`, `gitlab.closedMergeRequests7d`) use `state=closed`/`merged` with `updatedAfter` only to bound candidates (GitLab has no `closedAfter` list filter). The Scorecard backend then counts rows whose `closed_at` or `merged_at` falls in the window. Candidate pages use the same client-side cap as jobs (1000 items / 10 pages); when the cap is hit the client logs a warning and returns a truncated count. Items closed or merged in the window but not updated since the window start never enter the candidate set and are not counted.
 
-Pipeline started/success/failed windows use GitLab `created_after` so they match “started in the window”. Accurate filtering needs a GitLab version that supports `created_after` on project pipelines; unsupported instances may error or ignore the param (surfaced as calculation errors).
+Pipeline and job started windows count rows whose `started_at` falls in the window. Successful/failed (and therefore ratio) windows count rows whose `finished_at` falls in the window with the matching status. Pending, running, and canceled items are ignored for success/failed/ratios; jobs or pipelines with no `started_at` are excluded from started counts.
 
-Job metrics for a time window use a single Jobs API walk (no per-status fetches). Counts page with a default client-side cap of 1000 items per query; when the cap is hit the client logs a warning and returns a truncated count.
+Pipelines use `updatedAfter` only to bound candidates (GitLab has no `started_after` / `finished_after` list filter), then count by `started_at` or `finished_at` with the same client-side cap as closed issues (1000 items / 10 pages). Items started or finished in the window but not updated since the window start never enter the candidate set and are not counted.
+
+Job metrics for a time window use a single Jobs API walk (no per-status fetches). The walk pages with the same 1000-item / 10-page cap and stops when a page has no `started_at`/`finished_at` activity in the window and its oldest `created_at` is before the window start; when the cap is hit the client logs a warning and returns a truncated count.
 
 ## Available Providers
 

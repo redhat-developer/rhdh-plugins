@@ -38,21 +38,54 @@ export type GitlabMergeRequestsRequestAttributes = {
   showExpanded?: boolean;
 };
 
+export type GitlabPipelinesRequestAttributes = {
+  status?: 'success' | 'failed';
+  updatedAfter?: string;
+  page?: number;
+  perPage?: number;
+  maxPages?: number;
+  showExpanded?: boolean;
+};
+
 export type TimestampedItem = Record<string, unknown>;
 
-export type CountItemsSinceOptions = {
-  fetchPage: (page: number, perPage: number) => Promise<TimestampedItem[]>;
-  timestampField: string;
-  since: Date;
+export type ScanPagesOptions<TItem, TResult> = {
+  fetchPage: (page: number, perPage: number) => Promise<TItem[]>;
+  getValue: (item: TItem, result: TResult) => void;
+  initialResult: TResult;
   context: string;
+  fetchItemsLimit?: number;
+  shouldContinue?: (items: TItem[], perPage: number) => boolean;
+};
+
+export type GitlabPipelineItem = {
+  started_at?: string | null;
+  finished_at?: string | null;
+  status?: string;
+};
+
+export type AllPipelinesResponse = {
+  data: GitlabPipelineItem[];
+  paginationInfo?: {
+    total?: number;
+  };
 };
 
 export type GitlabJobItem = {
   created_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
   status?: string;
 };
 
-export type FetchJobsSinceOptions = {
+export type GitlabJobsRequestAttributes = {
+  scope?: string[];
+  page?: number;
+  perPage?: number;
+  maxPages?: number;
+};
+
+export type FetchJobsWindowOptions = {
   since: Date;
   scope?: string[];
   fetchItemsLimit?: number;
@@ -62,6 +95,13 @@ export type GitlabJobsWindowStats = {
   started: number;
   successful: number;
   failed: number;
+};
+
+export type AllJobsResponse = {
+  data: GitlabJobItem[];
+  paginationInfo?: {
+    total?: number;
+  };
 };
 
 export type GitlabIssueItem = {

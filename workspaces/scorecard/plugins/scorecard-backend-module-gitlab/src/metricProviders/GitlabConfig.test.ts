@@ -78,9 +78,9 @@ describe('GitlabConfig', () => {
   it('should lock percentage threshold rules', () => {
     expect(GITLAB_PERCENTAGE_THRESHOLDS).toEqual({
       rules: [
-        { key: 'error', expression: '<50' },
-        { key: 'warning', expression: '50-80' },
         { key: 'success', expression: '>80' },
+        { key: 'warning', expression: '50-80' },
+        { key: 'error', expression: '<50' },
       ],
     });
   });
@@ -88,9 +88,9 @@ describe('GitlabConfig', () => {
   it('should lock higher-is-better success count thresholds', () => {
     expect(GITLAB_SUCCESS_COUNT_THRESHOLDS).toEqual({
       rules: [
-        { key: 'error', expression: '<10' },
-        { key: 'warning', expression: '10-50' },
         { key: 'success', expression: '>50' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'error', expression: '<10' },
       ],
     });
   });

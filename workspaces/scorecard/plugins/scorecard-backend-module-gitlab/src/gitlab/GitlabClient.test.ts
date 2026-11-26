@@ -381,9 +381,25 @@ describe('GitlabClient', () => {
   });
 
   describe('getPipelinesCount', () => {
-    it('should return pipeline count with status filter', async () => {
-      mockGitlabApi.Pipelines.all.mockResolvedValue(mockExpandedCount(15));
+    it('should count successful pipelines by finished_at in the window', async () => {
       const since = new Date('2024-01-01T00:00:00Z');
+      mockGitlabApi.Pipelines.all.mockResolvedValue([
+        {
+          finished_at: '2024-01-02T00:00:00Z',
+          started_at: '2023-12-20T00:00:00Z',
+          status: 'success',
+        },
+        {
+          finished_at: '2023-12-15T00:00:00Z',
+          started_at: '2023-12-15T00:00:00Z',
+          status: 'success',
+        },
+        {
+          finished_at: null,
+          started_at: '2024-01-03T00:00:00Z',
+          status: 'running',
+        },
+      ]);
 
       const result = await gitlabClient.getPipelinesCount(
         url,
@@ -392,20 +408,35 @@ describe('GitlabClient', () => {
         'success',
       );
 
-      expect(result).toBe(15);
+      expect(result).toBe(1);
       expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledWith(projectSlug, {
-        createdAfter: since.toISOString(),
+        updatedAfter: since.toISOString(),
         status: 'success',
-        perPage: 1,
-        maxPages: 1,
         page: 1,
-        showExpanded: true,
+        perPage: 100,
+        maxPages: 1,
       });
     });
 
-    it('should return pipeline count without status filter', async () => {
-      mockGitlabApi.Pipelines.all.mockResolvedValue(mockExpandedCount(25));
+    it('should count started pipelines by started_at in the window', async () => {
       const since = new Date('2024-01-01T00:00:00Z');
+      mockGitlabApi.Pipelines.all.mockResolvedValue([
+        {
+          started_at: '2024-01-02T00:00:00Z',
+          finished_at: null,
+          status: 'running',
+        },
+        {
+          started_at: null,
+          finished_at: null,
+          status: 'pending',
+        },
+        {
+          started_at: '2023-12-01T00:00:00Z',
+          finished_at: '2024-01-02T00:00:00Z',
+          status: 'success',
+        },
+      ]);
 
       const result = await gitlabClient.getPipelinesCount(
         url,
@@ -413,207 +444,83 @@ describe('GitlabClient', () => {
         since,
       );
 
-      expect(result).toBe(25);
-      expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledWith(projectSlug, {
-        createdAfter: since.toISOString(),
-        perPage: 1,
-        maxPages: 1,
-        page: 1,
-        showExpanded: true,
-      });
-    });
-  });
-
-  describe('getJobsCount', () => {
-    it('should return jobs count filtered by date', async () => {
-      const now = Date.now();
-      const since = new Date(now - 7 * 24 * 60 * 60 * 1000);
-
-      mockGitlabApi.Jobs.all.mockResolvedValue([
-        { created_at: new Date(now - 1000).toISOString() },
-        { created_at: new Date(now - 2000).toISOString() },
-        { created_at: new Date(now - 3000).toISOString() },
-      ]);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-        scope: ['success'],
-      });
-
-      expect(result).toBe(3);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
-        scope: ['success'],
-        page: 1,
-        perPage: 100,
-        maxPages: 1,
-      });
-    });
-
-    it('should omit scope when not provided', async () => {
-      const now = Date.now();
-      const since = new Date(now - 1000);
-
-      mockGitlabApi.Jobs.all.mockResolvedValue([
-        { created_at: new Date(now - 500).toISOString() },
-      ]);
-
-      await gitlabClient.getJobsCount(url, projectSlug, { since });
-
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
-        page: 1,
-        perPage: 100,
-        maxPages: 1,
-      });
-    });
-
-    it('should omit scope when scope array is empty', async () => {
-      const now = Date.now();
-      const since = new Date(now - 1000);
-
-      mockGitlabApi.Jobs.all.mockResolvedValue([
-        { created_at: new Date(now - 500).toISOString() },
-      ]);
-
-      await gitlabClient.getJobsCount(url, projectSlug, { since, scope: [] });
-
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
-        page: 1,
-        perPage: 100,
-        maxPages: 1,
-      });
-    });
-
-    it('should filter out jobs older than since date', async () => {
-      const now = Date.now();
-      const since = new Date(now - 1000);
-
-      mockGitlabApi.Jobs.all.mockResolvedValue([
-        { created_at: new Date(now - 500).toISOString() },
-        { created_at: new Date(now - 5000).toISOString() },
-      ]);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-      });
-
       expect(result).toBe(1);
-    });
-
-    it('should stop paging when the page is empty', async () => {
-      const since = new Date('2024-01-01T00:00:00Z');
-      mockGitlabApi.Jobs.all.mockResolvedValue([]);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-      });
-
-      expect(result).toBe(0);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
-    });
-
-    it('should stop paging when the oldest job on the page is before since', async () => {
-      const now = Date.now();
-      const since = new Date(now - 2000);
-      const page = Array.from({ length: 100 }, (_, index) => ({
-        created_at: new Date(now - index * 10).toISOString(),
-      }));
-      page[99] = { created_at: new Date(now - 5000).toISOString() };
-
-      mockGitlabApi.Jobs.all.mockResolvedValue(page);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-      });
-
-      expect(result).toBe(99);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
-    });
-
-    it('should continue paging while all jobs on a full page are within since', async () => {
-      const now = Date.now();
-      const since = new Date(now - 10_000);
-      const firstPage = Array.from({ length: 100 }, (_, index) => ({
-        created_at: new Date(now - index).toISOString(),
-      }));
-      const secondPage = [
-        { created_at: new Date(now - 150).toISOString() },
-        { created_at: new Date(now - 200).toISOString() },
-      ];
-
-      mockGitlabApi.Jobs.all
-        .mockResolvedValueOnce(firstPage)
-        .mockResolvedValueOnce(secondPage);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-      });
-
-      expect(result).toBe(102);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(2);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenNthCalledWith(2, projectSlug, {
-        page: 2,
+      expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledWith(projectSlug, {
+        updatedAfter: since.toISOString(),
+        page: 1,
         perPage: 100,
         maxPages: 1,
       });
     });
 
-    it('should stop at fetchItemsLimit and warn', async () => {
-      const now = Date.now();
-      const since = new Date(now - 10_000);
-      const firstPage = Array.from({ length: 100 }, (_, index) => ({
-        created_at: new Date(now - index).toISOString(),
+    it('should warn and return truncated count when pipeline page cap is hit', async () => {
+      const since = new Date('2024-01-01T00:00:00Z');
+      const fullPage = Array.from({ length: 100 }, () => ({
+        started_at: '2024-01-02T00:00:00Z',
+        finished_at: '2024-01-02T01:00:00Z',
+        status: 'success',
       }));
+      mockGitlabApi.Pipelines.all.mockResolvedValue(fullPage);
 
-      mockGitlabApi.Jobs.all.mockResolvedValue(firstPage);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+      const result = await gitlabClient.getPipelinesCount(
+        url,
+        projectSlug,
         since,
-        fetchItemsLimit: 50,
-      });
-
-      expect(result).toBe(50);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
-      expect(mockedLogger.warn).toHaveBeenCalledWith(
-        `Reached jobs fetch limit for '${projectSlug}' ` +
-          `(fetchItemsLimit=50, maxPages=10); stopping fetch`,
+        'success',
       );
-    });
-
-    it('should stop paging after MAX_JOBS_PAGES and warn', async () => {
-      const now = Date.now();
-      const since = new Date(now - 1_000_000);
-      const fullPage = Array.from({ length: 100 }, (_, index) => ({
-        created_at: new Date(now - index).toISOString(),
-      }));
-
-      mockGitlabApi.Jobs.all.mockResolvedValue(fullPage);
-
-      const result = await gitlabClient.getJobsCount(url, projectSlug, {
-        since,
-        // High enough that the page cap stops the fetch first
-        fetchItemsLimit: 1001,
-      });
 
       expect(result).toBe(10 * 100);
-      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(10);
+      expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledTimes(10);
       expect(mockedLogger.warn).toHaveBeenCalledWith(
-        `Reached jobs fetch limit for '${projectSlug}' ` +
-          `(fetchItemsLimit=1001, maxPages=10); stopping fetch`,
+        `Reached fetch limit while counting success pipelines in '${projectSlug}' ` +
+          `(fetchItemsLimit=1000, maxPages=10). ` +
+          'Counts cannot be completed without scanning more candidates.',
       );
     });
   });
 
   describe('getJobsWindowStats', () => {
-    it('should classify jobs from a single unscoped fetch', async () => {
+    it('should classify jobs by started_at and finished_at', async () => {
       const now = Date.now();
       const since = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
       mockGitlabApi.Jobs.all.mockResolvedValue([
-        { created_at: new Date(now - 1000).toISOString(), status: 'success' },
-        { created_at: new Date(now - 2000).toISOString(), status: 'success' },
-        { created_at: new Date(now - 3000).toISOString(), status: 'failed' },
-        { created_at: new Date(now - 4000).toISOString(), status: 'running' },
-        { created_at: new Date(now - 5000).toISOString(), status: 'canceled' },
+        {
+          created_at: new Date(now - 1000).toISOString(),
+          started_at: new Date(now - 1000).toISOString(),
+          finished_at: new Date(now - 500).toISOString(),
+          status: 'success',
+        },
+        {
+          created_at: new Date(now - 2000).toISOString(),
+          started_at: new Date(now - 2000).toISOString(),
+          finished_at: new Date(now - 1500).toISOString(),
+          status: 'success',
+        },
+        {
+          created_at: new Date(now - 3000).toISOString(),
+          started_at: new Date(now - 3000).toISOString(),
+          finished_at: new Date(now - 2500).toISOString(),
+          status: 'failed',
+        },
+        {
+          created_at: new Date(now - 4000).toISOString(),
+          started_at: new Date(now - 4000).toISOString(),
+          finished_at: null,
+          status: 'running',
+        },
+        {
+          created_at: new Date(now - 5000).toISOString(),
+          started_at: null,
+          finished_at: null,
+          status: 'pending',
+        },
+        {
+          created_at: new Date(now - 6000).toISOString(),
+          started_at: new Date(now - 6000).toISOString(),
+          finished_at: new Date(now - 5500).toISOString(),
+          status: 'canceled',
+        },
       ]);
 
       const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
@@ -633,17 +540,51 @@ describe('GitlabClient', () => {
       });
     });
 
-    it('should exclude jobs older than since from stats', async () => {
+    it('should count finished jobs created before the window', async () => {
+      const now = Date.now();
+      const since = new Date(now - 1000);
+
+      mockGitlabApi.Jobs.all.mockResolvedValue([
+        {
+          created_at: new Date(now - 5000).toISOString(),
+          started_at: new Date(now - 5000).toISOString(),
+          finished_at: new Date(now - 500).toISOString(),
+          status: 'success',
+        },
+        {
+          created_at: new Date(now - 400).toISOString(),
+          started_at: new Date(now - 400).toISOString(),
+          finished_at: null,
+          status: 'running',
+        },
+      ]);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result).toEqual({
+        started: 1,
+        successful: 1,
+        failed: 0,
+      });
+    });
+
+    it('should exclude jobs whose started_at and finished_at are before since', async () => {
       const now = Date.now();
       const since = new Date(now - 1000);
 
       mockGitlabApi.Jobs.all.mockResolvedValue([
         {
           created_at: new Date(now - 500).toISOString(),
+          started_at: new Date(now - 500).toISOString(),
+          finished_at: new Date(now - 400).toISOString(),
           status: 'success',
         },
         {
           created_at: new Date(now - 5000).toISOString(),
+          started_at: new Date(now - 5000).toISOString(),
+          finished_at: new Date(now - 4000).toISOString(),
           status: 'failed',
         },
       ]);
@@ -657,6 +598,162 @@ describe('GitlabClient', () => {
         successful: 1,
         failed: 0,
       });
+    });
+
+    it('should omit scope when scope array is empty', async () => {
+      const now = Date.now();
+      const since = new Date(now - 1000);
+
+      mockGitlabApi.Jobs.all.mockResolvedValue([
+        {
+          created_at: new Date(now - 500).toISOString(),
+          started_at: new Date(now - 500).toISOString(),
+        },
+      ]);
+
+      await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+        scope: [],
+      });
+
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
+        page: 1,
+        perPage: 100,
+        maxPages: 1,
+      });
+    });
+
+    it('should stop paging when the page is empty', async () => {
+      const since = new Date('2024-01-01T00:00:00Z');
+      mockGitlabApi.Jobs.all.mockResolvedValue([]);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result).toEqual({ started: 0, successful: 0, failed: 0 });
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop paging when a page has no window activity and oldest created_at is before since', async () => {
+      const now = Date.now();
+      const since = new Date(now - 2000);
+      const inWindowPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+        started_at: new Date(now - index).toISOString(),
+        finished_at: new Date(now - index).toISOString(),
+        status: 'success',
+      }));
+      const outsidePage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - 5000 - index).toISOString(),
+        started_at: new Date(now - 5000 - index).toISOString(),
+        finished_at: new Date(now - 5000 - index).toISOString(),
+        status: 'success',
+      }));
+
+      mockGitlabApi.Jobs.all
+        .mockResolvedValueOnce(inWindowPage)
+        .mockResolvedValueOnce(outsidePage);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result.started).toBe(100);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(2);
+    });
+
+    it('should continue paging while jobs on a full page are within since', async () => {
+      const now = Date.now();
+      const since = new Date(now - 10_000);
+      const firstPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+        started_at: new Date(now - index).toISOString(),
+        finished_at: new Date(now - index).toISOString(),
+        status: 'success',
+      }));
+      const secondPage = [
+        {
+          created_at: new Date(now - 150).toISOString(),
+          started_at: new Date(now - 150).toISOString(),
+          finished_at: new Date(now - 150).toISOString(),
+          status: 'success',
+        },
+        {
+          created_at: new Date(now - 200).toISOString(),
+          started_at: new Date(now - 200).toISOString(),
+          finished_at: new Date(now - 200).toISOString(),
+          status: 'success',
+        },
+      ];
+
+      mockGitlabApi.Jobs.all
+        .mockResolvedValueOnce(firstPage)
+        .mockResolvedValueOnce(secondPage);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result.started).toBe(102);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(2);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenNthCalledWith(2, projectSlug, {
+        page: 2,
+        perPage: 100,
+        maxPages: 1,
+      });
+    });
+
+    it('should stop at fetchItemsLimit and warn', async () => {
+      const now = Date.now();
+      const since = new Date(now - 10_000);
+      const firstPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+        started_at: new Date(now - index).toISOString(),
+        finished_at: new Date(now - index).toISOString(),
+        status: 'success',
+      }));
+
+      mockGitlabApi.Jobs.all.mockResolvedValue(firstPage);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+        fetchItemsLimit: 50,
+      });
+
+      expect(result.started).toBe(50);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached fetch limit while counting jobs in '${projectSlug}' ` +
+          `(fetchItemsLimit=50, maxPages=10). ` +
+          'Counts cannot be completed without scanning more candidates.',
+      );
+    });
+
+    it('should stop paging after MAX_PAGES and warn', async () => {
+      const now = Date.now();
+      const since = new Date(now - 1_000_000);
+      const fullPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+        started_at: new Date(now - index).toISOString(),
+        finished_at: new Date(now - index).toISOString(),
+        status: 'success',
+      }));
+
+      mockGitlabApi.Jobs.all.mockResolvedValue(fullPage);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+        fetchItemsLimit: 1001,
+      });
+
+      expect(result.started).toBe(10 * 100);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(10);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached fetch limit while counting jobs in '${projectSlug}' ` +
+          `(fetchItemsLimit=1001, maxPages=10). ` +
+          'Counts cannot be completed without scanning more candidates.',
+      );
     });
   });
 

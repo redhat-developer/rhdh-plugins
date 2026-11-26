@@ -35,17 +35,17 @@ export const GITLAB_PIPELINES_METRIC_IDS = {
 
 export const GITLAB_PERCENTAGE_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'error', expression: '<50' },
-    { key: 'warning', expression: '50-80' },
     { key: 'success', expression: '>80' },
+    { key: 'warning', expression: '50-80' },
+    { key: 'error', expression: '<50' },
   ],
 } as const;
 
 export const GITLAB_SUCCESS_COUNT_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'error', expression: '<10' },
-    { key: 'warning', expression: '10-50' },
     { key: 'success', expression: '>50' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '<10' },
   ],
 } as const;
 
