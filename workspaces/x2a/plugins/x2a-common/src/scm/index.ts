@@ -22,4 +22,6 @@ export {
 } from './providerRegistry';
 export { buildScmHostMap } from './buildScmHostMap';
 export { extractHost, extractAuthHost } from './extractHost';
+export { parseRepoUrl } from './parseRepoUrl';
+export type { ParsedRepoUrl } from './parseRepoUrl';
 export { githubProvider, gitlabProvider, bitbucketProvider } from './providers';
