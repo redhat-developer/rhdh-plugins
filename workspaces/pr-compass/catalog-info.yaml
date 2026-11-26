@@ -8,5 +8,5 @@ metadata:
 spec:
   type: backstage-plugin
   owner: rhdh-team
-  lifecycle: experimental
+  lifecycle: active
   subcomponentOf: rhdh-plugins

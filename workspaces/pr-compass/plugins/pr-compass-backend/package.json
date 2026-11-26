@@ -20,6 +20,7 @@
       "@red-hat-developer-hub/backstage-plugin-pr-compass-node"
     ]
   },
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start --config app-config.yaml",
     "build": "backstage-cli package build",
@@ -30,6 +31,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "files": [
+    "config.d.ts",
     "dist"
   ],
   "repository": {

@@ -22,10 +22,7 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install",
-    "start-app": "yarn workspace app start",
-    "start-backend": "yarn workspace backend start",
-    "build:backend": "yarn workspace backend build"
+    "postinstall": "cd ../../ && yarn install"
   },
   "workspaces": [
     "packages/*",
