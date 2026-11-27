@@ -30,6 +30,7 @@ describe('x2a frontend configuration schema', () => {
           authHosts: {
             github: 'ghe.example.com',
             gitlab: 'gitlab.example.com',
+            bitbucket: 'bitbucket.org',
           },
         },
       },

@@ -16,15 +16,39 @@
 
 import { InputError } from '@backstage/errors';
 
-import { MarkItDown } from 'markitdown-ts';
-
-const markitdown = new MarkItDown();
+import { extractText } from 'unpdf';
 
 const PLAINTEXT_EXTENSIONS = new Set(['.json', '.yaml', '.yml', '.log']);
+const TEXT_EXTENSIONS = new Set(['.txt', '.md']);
 
 /**
- * Convert a document buffer to markdown using markitdown-ts.
- * Plain-text formats (json, yaml, log) are passed through as-is.
+ * Normalize line endings, trim, and collapse runs of blank lines.
+ * Matches the output previously produced by markitdown-ts.
+ */
+const normalizeText = (text: string): string =>
+  text
+    .replace(/\r\n|\r/g, '\n')
+    .trim()
+    .replace(/\n{3,}/g, '\n\n');
+
+async function extractPdfText(
+  buffer: Buffer,
+  originalName: string,
+): Promise<string> {
+  try {
+    const { text } = await extractText(new Uint8Array(buffer), {
+      mergePages: true,
+    });
+    return text;
+  } catch (error) {
+    throw new InputError(`Failed to extract text from ${originalName}`, error);
+  }
+}
+
+/**
+ * Convert an uploaded document buffer to text for the vector store.
+ * Plain-text formats (json, yaml, log) are passed through as-is,
+ * txt and md are normalized, and pdf text is extracted with unpdf.
  */
 export async function convertToMarkdown(
   buffer: Buffer,
@@ -49,15 +73,21 @@ export async function convertToMarkdown(
     return buffer.toString('utf-8');
   }
 
-  const result = await markitdown.convertBuffer(buffer, {
-    file_extension: ext,
-  });
+  let text: string;
+  if (ext === '.pdf') {
+    text = await extractPdfText(buffer, originalName);
+  } else if (TEXT_EXTENSIONS.has(ext)) {
+    text = buffer.toString('utf-8');
+  } else {
+    throw new InputError(`Unsupported file type "${fileType}"`);
+  }
 
-  if (!result?.markdown) {
+  const markdown = normalizeText(text);
+  if (!markdown) {
     throw new InputError(
       `Markdown conversion produced no output for ${originalName}`,
     );
   }
 
-  return result.markdown;
+  return markdown;
 }

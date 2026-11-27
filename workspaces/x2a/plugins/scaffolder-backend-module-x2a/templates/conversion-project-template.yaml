@@ -121,8 +121,10 @@ spec:
                     # hosts from the "integrations:" app config plus bitbucket.org instead of
                     # a hard-coded allowedHosts list, so self-hosted instances work. The OAuth
                     # token comes from the app's scmAuthApi (its scopes, not narrowed) and is
-                    # only requested for the host set in x2a.scm.authHosts.<github|gitlab>
-                    # (the host each auth provider is registered against). See
+                    # only requested for the host set in
+                    # x2a.scm.authHosts.<github|gitlab|bitbucket> (the host each auth provider
+                    # is registered against). With credentials requested, bitbucket.org is
+                    # hidden silently when x2a.scm.authHosts.bitbucket is unset. See
                     # workspaces/x2a/docs/scm-hosts.md.
                     ui:field: X2ARepoUrlPicker
                     ui:options:

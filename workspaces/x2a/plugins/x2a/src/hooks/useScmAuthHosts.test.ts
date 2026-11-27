@@ -41,6 +41,7 @@ describe('useScmAuthHosts', () => {
   const configured = {
     github: 'ghe.corp.example.com',
     gitlab: 'GitLab.Corp.Example.com:8443',
+    bitbucket: 'bitbucket.org',
   };
 
   it.each<[string, string | undefined, ScmProviderName, boolean]>([
@@ -59,12 +60,7 @@ describe('useScmAuthHosts', () => {
       false,
     ],
     ['a GitLab host on another type', 'ghe.corp.example.com', 'gitlab', false],
-    [
-      'bitbucket.org, which needs no config',
-      'bitbucket.org',
-      'bitbucket',
-      true,
-    ],
+    ['the configured Bitbucket host', 'bitbucket.org', 'bitbucket', true],
     ['another Bitbucket host', 'bitbucket.example.com', 'bitbucket', false],
     ['an empty host', '', 'github', false],
     ['an undefined host', undefined, 'github', false],
@@ -73,11 +69,16 @@ describe('useScmAuthHosts', () => {
     expect(isAuthHost(host, provider)).toBe(expected);
   });
 
-  it('has no default: an unset key authenticates no GitHub or GitLab host', () => {
+  it('has no default: an unset key authenticates no provider host', () => {
     withAuthHosts();
     expect(isAuthHost('github.com', 'github')).toBe(false);
     expect(isAuthHost('gitlab.com', 'gitlab')).toBe(false);
-    expect(isAuthHost('bitbucket.org', 'bitbucket')).toBe(true);
+    expect(isAuthHost('bitbucket.org', 'bitbucket')).toBe(false);
+  });
+
+  it('does not match bitbucket.org when the configured Bitbucket host is different', () => {
+    withAuthHosts({ bitbucket: 'bitbucket.example.com' });
+    expect(isAuthHost('bitbucket.org', 'bitbucket')).toBe(false);
   });
 
   it.each([

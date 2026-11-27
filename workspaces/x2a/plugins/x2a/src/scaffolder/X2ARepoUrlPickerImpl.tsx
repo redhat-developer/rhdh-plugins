@@ -79,7 +79,9 @@ function getStockRepoUrlPicker() {
  * gitlab.com) are offered only when configured. When credentials are
  * requested, only the host each OAuth provider is registered against
  * (`x2a.scm.authHosts`) is offered; the others are returned in `hidden`, so
- * the field can say why they are missing.
+ * the field can say why they are missing. Bitbucket is the exception to that
+ * notice: it is dropped silently because its host is always injected by
+ * Backstage, so `x2a.scm.authHosts.bitbucket` is the only visible signal.
  */
 function useDefaultHosts(onlyAuthHosts: boolean): {
   hosts: string[];
