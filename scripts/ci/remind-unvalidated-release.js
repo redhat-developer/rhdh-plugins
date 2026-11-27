@@ -270,7 +270,7 @@ export async function remind({ github, owner, repo, pr, cutoff, request }) {
       owner,
       repo,
       issue_number: pr.number,
-      body: `${MARKER}\n@redhat-developer/rhdh-cope These packages versioned by this PR have no confirmed publish through the \`${target.workflow}\` release path on \`${target.base}\` since the trusted-publishing cutover:\n\n${missing.map(name => `- \`${name}\``).join('\n')}\n\nPlease verify the first token-free publish before merging, or explicitly agree to merge the first release despite this non-required check.`,
+      body: `${MARKER}\nThese packages versioned by this PR have no confirmed publish through the \`${target.workflow}\` release path on \`${target.base}\` since the trusted-publishing cutover:\n\n${missing.map(name => `- \`${name}\``).join('\n')}\n\nPlease ping \`@rhdh-cope\` in \`#rhdh-plugins-ecosystem\` on Slack to verify the first token-free publish before merging, or explicitly agree to merge the first release despite this non-required check.`,
     });
   }
   return missing;
