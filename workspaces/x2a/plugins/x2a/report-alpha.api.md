@@ -131,6 +131,21 @@ const _default: OverridableFrontendPlugin<
         field: () => Promise<FormField>;
       };
     }>;
+    'scaffolder-form-field:x2a/X2ARepoUrlPicker': OverridableExtensionDefinition<{
+      kind: 'scaffolder-form-field';
+      name: 'X2ARepoUrlPicker';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        () => Promise<FormField>,
+        'scaffolder.form-field-loader',
+        {}
+      >;
+      inputs: {};
+      params: {
+        field: () => Promise<FormField>;
+      };
+    }>;
   }
 >;
 export default _default;
@@ -387,6 +402,14 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.project_metadata': string;
     readonly 'artifact.types.adversarial_report': string;
     readonly 'artifact.types.adversarial_report_json': string;
+    readonly 'scaffolder.repoUrlPicker.pickerUnavailable': string;
+    readonly 'scaffolder.repoUrlPicker.authError': string;
+    readonly 'scaffolder.repoUrlPicker.authRetry': string;
+    readonly 'scaffolder.repoUrlPicker.hostsHiddenUnset': string;
+    readonly 'scaffolder.repoUrlPicker.hostsHiddenOther': string;
+    readonly 'scaffolder.repoUrlPicker.hostsHiddenNotListed': string;
+    readonly 'scaffolder.repoUrlPicker.hostRefusedOther': string;
+    readonly 'scaffolder.repoUrlPicker.hostRefusedUnset': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;

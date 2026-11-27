@@ -286,6 +286,7 @@ test.describe(() => {
     await verifyPanelContainsTexts(panel, [
       translations.table.headers.name,
       translations.table.headers.executions,
+      translations.table.headers.totalEstimatedTimeSaved,
     ]);
 
     await panel.scrollIntoViewIfNeeded();

@@ -1,14 +1,14 @@
 ## ADDED Requirements
 
-### Requirement: OCI skill documentation URL matching
+### Requirement: Skill documentation URL matching
 
-The URL-reader plugin SHALL match OCI skill documentation URLs from trusted
+The URL-reader plugin SHALL match OCI and npx skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations, extending the
 existing model-card URL-reader pattern. It SHALL match the exact trusted origin
 and connector base pathname followed by `/skilldocs/<sourceId>/<digest>`. It
 SHALL append the route to the full connector base, including any `/api/<pluginId>`
 prefix, encoding source ID and digest individually as path segments. Matching
-SHALL decode each segment once, validate the manifest digest, and reject extra
+SHALL decode each segment once, validate the SHA-256 digest format, and reject extra
 segments, query strings, fragments, URL credentials, and paths outside the trusted
 base. Connector redirects SHALL be errors; service tokens SHALL NOT be forwarded
 to redirect destinations. It SHALL NOT infer arbitrary credential destinations
@@ -18,7 +18,7 @@ preserved.
 #### Scenario: Skill documentation URL matches
 
 - **WHEN** a `backstage.io/techdocs-ref` annotation contains `url:<connector-base>/skilldocs/<sourceId>/<digest>`
-- **AND** the connector base URL matches a trusted configured destination
+- **AND** the source ID and connector base URL match a configured OCI or npx source
 - **THEN** the URL reader matches and handles the request
 
 #### Scenario: Discovered plugin base pathname is preserved
@@ -59,7 +59,7 @@ preserved.
 
 ### Requirement: Service-token authentication to connector
 
-The URL reader SHALL authenticate to the OCI connector using Backstage
+The URL reader SHALL authenticate to the configured OCI or npx connector using Backstage
 service-to-service tokens, as specified in design D8. It SHALL call
 `auth.getPluginRequestToken` with `targetPluginId` set to the receiving
 connector plugin's registered `pluginId`, consistent with the model-card URL
@@ -68,7 +68,7 @@ reader's service-token pattern. It SHALL send the token in the
 
 #### Scenario: Service token targets the connector plugin
 
-- **WHEN** the URL reader fetches OCI skill documentation from a connector
+- **WHEN** the URL reader fetches OCI or npx skill documentation from a connector
 - **THEN** it calls `auth.getPluginRequestToken` with `targetPluginId` matching the connector's `pluginId` from its `createBackendPlugin` registration
 - **AND** the resulting token is sent as `Authorization: Bearer <token>`
 - **AND** no static admin token fallback is used
@@ -148,8 +148,8 @@ and `docs/index.md` for the TechDocs builder, as specified in design D8.
 
 #### Scenario: Single document only
 
-- **WHEN** the URL reader processes OCI skill documentation
-- **THEN** it renders only the single extracted Markdown document
+- **WHEN** the URL reader processes OCI or npx skill documentation
+- **THEN** it renders only the single Markdown document returned by the connector
 - **AND** bundled assets, relative-file resolution, and multi-page documentation are out of scope for this increment
 
 #### Scenario: Size-limited Markdown content

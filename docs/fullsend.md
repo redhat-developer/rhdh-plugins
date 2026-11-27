@@ -4,60 +4,33 @@
 
 [Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events or the Jira poller, and uses Vertex AI (Anthropic Claude) for inference.
 
-## Pilot scope
+## GitHub triggers
 
-### Enabled agents
+The [Fullsend workflow](../.github/workflows/fullsend.yaml) uses `pull_request`
+for labels added to or removed from same-repository PRs. Its `paths` filter
+limits those label events to enrolled workspaces. The workflow handles
+authorized `/fs-*` comments across the repository.
 
-| Agent | Trigger | How to use |
-|-------|---------|------------|
-| Triage | `/fs-triage` slash command | Post on any issue |
-| Coder | `/fs-code` slash command, or `ready-to-code` label | Post on a triaged issue |
-| Review | Auto-triggers on PR open/update | Automatic for `workspaces/scorecard/` PRs |
-| Fix | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
-
-### Auto-trigger vs. manual trigger
-
-Fullsend is designed to chain agents automatically (issue → triage → code → review → fix). In practice, most of that chain requires manual triggering. Here's what actually happens:
-
-| Agent | Designed auto-trigger | What actually happens | How to trigger manually |
-|-------|----------------------|----------------------|------------------------|
-| Triage | `issues/opened` | **Does not auto-trigger.** The upstream dispatcher only handles `issues/labeled`, not `issues/opened`. | `/fs-triage` on an issue |
-| Coder | `ready-to-code` label | **Does not auto-trigger from triage.** Triage labels issues `triaged`, not `ready-to-code`. | `/fs-code` on a triaged issue, or manually add `ready-to-code` label |
-| Review | `pull_request_target/opened\|synchronize` | **Auto-triggers on `workspaces/scorecard/` PRs.** This is the only agent that reliably auto-triggers. Scoped via `paths` filter. | `/fs-review` on any PR (auth-gated) |
-| Fix | `pull_request_review/submitted` with `changes_requested` | **Partially auto-triggers.** Only fires from bot reviews (e.g., fullsend-review requesting changes), not from human reviews. Effectively scoped to scorecard PRs because only scorecard PRs get auto-reviewed. | `/fs-fix` on a PR, `/fs-fix-stop` to disable |
-
-The "autonomous pipeline" does not chain automatically. In practice: review auto-triggers on augment PRs, everything else is slash-command-driven.
-
-### Scope details
-
-The `paths` filter (`workspaces/scorecard/**`) only applies to the `pull_request_target` event. Other triggers are repo-wide:
-
-- **`issues`** — fires for all issues (fine, since auto-triage doesn't work; slash commands are auth-gated)
-- **`issue_comment`** — fires for all comments (auth-gated to OWNER/MEMBER/COLLABORATOR)
-- **`pull_request_review`** — fires for all PR reviews (no `paths` support for this event type). Fix is transitively scoped: it only auto-fires from bot reviews, and the review bot only auto-reviews scorecard PRs.
-
-### What does NOT run
-
-| Agent | Why |
-|-------|-----|
-| Retro | Out of scope for initial pilot |
-| Prioritize | Out of scope for initial pilot |
+For PRs from forks, a maintainer can use `/fs-review` or another applicable
+slash command. The CI repair labels also run on same-repository PRs. The
+[CI repair workflow](../.github/workflows/fullsend-ci-repair.yml) provides a
+manual dispatch when a repair or retry needs to be requested directly.
 
 ## Slash commands
 
-Slash commands are **restricted to org members and collaborators** via an `author_association` check in the workflow shim. This prevents external users from burning Vertex AI tokens on this public repo.
+The workflow accepts human `/fs-*` comments and delegates authorization to Fullsend.
 
 Available commands:
 
-| Command | What it does |
-|---------|-------------|
-| `/fs-triage` | Run triage on an issue |
-| `/fs-code` | Generate code for a triaged issue |
-| `/fs-review` | Run review on a PR |
-| `/fs-fix` | Fix issues flagged in a review |
+| Command        | What it does                                              |
+| -------------- | --------------------------------------------------------- |
+| `/fs-triage`   | Run triage on an issue                                    |
+| `/fs-code`     | Generate code for a triaged issue                         |
+| `/fs-review`   | Run review on a PR                                        |
+| `/fs-fix`      | Fix issues flagged in a review                            |
 | `/fs-fix-stop` | Disable fix agent for a PR (adds `fullsend-no-fix` label) |
 
-### Jira pilot for RHDH AI
+### Jira pilot for RHDH AI and Plugins
 
 The [Jira poll workflow](../.github/workflows/fullsend-poll-jira.yml) checks
 every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP work
@@ -67,7 +40,7 @@ GitHub Fullsend commands are unchanged.
 Each Jira query requires all of these gates:
 
 - Project: `RHIDP`.
-- Jira `Team`: `RHDH AI`, selected by `cf[10001]` and its Atlassian team ID.
+- Jira `Team` is RHDH AI or Plugins, selected by `cf[10001]` and the Atlassian team ID.
 - Label: `fullsend` (agent opt-in).
 - Status category is not Done.
 
@@ -79,9 +52,9 @@ part of this Jira pilot.
 To expand the cohort, add a project/team pair to the `poll_project` calls in
 the workflow. Keep the `fullsend` opt-in label for each cohort.
 
-Before enabling the scheduled workflow, configure the Actions variable
-`JIRA_BASE_URL` and secrets `JIRA_TOKEN` and `JIRA_USER_EMAIL`. The workflow
-fails visibly when any are missing. Its existing Fullsend GCP and mint
+Configure the Actions variable `JIRA_BASE_URL` and secrets
+`FULLSEND_JIRA_TOKEN` and `FULLSEND_JIRA_EMAIL`. The workflow also accepts
+the existing `JIRA_TOKEN` and `JIRA_USER_EMAIL` names. Its existing Fullsend GCP and mint
 credentials are also required for the downstream agents. The RHDH AI team ID
 comes from Parasol's poller for `https://stage-redhat.atlassian.net`; verify
 the ID if `JIRA_BASE_URL` points to a different Jira instance.
@@ -91,7 +64,7 @@ the ID if `JIRA_BASE_URL` points to a different Jira instance.
 rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently:
 
 - **PR Agent** — runs on all PRs across the entire repo
-- **Fullsend Review** — auto-triggers only on PRs touching `workspaces/scorecard/`
+- **Fullsend Review** — listens for label events on same-repository PRs touching enrolled workspaces
 
 This parallel setup allows comparing review quality. Neither blocks the other. PR Agent configuration is not modified.
 
@@ -101,22 +74,22 @@ Add paths to the `paths` filter in `.github/workflows/fullsend.yaml`:
 
 ```yaml
 on:
-  pull_request_target:
-    types: [opened, synchronize, ready_for_review, closed]
+  pull_request:
+    types: [labeled, unlabeled]
     paths:
-      - "workspaces/scorecard/**"
-      - "workspaces/your-new-workspace/**"  # add here
+      - 'workspaces/scorecard/**'
+      - 'workspaces/your-new-workspace/**' # add here
 ```
 
 To enable review for ALL workspaces, remove the `paths` filter entirely.
 
-Note: the `paths` filter only affects the Review agent's auto-trigger. Triage, coder, and fix are already available repo-wide via slash commands.
+The `paths` filter applies to PR label events. Slash commands remain available across the repository.
 
 ## Authorization model
 
 ### Slash command auth gate
 
-The dispatch job checks `author_association` on `issue_comment` events. Only `OWNER`, `MEMBER`, and `COLLABORATOR` can trigger agents via slash commands. External contributors are silently ignored.
+The dispatcher checks repository permissions and applicable ownership rules for each command.
 
 ### CODEOWNERS protection
 
@@ -132,10 +105,10 @@ Fullsend uses GCP Workload Identity Federation (WIF) to authenticate GitHub Acti
 
 ## Configuration files
 
-| Path | Purpose |
-|------|---------|
-| `.fullsend/config.yaml` | Declares enabled roles (triage, coder, review, fix) |
-| `.fullsend/customized/` | Scaffold for future agent customization (agents, harness, policies, schemas, env, scripts, skills) |
+| Path                              | Purpose                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `.fullsend/config.yaml`           | Declares enabled roles (triage, coder, review, fix)                                                  |
+| `.fullsend/customized/`           | Scaffold for future agent customization (agents, harness, policies, schemas, env, scripts, skills)   |
 | `.github/workflows/fullsend.yaml` | Event shim — routes GitHub events to fullsend's reusable workflows, with auth gate on slash commands |
 
 ## Debugging
@@ -159,13 +132,13 @@ Available in the workflow run logs under the sandbox creation step. Look for `fu
 
 ### Common issues
 
-| Symptom | Likely cause |
-|---------|-------------|
-| Slash command ignored | Commenter is not OWNER/MEMBER/COLLABORATOR |
-| Review doesn't trigger | PR doesn't touch files in `workspaces/scorecard/` |
-| 403 from mint | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
-| `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project |
-| Agent produces no output | Check transcript artifact for agent errors |
+| Symptom                               | Likely cause                                              |
+| ------------------------------------- | --------------------------------------------------------- |
+| Slash command ignored                 | Commenter lacks permission to run the command             |
+| Review doesn't trigger                | PR comes from a fork or touches no enrolled workspace     |
+| 403 from mint                         | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
+| `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project                    |
+| Agent produces no output              | Check transcript artifact for agent errors                |
 
 ## Reference
 

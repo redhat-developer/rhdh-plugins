@@ -2103,6 +2103,7 @@ __metadata:
     "@red-hat-developer-hub/rhdh-repo-tools": "portal:./workspaces/repo-tools/packages/cli"
     "@spotify/eslint-plugin": "npm:^15.0.0"
     "@spotify/prettier-config": "npm:^15.0.0"
+    ajv: "npm:^8.20.0"
     array-to-table: "npm:^1.0.1"
     eslint: "npm:^8.6.0"
     eslint-plugin-notice: "npm:^0.9.10"
@@ -2116,6 +2117,7 @@ __metadata:
     node-fetch: "npm:^2.6.7"
     prettier: "npm:^3.4.2"
     semver: "npm:^7.7.2"
+    yaml: "npm:^2.9.0"
   languageName: unknown
   linkType: soft
 
@@ -13590,6 +13592,15 @@ __metadata:
   bin:
     yaml: bin.mjs
   checksum: 10c0/771a1df083c8217cf04ef49f87244ae2dd7d7457094425e793b8f056159f167602ce172aa32d6bca21f787d24ec724aee3cecde938f6643564117bd151452631
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.9.0":
+  version: 2.9.1
+  resolution: "yaml@npm:2.9.1"
+  bin:
+    yaml: bin.mjs
+  checksum: 10c0/9d06676ef02b89559a8b10a71882bd2cdae81e8393dc8dbc871615c3259475d9609ad973d19cb3c9e71e72d6206e3d1e7aa241c7e55f3d16fd2e77db305827d6
   languageName: node
   linkType: hard
 

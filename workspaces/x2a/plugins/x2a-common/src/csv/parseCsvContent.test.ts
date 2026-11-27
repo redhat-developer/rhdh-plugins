@@ -199,6 +199,26 @@ describe('parseCsvContent', () => {
         'CSV row 3 is missing required field: "name"',
       );
     });
+
+    it.each([
+      [
+        'sourceRepoUrl',
+        { sourceRepoUrl: 'https://gitlab.com\\@evil.test/o/r' },
+      ],
+      ['targetRepoUrl', { targetRepoUrl: 'http://github.com/org/target' }],
+      [
+        'sourceRepoUrl',
+        { sourceRepoUrl: 'https://u:p@github.com/o/r', targetRepoUrl: '' },
+      ],
+    ])(
+      'should reject a row whose %s is not a plain HTTPS URL',
+      (column, overrides) => {
+        const csv = `${FULL_HEADERS}\n${fullRow()}\n${fullRow(overrides)}`;
+        expect(() => parseCsvContent(toDataUrl(csv))).toThrow(
+          `CSV row 3: "${column}" is not a plain HTTPS repository URL`,
+        );
+      },
+    );
   });
 
   describe('successful parsing', () => {

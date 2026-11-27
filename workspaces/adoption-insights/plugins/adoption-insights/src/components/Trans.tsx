@@ -31,5 +31,7 @@ interface TransProps<
 
 export const Trans = ({ message, params }: TransProps<Messages>) => {
   const { t } = useTranslation();
-  return t(message, params);
+  // Plural entries such as minute_one are not valid t() keys. t() accepts the
+  // collapsed key, so the raw message union cannot be passed through directly.
+  return t(message as any, params);
 };

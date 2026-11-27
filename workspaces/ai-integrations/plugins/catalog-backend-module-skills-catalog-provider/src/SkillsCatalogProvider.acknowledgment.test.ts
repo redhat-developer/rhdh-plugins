@@ -260,14 +260,16 @@ describe('D8 provider acknowledgment safety with real SQLite', () => {
     const { store } = await database.open();
     const provider = await start(store, [source, npx]);
     await provider.run();
-    const initial = [...processed.values()].find(
-      entity => entity.metadata.annotations?.['backstage.io/techdocs-ref'],
+    const entities = [...processed.values()];
+    const initial = entities.find(
+      entity => entity.metadata.annotations?.['rhdh.io/oci-skill-ref'],
     )!;
+    const npxEntity = entities.find(
+      entity => entity.metadata.annotations?.['rhdh.io/npx-skill-ref'],
+    );
     expect(
-      [...processed.values()].find(
-        entity => !entity.metadata.annotations?.['backstage.io/techdocs-ref'],
-      ),
-    ).toBeDefined();
+      npxEntity?.metadata.annotations?.['backstage.io/techdocs-ref'],
+    ).toContain(`/skilldocs/${npxSource.id}/`);
     autoProcess = false;
     const digest = `sha256:${'b'.repeat(64)}`;
     current = {

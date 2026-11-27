@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
+import { useEffect, useState, useCallback } from 'react';
+import { Box, Flex } from '@backstage/ui';
+
 import { QuickstartHeader } from './QuickstartHeader';
-import Divider from '@mui/material/Divider';
 import { QuickstartContent } from './QuickstartContent/QuickstartContent';
 import { QuickstartFooter } from './QuickstartFooter';
-import { useEffect, useState, useCallback } from 'react';
 import { QuickstartItemData } from '../types';
 
 type QuickstartProps = {
@@ -37,6 +37,10 @@ export const Quickstart = ({
   const [progress, setProgress] = useState<number>(0);
 
   const calculateProgress = useCallback(() => {
+    if (itemCount === 0) {
+      return 0;
+    }
+
     const completedCount = quickstartItems.filter((item, index) => {
       const itemKey = `${item.title}-${index}`;
       const stepState = localStorage.getItem(itemKey);
@@ -54,22 +58,28 @@ export const Quickstart = ({
   }, [quickstartItems, itemCount, calculateProgress]);
 
   return (
-    <Box
-      sx={{
+    <Flex
+      direction="column"
+      style={{
         height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        // Theme token: #F2F2F2 light / #151515 dark (sidebar / page-inset chrome)
+        backgroundColor: 'var(--bui-redhat-theme-page-inset-bg)',
       }}
     >
       <Box
-        sx={{
-          flex: 1,
-          padding: theme => theme.spacing(3),
-          overflowY: 'auto',
-        }}
+        grow
+        p="6"
+        tabIndex={0}
+        style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}
       >
         <QuickstartHeader />
-        <Divider />
+        <hr
+          style={{
+            border: 'none',
+            borderTop: '1px solid var(--bui-border-1)',
+            margin: 0,
+          }}
+        />
         <QuickstartContent
           quickstartItems={quickstartItems}
           itemCount={itemCount}
@@ -84,6 +94,6 @@ export const Quickstart = ({
         handleDrawerClose={handleDrawerClose}
         progress={progress}
       />
-    </Box>
+    </Flex>
   );
 };

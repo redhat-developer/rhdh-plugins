@@ -18,7 +18,12 @@ export {
   X2APage,
   RepoAuthenticationExtension,
   RulesAcceptanceExtension,
+  X2ARepoUrlPickerExtension,
 } from './plugin';
+export type {
+  X2ARepoUrlPickerUiOptions,
+  RepoUrlCredentialsOptions,
+} from './scaffolder';
 export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
 export {
   useTranslation as useX2ATranslation,

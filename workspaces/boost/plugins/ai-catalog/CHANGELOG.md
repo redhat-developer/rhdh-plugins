@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.2.3
+
+### Patch Changes
+
+- 0a9a9a1: Copy a registry-specific install command for imported npx skills using their discovery URL and index key.
+
 ## 1.2.2
 
 ### Patch Changes

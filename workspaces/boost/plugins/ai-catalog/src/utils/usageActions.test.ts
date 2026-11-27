@@ -64,6 +64,65 @@ describe('getUsageAction', () => {
     expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
   });
 
+  const imported = {
+    'rhdh.io/ai-asset-source': 'npx/public-agent-skills',
+    'rhdh.io/npx-skill-registry': 'https://evilmartians.com',
+    'rhdh.io/npx-skill-key': 'good-readme',
+  };
+  it('copies the registry and index key for an imported skill', () => {
+    expect(
+      getUsageAction(
+        entity({
+          name: 'skill-abc123',
+          specType: 'skill',
+          annotations: imported,
+        }),
+      ),
+    ).toEqual({
+      type: 'copy',
+      value: "npx skills add 'https://evilmartians.com' --skill good-readme",
+    });
+  });
+  it('quotes a registry path as one shell argument', () => {
+    const annotations = {
+      ...imported,
+      'rhdh.io/npx-skill-registry': "https://registry.example/team's/(public)",
+    };
+    expect(
+      getUsageAction(entity({ specType: 'skill', annotations }))?.value,
+    ).toBe(
+      "npx skills add 'https://registry.example/team'\\''s/(public)' --skill good-readme",
+    );
+  });
+  it.each([
+    { 'rhdh.io/npx-skill-registry': '' },
+    { 'rhdh.io/npx-skill-registry': 'https://user@registry.example' },
+    { 'rhdh.io/npx-skill-registry': 'https://registry.example?token=secret' },
+    { 'rhdh.io/npx-skill-registry': 'http://registry.example' },
+    { 'rhdh.io/npx-skill-key': '--all' },
+    { 'rhdh.io/npx-skill-key': '' },
+  ])('hides an incomplete or invalid registry command (%j)', override => {
+    expect(
+      getUsageAction(
+        entity({
+          specType: 'skill',
+          annotations: { ...imported, ...override },
+        }),
+      ),
+    ).toBeUndefined();
+  });
+  it('preserves the existing action when an older npx entity lacks install metadata', () => {
+    expect(
+      getUsageAction(
+        entity({
+          specType: 'skill',
+          name: 'legacy',
+          annotations: { 'rhdh.io/ai-asset-source': 'npx/old' },
+        }),
+      )?.value,
+    ).toBe('npx skills add legacy');
+  });
+
   it('returns a Podman pull command for an OCI skill reference', () => {
     const action = getUsageAction(
       entity({

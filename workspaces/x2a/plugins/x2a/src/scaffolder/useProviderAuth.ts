@@ -16,14 +16,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  extractHost,
   resolveScmProvider,
   parseCsvContent,
   ScmProvider,
   SCAFFOLDER_SECRET_PREFIX,
   type AuthToken,
-  type AuthTokenDescriptor,
   type ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import type { HostBoundTokenRequest } from '../repoAuth';
 
 export type ProviderAuthStatus = 'pending' | 'authenticated' | 'error';
 
@@ -39,7 +41,7 @@ interface UseProviderAuthParams {
   csvContent: string | undefined;
   hostProviderMap: Map<string, ScmProviderName>;
   authenticate: (
-    descriptors: AuthTokenDescriptor[],
+    requests: HostBoundTokenRequest[],
   ) => Promise<Array<AuthToken>>;
   onChange: (value: string | undefined) => void;
   secrets: Record<string, string>;
@@ -97,48 +99,86 @@ export function useProviderAuth({
   // (from auto-auth or retry) are silently discarded.
   const authGenerationRef = useRef(0);
 
-  const { distinctTargetProviders, distinctSourceProviders, parseError } =
-    useMemo(() => {
-      if (!csvContent) {
-        return {
-          distinctTargetProviders: [] as ScmProvider[],
-          distinctSourceProviders: [] as ScmProvider[],
-          parseError: undefined,
-        };
-      }
+  const {
+    distinctTargetProviders,
+    distinctSourceProviders,
+    hostsByProvider,
+    parseError,
+  } = useMemo(() => {
+    if (!csvContent) {
+      return {
+        distinctTargetProviders: [] as ScmProvider[],
+        distinctSourceProviders: [] as ScmProvider[],
+        hostsByProvider: {} as Record<string, string[]>,
+        parseError: undefined,
+      };
+    }
 
-      try {
-        const projectsToCreate = parseCsvContent(csvContent);
+    try {
+      const projectsToCreate = parseCsvContent(csvContent);
 
-        const allTargetProviders: ScmProvider[] = projectsToCreate.map(
-          project => resolveScmProvider(project.targetRepoUrl, hostProviderMap),
-        );
-        const allSourceProviders: ScmProvider[] = projectsToCreate.map(
-          project => resolveScmProvider(project.sourceRepoUrl, hostProviderMap),
-        );
-        // Deduplicate: targets get read-write access, sources that also
-        // appear as targets are excluded (the read-write token covers both).
-        const targets = allTargetProviders.filter(
-          (p, i, arr) => arr.findIndex(q => q.name === p.name) === i,
-        );
-        const sources = allSourceProviders.filter(
-          (p, i, arr) =>
-            arr.findIndex(q => q.name === p.name) === i &&
-            !targets.some(t => t.name === p.name),
-        );
-        return {
-          distinctTargetProviders: targets,
-          distinctSourceProviders: sources,
-          parseError: undefined,
-        };
-      } catch (e) {
-        return {
-          distinctTargetProviders: [] as ScmProvider[],
-          distinctSourceProviders: [] as ScmProvider[],
-          parseError: e instanceof Error ? e.message : 'Unknown error',
-        };
-      }
-    }, [csvContent, hostProviderMap]);
+      const allTargetProviders: ScmProvider[] = projectsToCreate.map(project =>
+        resolveScmProvider(project.targetRepoUrl, hostProviderMap),
+      );
+      const allSourceProviders: ScmProvider[] = projectsToCreate.map(project =>
+        resolveScmProvider(project.sourceRepoUrl, hostProviderMap),
+      );
+      // Deduplicate: targets get read-write access, sources that also
+      // appear as targets are excluded (the read-write token covers both).
+      const targets = allTargetProviders.filter(
+        (p, i, arr) => arr.findIndex(q => q.name === p.name) === i,
+      );
+      const sources = allSourceProviders.filter(
+        (p, i, arr) =>
+          arr.findIndex(q => q.name === p.name) === i &&
+          !targets.some(t => t.name === p.name),
+      );
+
+      // Collected from ALL rows, before the target/source dedupe above: one
+      // token per provider is shared by every row, so each host the
+      // provider is used with must be allowed to receive it.
+      const collected: Record<string, string[]> = {};
+      const addHost = (provider: ScmProvider, repoUrl: string) => {
+        const host = extractHost(repoUrl) ?? '';
+        const hosts = (collected[provider.name] ??= []);
+        if (!hosts.includes(host)) hosts.push(host);
+      };
+      projectsToCreate.forEach((project, i) => {
+        addHost(allTargetProviders[i], project.targetRepoUrl);
+        addHost(allSourceProviders[i], project.sourceRepoUrl);
+      });
+
+      return {
+        distinctTargetProviders: targets,
+        distinctSourceProviders: sources,
+        hostsByProvider: collected,
+        parseError: undefined,
+      };
+    } catch (e) {
+      return {
+        distinctTargetProviders: [] as ScmProvider[],
+        distinctSourceProviders: [] as ScmProvider[],
+        hostsByProvider: {} as Record<string, string[]>,
+        parseError: e instanceof Error ? e.message : 'Unknown error',
+      };
+    }
+  }, [csvContent, hostProviderMap]);
+
+  // One request per distinct host the provider is used with. The guard in
+  // useRepoAuth rejects the whole provider if any of them is not the host its
+  // OAuth provider is registered against, so the single token is only ever
+  // used on that host.
+  // Read through a ref because retryProvider is memoised with no deps.
+  const hostsByProviderRef = useRef(hostsByProvider);
+  hostsByProviderRef.current = hostsByProvider;
+  const requestsFor = useCallback(
+    (provider: ScmProvider, readOnly: boolean) =>
+      (hostsByProviderRef.current[provider.name] ?? ['']).map(host => ({
+        descriptor: provider.getAuthTokenDescriptor(readOnly),
+        host,
+      })),
+    [],
+  );
 
   // Build the provider rows for the table.
   const providerRows: ProviderRow[] = useMemo(() => {
@@ -219,9 +259,9 @@ export function useProviderAuth({
         readOnly: boolean,
       ) => {
         try {
-          const tokens = await authenticateRef.current([
-            provider.getAuthTokenDescriptor(readOnly),
-          ]);
+          const tokens = await authenticateRef.current(
+            requestsFor(provider, readOnly),
+          );
           if (cancelled) return;
 
           providerTokensRef.current[
@@ -309,9 +349,9 @@ export function useProviderAuth({
       });
 
       try {
-        const tokens = await authenticateRef.current([
-          provider.getAuthTokenDescriptor(readOnly),
-        ]);
+        const tokens = await authenticateRef.current(
+          requestsFor(provider, readOnly),
+        );
 
         if (generation !== authGenerationRef.current) return;
 
@@ -335,7 +375,7 @@ export function useProviderAuth({
         }));
       }
     },
-    [],
+    [requestsFor],
   );
 
   return { providerRows, retryProvider, parseError };

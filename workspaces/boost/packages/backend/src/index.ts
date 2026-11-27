@@ -100,4 +100,9 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-ogx-entity-provider'),
 );
 
+// Agentic chat
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-agentic-chat-backend'),
+);
+
 backend.start();

@@ -33,6 +33,8 @@ type RecordValue = Record<string, unknown>;
 
 const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
 const OCI_SKILL_REF_ANNOTATION = 'rhdh.io/oci-skill-ref';
+const NPX_SKILL_REGISTRY_ANNOTATION = 'rhdh.io/npx-skill-registry';
+const NPX_SKILL_KEY_ANNOTATION = 'rhdh.io/npx-skill-key';
 const OCI_REFERENCE_SCHEME = 'oci://';
 
 function asRecord(value: unknown): RecordValue | undefined {
@@ -57,6 +59,35 @@ function isHttpUrl(value: string): boolean {
 
 function isSafeCommandToken(value: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value);
+}
+
+/** Build a command from registry metadata supplied by the npx connector. */
+function getRegistryInstallAction(
+  registry?: string,
+  key?: string,
+): UsageAction | undefined {
+  if (
+    !registry ||
+    !key ||
+    key.length > 64 ||
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(key)
+  )
+    return undefined;
+  const url = parseUrl(registry);
+  if (
+    url?.protocol !== 'https:' ||
+    !registry.startsWith('https://') ||
+    url.username ||
+    url.password ||
+    /[\s\\?#]/u.test(registry)
+  )
+    return undefined;
+
+  // A registry path can contain shell metacharacters. Quote it as one
+  // POSIX shell argument, including an embedded single quote.
+  const base = url.pathname === '/' ? url.origin : url.href;
+  const argument = `'${base.replace(/'/g, "'\\''")}'`;
+  return { type: 'copy', value: `npx skills add ${argument} --skill ${key}` };
 }
 
 /**
@@ -148,6 +179,15 @@ export function getUsageAction(entity: Entity): UsageAction | undefined {
         type: 'copy',
         value: `podman pull ${ociSkillRef.slice(OCI_REFERENCE_SCHEME.length)}`,
       };
+    }
+
+    if (sourceType === 'npx') {
+      const registry =
+        entity.metadata.annotations?.[NPX_SKILL_REGISTRY_ANNOTATION];
+      const key = entity.metadata.annotations?.[NPX_SKILL_KEY_ANNOTATION];
+      if (registry !== undefined || key !== undefined) {
+        return getRegistryInstallAction(registry, key);
+      }
     }
 
     if (isSafeCommandToken(entity.metadata.name)) {
