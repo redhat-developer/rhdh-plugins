@@ -24,8 +24,6 @@ import type {
   JobsResponseItem,
   JobsRequestParams,
   JobsWindowStatsResult,
-  RequestURL,
-  ProjectSlug,
   MRsResponseItem,
   PipelinesCountRequestParams,
   MRsCountOptions,
@@ -57,10 +55,7 @@ export class GitlabClient {
     this.rest = options?.rest ?? new GitlabREST(config, logger);
   }
 
-  async getOpenIssuesCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
-  ): Promise<number> {
+  async getOpenIssuesCount(url: string, projectSlug: string): Promise<number> {
     return this.graphql.projectIssueCount(url, {
       projectPath: projectSlug,
       state: ISSUE_STATUSES.OPENED,
@@ -68,8 +63,8 @@ export class GitlabClient {
   }
 
   async getOpenedIssuesCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: IssuesCountOptions,
   ): Promise<number> {
     const { since } = options;
@@ -81,8 +76,8 @@ export class GitlabClient {
   }
 
   async getClosedIssuesCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: IssuesCountOptions,
   ): Promise<number> {
     const { since } = options;
@@ -94,8 +89,8 @@ export class GitlabClient {
   }
 
   private async getClosedMergeRequestsCountRest(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: MRsCountOptions,
   ): Promise<number> {
     const { since } = options;
@@ -140,8 +135,8 @@ export class GitlabClient {
   }
 
   async getOpenMergeRequestsCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
   ): Promise<number> {
     return this.graphql.projectMergeRequestCount(url, {
       projectPath: projectSlug,
@@ -150,8 +145,8 @@ export class GitlabClient {
   }
 
   async getOpenedMergeRequestsCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: MRsCountOptions,
   ): Promise<number> {
     const { since } = options;
@@ -163,8 +158,8 @@ export class GitlabClient {
   }
 
   async getClosedMergeRequestsCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: MRsCountOptions,
   ): Promise<number> {
     const { since } = options;
@@ -201,8 +196,8 @@ export class GitlabClient {
   }
 
   async getPipelinesCount(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     requestParams: PipelinesCountRequestParams,
   ): Promise<number> {
     return this.graphql.projectPipelinesCount(url, {
@@ -213,16 +208,16 @@ export class GitlabClient {
   }
 
   async getJobs(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     requestParams: JobsRequestParams = {},
   ): Promise<JobsResponse> {
     return this.rest.jobs(url, projectSlug, requestParams);
   }
 
   async getJobsWindowStats(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     options: JobsWindowStatsOptions,
   ): Promise<JobsWindowStatsResult> {
     const { since, scope, fetchItemsLimit } = options;

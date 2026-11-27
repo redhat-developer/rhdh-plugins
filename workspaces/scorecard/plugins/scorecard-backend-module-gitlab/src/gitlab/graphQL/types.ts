@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import type { RequestURL } from '../types';
-
 export type GraphqlRequestOptions = {
-  url: RequestURL;
+  url: string;
   query: string;
   variables?: Record<string, unknown>;
 };

@@ -23,8 +23,6 @@ import {
 import { Gitlab } from '@gitbeaker/rest';
 import { BasePaginationRequestOptions, PaginationTypes } from '@gitbeaker/core';
 import type {
-  RequestURL,
-  ProjectSlug,
   MRsRequestParams,
   MRsResponse,
   JobsRequestParams,
@@ -47,7 +45,7 @@ export class GitlabREST {
       DefaultGitlabCredentialsProvider.fromIntegrations(this.integrations);
   }
 
-  private async getGitlabApi(url: RequestURL): Promise<Gitlab> {
+  private async getGitlabApi(url: string): Promise<Gitlab> {
     const gitlabIntegration = this.integrations.gitlab.byUrl(url);
 
     if (!gitlabIntegration) {
@@ -69,8 +67,8 @@ export class GitlabREST {
   }
 
   async mergeRequests(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     requestParams: MRsRequestParams,
   ): Promise<MRsResponse> {
     const api = await this.getGitlabApi(url);
@@ -85,8 +83,8 @@ export class GitlabREST {
   }
 
   async jobs(
-    url: RequestURL,
-    projectSlug: ProjectSlug,
+    url: string,
+    projectSlug: string,
     requestParams: JobsRequestParams,
   ): Promise<JobsResponse> {
     const api = await this.getGitlabApi(url);

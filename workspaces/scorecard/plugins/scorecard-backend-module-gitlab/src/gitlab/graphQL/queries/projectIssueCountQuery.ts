@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { IssueStatus, ProjectSlug } from '../../types';
+import type { IssueStatus } from '../../types';
 
 export type ProjectIssueCountVariables = {
-  projectPath: ProjectSlug;
+  projectPath: string;
   state?: IssueStatus;
   createdAfter?: string;
   closedAfter?: string;

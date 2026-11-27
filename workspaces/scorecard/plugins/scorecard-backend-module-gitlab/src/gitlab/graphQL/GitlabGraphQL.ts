@@ -20,7 +20,6 @@ import {
   DefaultGitlabCredentialsProvider,
   ScmIntegrations,
 } from '@backstage/integration';
-import type { RequestURL } from '../types';
 import { isTimestampInWindow } from '../utils/isTimestampInWindow';
 import { scanByCursor } from '../../utils/scanByCursor';
 import type { GraphqlRequestOptions, GraphqlResponseBody } from './types';
@@ -112,7 +111,7 @@ export class GitlabGraphql {
   }
 
   async projectIssueCount(
-    url: RequestURL,
+    url: string,
     variables: ProjectIssueCountVariables,
   ): Promise<number> {
     const data = await this.request<ProjectIssueCountResponse>({
@@ -139,7 +138,7 @@ export class GitlabGraphql {
   }
 
   async projectMergeRequestCount(
-    url: RequestURL,
+    url: string,
     variables: ProjectMergeRequestCountVariables,
   ): Promise<number> {
     const data = await this.request<ProjectMergeRequestCountResponse>({
@@ -166,7 +165,7 @@ export class GitlabGraphql {
   }
 
   async projectPipelinesCount(
-    url: RequestURL,
+    url: string,
     requestParams: ProjectPipelinesVariables,
   ): Promise<number> {
     const { projectPath, updatedAfter, status } = requestParams;

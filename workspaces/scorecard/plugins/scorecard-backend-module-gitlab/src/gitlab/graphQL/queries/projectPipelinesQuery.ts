@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { PipelinesStatus, ProjectSlug } from '../../types';
+import type { PipelinesStatus } from '../../types';
 
 export type ProjectPipelinesVariables = {
-  projectPath: ProjectSlug;
+  projectPath: string;
   status?: PipelinesStatus;
   first?: number;
   updatedAfter: string;

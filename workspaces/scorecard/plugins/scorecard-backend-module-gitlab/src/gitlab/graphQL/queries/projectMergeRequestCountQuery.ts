@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { MergeRequestStatus, ProjectSlug } from '../../types';
+import type { MergeRequestStatus } from '../../types';
 
 export type ProjectMergeRequestCountVariables = {
-  projectPath: ProjectSlug;
+  projectPath: string;
   state?: MergeRequestStatus;
   createdAfter?: string;
   closedAfter?: string;

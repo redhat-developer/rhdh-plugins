@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-export type RequestURL = string;
-
-export type ProjectSlug = string;
-
 export type IssueStatus = 'opened' | 'closed';
 
 export type IssuesCountOptions = {
