@@ -17,7 +17,10 @@
 export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
 export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 
-import './assets/fonts/font.min.css';
+import { injectRedHatFontFaces } from './fonts';
+
+// Side-effect: inject Red Hat @font-face rules with webpack-resolved woff2 URLs.
+injectRedHatFontFaces();
 
 export * from './hooks';
 export * from './themes';

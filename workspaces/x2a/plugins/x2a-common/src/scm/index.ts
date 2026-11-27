@@ -21,4 +21,5 @@ export {
   allProviders,
 } from './providerRegistry';
 export { buildScmHostMap } from './buildScmHostMap';
+export { extractHost, extractAuthHost } from './extractHost';
 export { githubProvider, gitlabProvider, bitbucketProvider } from './providers';

@@ -42,9 +42,18 @@ describe('QuickstartFooter', () => {
     );
   });
 
-  it('calls handleDrawerClose when Hide button is clicked', () => {
+  it('calls handleDrawerClose when Hide is clicked', () => {
     render(<QuickstartFooter handleDrawerClose={mockClose} progress={50} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Hide' }));
     expect(mockClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats non-finite progress as not started', () => {
+    render(<QuickstartFooter handleDrawerClose={mockClose} progress={NaN} />);
+    expect(screen.getByText('Not started')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute(
+      'aria-valuenow',
+      '0',
+    );
   });
 });

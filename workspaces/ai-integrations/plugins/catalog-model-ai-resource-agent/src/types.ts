@@ -67,13 +67,6 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     handoffDescription?: string;
     /** The model identifier for this agent. */
     model?: string;
-    /** Optional inference provider. When set, both name and model are required. */
-    inferenceProvider?: {
-      /** The inference provider identifier. */
-      name: string;
-      /** The model identifier. */
-      model: string;
-    };
     /** Opaque string references to other agents this agent can hand off to. */
     handoffs?: string[];
     /** Opaque string references to tools available to this agent. */
@@ -86,14 +79,5 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     modelSettings?: AgentAiResourceModelSettings;
     /** JSON Schema object or simple type name describing the agent's output format. */
     outputSchema?: Record<string, JsonValue | undefined> | string;
-    /**
-     * Execution mode — declares how this agent is executed by LCore.
-     *
-     * - `in-process`  — runs inside the LCore process (no isolation).
-     * - `subprocess`  — runs in a child process managed by LCore.
-     * - `sandbox`     — runs in an administrator-predefined sandbox profile.
-     * - Omitted       — stays unset; LCore applies its default.
-     */
-    executionMode?: 'in-process' | 'subprocess' | 'sandbox';
   };
 }

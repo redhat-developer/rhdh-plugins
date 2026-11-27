@@ -317,6 +317,21 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Échec de la resynchronisation du plan de migration pour le projet « {{name}} »',
     'resyncMigrationPlan.errorStart':
       'Échec de la resynchronisation du plan de migration',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      "Le sélecteur de dépôt n'a pas pu être chargé. Il s'agit d'un problème de compatibilité du plugin, veuillez le signaler.",
+    'scaffolder.repoUrlPicker.authError':
+      "Impossible d'obtenir un jeton d'accès {{provider}} : {{error}}. Vérifiez que le fournisseur d'authentification \"{{provider}}\" est configuré pour cette instance.",
+    'scaffolder.repoUrlPicker.authRetry': 'Réessayer',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      "Les hôtes {{provider}} ne sont pas proposés ({{hosts}}) : aucun hôte n'est défini pour la connexion {{provider}}. Un administrateur doit définir {{configKey}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      'Les hôtes {{provider}} autres que {{authHost}} ne sont pas proposés ({{hosts}}) : la connexion {{provider}} est configurée uniquement pour {{authHost}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      'Les hôtes {{provider}} ne sont pas proposés ({{hosts}}) : la connexion {{provider}} est configurée pour {{authHost}}, qui ne figure pas dans la configuration des intégrations.',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      "La connexion {{provider}} est configurée pour {{authHost}}, et non pour {{host}}. Son jeton d'accès n'est pas envoyé à d'autres hôtes.",
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      "Aucun hôte n'est défini pour la connexion {{provider}} : aucun jeton d'accès {{provider}} ne peut donc être utilisé pour {{host}}. Un administrateur doit définir {{configKey}}.",
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'requis',

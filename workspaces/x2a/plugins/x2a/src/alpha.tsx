@@ -81,13 +81,33 @@ const rulesAcceptanceField = FormFieldBlueprint.make({
   },
 });
 
+const x2aRepoUrlPickerField = FormFieldBlueprint.make({
+  name: 'X2ARepoUrlPicker',
+  params: {
+    field: () =>
+      import('./scaffolder').then(m =>
+        createFormField({
+          name: 'X2ARepoUrlPicker',
+          component: m.X2ARepoUrlPicker,
+          validation: m.x2aRepoUrlPickerValidation,
+          schema: m.x2aRepoUrlPickerFieldSchema,
+        }),
+      ),
+  },
+});
+
 /**
  * The X2Ansible plugin for the new frontend system.
  * @alpha
  */
 export default createFrontendPlugin({
   pluginId: 'x2a',
-  extensions: [x2aPage, repoAuthField, rulesAcceptanceField],
+  extensions: [
+    x2aPage,
+    repoAuthField,
+    rulesAcceptanceField,
+    x2aRepoUrlPickerField,
+  ],
   routes: {
     root: rootRouteRef,
   },

@@ -337,6 +337,18 @@ export const intelligentAssistantMessages = {
   'conversation.category.savedPrompts': 'Saved prompts',
 
   // lightspeed settings
+  'settings.menu.label': 'Settings',
+  'settings.menu.badge': 'New',
+  'settings.preferences.tab.title': 'Preferences',
+  'settings.preferences.pinnedChats.label': 'Pinned chats',
+  'settings.preferences.pinnedChats.description':
+    'Show pinned chats in the conversation history panel.',
+  'settings.preferences.savedPrompts.label': 'Saved prompts',
+  'settings.preferences.savedPrompts.description':
+    'Show saved prompts in the conversation history panel.',
+  'settings.preferences.screenContext.label': 'Screen context',
+  'settings.preferences.screenContext.description':
+    'Share your current screen with the assistant when sending messages. Off by default.',
   'settings.pinned.enable': 'Enable pinned chats',
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
@@ -381,9 +393,6 @@ export const intelligentAssistantMessages = {
   'contextChip.aria.pause': 'Pause screen context: {{label}}',
   'contextChip.aria.resume': 'Resume screen context',
   'settings.panel.title': 'Settings',
-  'settings.mcp.label': 'MCP and Prompt Settings',
-  'settings.prompt.label': 'Prompt Settings',
-  'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',
