@@ -267,7 +267,9 @@ test('comments once when a PR versions a package with no matching publish', asyn
     }),
   };
   assert.deepEqual(await remind(args), ['@example/frontend']);
-  assert.match(github.posted[0].body, /@redhat-developer\/rhdh-cope/);
+  assert.match(github.posted[0].body, /`@rhdh-cope`/);
+  assert.match(github.posted[0].body, /`#rhdh-plugins-ecosystem` on Slack/);
+  assert.doesNotMatch(github.posted[0].body, /@redhat-developer\/rhdh-cope/);
   const again = mockGithub({
     files: [{ filename: file, status: 'modified' }],
     manifests,
