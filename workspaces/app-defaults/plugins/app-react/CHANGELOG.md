@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.14.0
+
+### Minor Changes
+
+- 4074986: Support optional `target` (`_blank` / `_self`) on `app.sidebar` menu items. External links with `target: _blank` show an external-link icon and use `rel="noopener noreferrer"`, consistent with global-header.
+
+### Patch Changes
+
+- f99ef6f: Show estimated time saved on scaffolder template cards from the backstage.io/time-saved annotation. The value is an ISO 8601 duration such as PT4H. When it is missing or invalid, the card shows a copyable line to add the annotation.
+
 ## 1.13.1
 
 ### Patch Changes

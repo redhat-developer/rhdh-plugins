@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.14.0
+
+### Minor Changes
+
+- 4074986: Support optional `target` (`_blank` / `_self`) on `app.sidebar` menu items. External links with `target: _blank` show an external-link icon and use `rel="noopener noreferrer"`, consistent with global-header.
+
+### Patch Changes
+
+- 75a8512: Show a Backstage UI hover tooltip with the full sidebar label only when the text is truncated with an ellipsis.
+- Updated dependencies [4074986]
+- Updated dependencies [f99ef6f]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.14.0
+
 ## 1.13.1
 
 ### Patch Changes
