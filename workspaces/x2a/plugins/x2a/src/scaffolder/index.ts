@@ -14,3 +14,13 @@
  */
 export * from './RepoAuthentication';
 export { RulesAcceptance, rulesAcceptanceValidation } from './RulesAcceptance';
+export {
+  X2ARepoUrlPicker,
+  x2aRepoUrlPickerValidation,
+  x2aRepoUrlPickerFieldSchema,
+  type X2ARepoUrlPickerUiOptions,
+} from './X2ARepoUrlPicker';
+export type {
+  RepoUrlCredentialsOptions,
+  RepoUrlCredentialsStatus,
+} from './useRepoUrlCredentials';

@@ -57,7 +57,6 @@ function makeFullAgent(): Entity {
       instructions: 'You are a fully configured agent.',
       handoffDescription: 'Handles everything.',
       model: 'gpt-4o',
-      inferenceProvider: { name: 'openai', model: 'gpt-4o' },
       handoffs: ['agent-a', 'agent-b'],
       tools: ['tool-x', 'tool-y'],
       toolUseBehavior: 'run_llm_again',
@@ -71,7 +70,6 @@ function makeFullAgent(): Entity {
         type: 'object',
         properties: { result: { type: 'string' } },
       },
-      executionMode: 'sandbox',
     },
   } as Entity;
 }
@@ -88,19 +86,6 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
     it('accepts a valid agent with all optional fields populated', async () => {
       const result = await agentAiResourceEntityV1alpha1Validator.check(
         makeFullAgent(),
-      );
-      expect(result).toBe(true);
-    });
-
-    it.each([
-      ['model only', { model: 'gpt-4o' }],
-      [
-        'inferenceProvider only',
-        { inferenceProvider: { name: 'openai', model: 'gpt-4o' } },
-      ],
-    ])('accepts an agent with %s', async (_description, fields) => {
-      const result = await agentAiResourceEntityV1alpha1Validator.check(
-        makeMinimalAgent(fields),
       );
       expect(result).toBe(true);
     });
@@ -155,61 +140,9 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
       );
       expect(result).toBe(true);
     });
-
-    it.each(['in-process', 'subprocess', 'sandbox'] as const)(
-      'accepts agent with executionMode: %s',
-      async executionMode => {
-        const result = await agentAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ executionMode }),
-        );
-        expect(result).toBe(true);
-      },
-    );
-
-    it('accepts agent without executionMode (field absent)', async () => {
-      const entity = makeMinimalAgent();
-      delete (entity as any).spec.executionMode;
-      const result = await agentAiResourceEntityV1alpha1Validator.check(entity);
-      expect(result).toBe(true);
-    });
   });
 
   describe('reject paths', () => {
-    it.each([
-      ['a string', 'openai'],
-      ['a number', 42],
-      ['a boolean', true],
-      ['null', null],
-      ['an array', []],
-      ['an empty object', {}],
-      ['missing name', { model: 'gpt-4o' }],
-      ['missing model', { name: 'openai' }],
-      ['empty name', { name: '', model: 'gpt-4o' }],
-      ['empty model', { name: 'openai', model: '' }],
-      ['non-string name', { name: 42, model: 'gpt-4o' }],
-      ['non-string model', { name: 'openai', model: 42 }],
-    ])(
-      'rejects spec.inferenceProvider with %s',
-      async (_description, inferenceProvider) => {
-        await expect(
-          agentAiResourceEntityV1alpha1Validator.check(
-            makeMinimalAgent({ inferenceProvider: inferenceProvider as any }),
-          ),
-        ).rejects.toThrow(/inferenceProvider/);
-      },
-    );
-
-    it.each(['', 42, true, null, [], { provider: 'openai', name: 'gpt-4o' }])(
-      'rejects invalid spec.model: %j',
-      async model => {
-        await expect(
-          agentAiResourceEntityV1alpha1Validator.check(
-            makeMinimalAgent({ model: model as any }),
-          ),
-        ).rejects.toThrow(/model/);
-      },
-    );
-
     it('accepts missing spec.instructions', async () => {
       const entity = makeMinimalAgent();
       delete (entity as any).spec.instructions;
@@ -304,30 +237,6 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
           makeMinimalAgent({
             modelSettings: { temperature: 'high' as any },
           }),
-        ),
-      ).rejects.toThrow();
-    });
-
-    it('rejects executionMode as boolean', async () => {
-      await expect(
-        agentAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ executionMode: true as any }),
-        ),
-      ).rejects.toThrow();
-    });
-
-    it('rejects executionMode as number', async () => {
-      await expect(
-        agentAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ executionMode: 42 as any }),
-        ),
-      ).rejects.toThrow();
-    });
-
-    it('rejects executionMode with invalid string value', async () => {
-      await expect(
-        agentAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ executionMode: 'other' as any }),
         ),
       ).rejects.toThrow();
     });

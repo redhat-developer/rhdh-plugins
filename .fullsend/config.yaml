@@ -12,6 +12,10 @@ agents:
     source: rhdh/harness/triage-jira.yaml
   - name: code
     source: rhdh/harness/code.yaml
+  - name: ci-repair
+    source: rhdh/harness/ci-repair.yaml
+  - name: ci-triage
+    source: rhdh/harness/ci-triage.yaml
   - name: fix
     source: rhdh/harness/fix.yaml
   - name: review
@@ -23,6 +27,10 @@ agents:
   - name: spec-audit
     runtime: claude
     source: rhdh/harness/spec-audit.yaml
+  # CVE dependency-bump assessment (RHIDP-17209). Trigger: cve-fix label
+  # or /fs-cve-pr-review on a PR. Posts advisory PASS/FAIL/PARTIAL; no merge.
+  - name: cve-reviewer
+    source: rhdh/harness/cve-review.yaml
 roles:
   - triage
   - coder
@@ -34,8 +42,9 @@ allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/fullsend/
   - https://raw.githubusercontent.com/fullsend-ai/agents/
   - https://github.com/redhat-developer/rhdh-skills/
-create_issues:
-  allow_targets:
-    repos:
-      - redhat-developer/rhdh-plugins
-      - fullsend-ai/fullsend
+tracker:
+  github:
+    allowed_targets:
+      repos:
+        - redhat-developer/rhdh-plugins
+        - fullsend-ai/fullsend

@@ -32,6 +32,11 @@ export function normalizeRepoUrl(url: string): string {
   if (!url?.trim()) {
     return url;
   }
+  // A full URL is never rewritten: prefixing it with https:// again would
+  // turn its scheme into the host (https://https/...).
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url.trim())) {
+    return url;
+  }
 
   // Motivated by https://github.com/backstage/backstage/blob/master/plugins/scaffolder/src/components/fields/RepoUrlPicker/utils.ts
   try {

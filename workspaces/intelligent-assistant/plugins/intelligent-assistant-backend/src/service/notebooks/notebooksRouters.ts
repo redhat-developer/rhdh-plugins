@@ -27,6 +27,7 @@ import express, { Router } from 'express';
 
 import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
+import { StringDecoder } from 'node:string_decoder';
 import { Readable, Transform } from 'stream';
 
 import {
@@ -46,9 +47,9 @@ import {
   getIdentity,
 } from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
+import { convertToMarkdown } from './documents/documentConverter';
 import { isValidFileType } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
-import { convertToMarkdown } from './documents/markitdownClient';
 import { SessionService } from './sessions/sessionService';
 import {
   createDocumentListResponse,
@@ -164,12 +165,13 @@ export async function createNotebooksRouter(
     sessionId: string,
     userId: string,
   ) => {
+    const decoder = new StringDecoder('utf8');
     let buffer = '';
     let conversationCaptured = !!session.metadata?.conversation_id;
 
     return new Transform({
       transform(chunk: any, _encoding: any, callback: any) {
-        buffer += chunk.toString();
+        buffer += decoder.write(chunk);
 
         const blocks = buffer.split('\n\n');
         buffer = blocks.pop()!;
@@ -251,6 +253,7 @@ export async function createNotebooksRouter(
       },
 
       flush(callback: any) {
+        buffer += decoder.end();
         if (buffer.trim()) {
           const lines = buffer.split('\n');
           let dataLine = '';

@@ -230,8 +230,7 @@ version as SemVer, and otherwise emits
   content. Same-digest tag aliases share the same documentation URL because they
   share the same manifest digest. When a tag moves to a new manifest, the entity's
   `backstage.io/techdocs-ref` updates to reflect the new digest, matching the
-  entity's updated integrity references. The annotation is OCI-only for this
-  increment; npx skill entities do not receive a `backstage.io/techdocs-ref`.
+  entity's updated integrity references.
 - npx: `sourceUri` is the configured index entry's absolute HTTPS artifact URL,
   serialized with the URL API. URL credentials, fragments, query-string
   credentials, and signed access tokens are rejected before the value is
@@ -242,6 +241,10 @@ version as SemVer, and otherwise emits
   literal `#`; comparison uses the serialized URL and lowercase SHA-256 digest.
   This reference records verified content at that URL, not a guarantee that the
   server supports immutable retrieval. Consumers fetching it again must reverify.
+  Set `backstage.io/techdocs-ref` using the npx connector base, source ID, and
+  verified Markdown digest. Set `rhdh.io/npx-skill-key` from the index entry
+  name and `rhdh.io/npx-skill-registry` from a valid `X-Npx-Skill-Registry`
+  snapshot header when present.
 
 Configured digest-only references retain raw acquisition without inventing a tag.
 They are deliberately excluded from normalized `skills` and `failedSkillKeys`;
@@ -328,7 +331,16 @@ Provider removals persist the full original catalog entity reference, including
 namespace, rather than reconstructing it from current configuration. A namespace
 configuration change is reconciled even for a repeated connector observation:
 ready results add the new identity and remove the old one; partial results retain
-old identities until ready cleanup is authorized. Pre-upgrade pending removals
+old identities until ready cleanup is authorized. Effective `spec.owner` and
+`spec.lifecycle` are reconciled the same way: when a changed `defaultOwner` or
+`defaultLifecycle` alters a mapped entity's effective value, an accepted `ready`
+or `partial` snapshot upserts that entity even when its digest and connector
+observation timestamp are unchanged. The planner compares the already mapped
+values, so valid source hints still win independently per field and a field
+resolved from a hint is unaffected by its default changing. Once applied,
+identical refreshes are no-ops; `loading`, `failed`, and stale observations
+still preserve committed entities. Defaults are read when the provider is
+constructed at backend startup. Pre-upgrade pending removals
 recover their original references from committed ownership; missing or ambiguous
 ownership blocks that source's replay rather than guessing a namespace.
 
@@ -536,7 +548,7 @@ Top-level numeric acquisition limits remain shared settings applied per source.
 unknown source, and treats its once-decoded route parameter as the source identity.
 It does not re-decode percent sequences or perform upstream work.
 
-### D8 — OCI skill TechDocs
+### D8 — OCI and npx skill TechDocs
 
 OCI skill Markdown extracted during D4 acquisition is published as TechDocs
 documentation for `AiResource` entities with `spec.type: skill`. This extends
@@ -545,8 +557,12 @@ the HTTP-based model-card TechDocs integration pattern established in the
 discovery-resolved `backstage.io/techdocs-ref` annotation, and authenticated
 URL-reader retrieval producing a minimal MkDocs project. No direct OCI
 UrlReader is added; the existing URL reader retrieves extracted content over
-connector HTTP; the connector alone acquires and extracts OCI artifacts. This
-increment covers OCI skill documentation only; npx TechDocs is deferred.
+connector HTTP; the connector alone acquires and extracts OCI artifacts.
+
+The npx connector serves the same authenticated route using the verified
+Markdown digest. It looks up the digest in the current source snapshot and
+re-fetches and verifies the artifact for a fresh build. The durable storage
+and acknowledgment protocol below applies to OCI sources.
 
 **Connector Markdown endpoint.** The OCI connector exposes
 `GET /skilldocs/:sourceId/:digest` relative to its Backstage plugin base URL.
@@ -724,7 +740,7 @@ release. Existing entities missing or changing their TechDocs annotation receive
 an upsert even when digest and observation timestamp are unchanged.
 
 **Provider annotation.** The catalog provider constructs the
-`backstage.io/techdocs-ref` annotation for OCI skill entities using
+`backstage.io/techdocs-ref` annotation for OCI and npx skill entities using
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified
 in D5. The `<discovered-connector-base>` is resolved through Backstage
 discovery using the configured `connectorPluginId`. The provider does not
@@ -732,13 +748,12 @@ download or extract skill content; it constructs the annotation from trusted
 configuration and the record's verified digest. The annotation is set alongside
 the existing identity, integrity, and source-location annotations. When a tag
 moves to a new manifest, the entity's `backstage.io/techdocs-ref` updates to
-reflect the new digest, consistent with D5's integrity reference update. npx
-skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
+reflect the new digest, consistent with D5's integrity reference update.
 
 **URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
-plugin is extended to match OCI skill documentation URLs from trusted
+plugin is extended to match OCI and npx skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations and paths. The reader
-resolves configured OCI connector bases through Backstage discovery during service
+resolves configured skill connector bases through Backstage discovery during service
 initialization, before publishing its synchronous reader factory. Both predicate
 selection and direct reads enforce those trusted destinations. The reader
 matches the exact trusted connector origin and base pathname, followed by
@@ -763,7 +778,7 @@ propagate as errors. Successful responses produce a minimal MkDocs project
 containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
 the retrieved Markdown content. The reader passes the connector's `ETag`
 response header through for TechDocs digest-based cache semantics. Conditional
-OCI reads use explicit fetch revalidation cache mode so a matching ETag can
+skill documentation reads use explicit fetch revalidation cache mode so a matching ETag can
 produce the connector's 304 response rather than being overridden by Node
 fetch's automatic request cache-control policy. A successful
 skill-docs response missing a nonblank ETag is a protocol error; no empty or

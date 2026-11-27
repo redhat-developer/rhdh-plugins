@@ -49,6 +49,26 @@ const skillEntity: Entity = {
   },
 };
 
+const ociSkillEntity: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'skill-9fcff220c97888266089c9abb084c92bd3a2c1ef88fd4335347de797',
+    namespace: 'default',
+    uid: 'uid-oci-skill',
+    annotations: {
+      'rhdh.io/ai-asset-source': 'oci/skillimage-skills',
+      'rhdh.io/oci-skill-ref':
+        'oci://quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+    },
+  },
+  spec: {
+    type: 'skill',
+    lifecycle: 'experimental',
+    owner: 'team-skills',
+  },
+};
+
 const ociEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'Resource',
@@ -187,6 +207,40 @@ describe('UsageCard', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows the selected registry skill on the Copy button’s code snippet', async () => {
+    await renderWithEntity({
+      ...skillEntity,
+      metadata: {
+        name: 'skill-abc123',
+        title: 'Write a good README',
+        annotations: {
+          'rhdh.io/ai-asset-source': 'npx/public-agent-skills',
+          'rhdh.io/npx-skill-registry': 'https://evilmartians.com',
+          'rhdh.io/npx-skill-key': 'good-readme',
+        },
+      },
+    });
+    expect(screen.getByRole('code')).toHaveTextContent(
+      "npx skills add 'https://evilmartians.com' --skill good-readme",
+    );
+    expect(
+      screen.getByRole('button', { name: 'Copy text' }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders Podman pull command for OCI skill entities', async () => {
+    await renderWithEntity(ociSkillEntity);
+
+    expect(
+      screen.getByText(
+        'podman pull quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Copy text' }),
+    ).toBeInTheDocument();
+  });
+
   it('does not render usage actions without permission', async () => {
     const deniedEntity = {
       ...skillEntity,
@@ -207,7 +261,7 @@ describe('UsageCard', () => {
 
     expect(
       screen.getByText(
-        'podman pull oci://registry.example.com/tools/custom-ai-tool:latest',
+        'podman pull registry.example.com/tools/custom-ai-tool:latest',
       ),
     ).toBeInTheDocument();
     expect(

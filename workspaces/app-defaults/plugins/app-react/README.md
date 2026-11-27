@@ -176,14 +176,15 @@ export default createFrontendPlugin({
 
 `SidebarItemBlueprint` parameters:
 
-| Param      | Type                      | Required | Description                                                |
-| ---------- | ------------------------- | -------- | ---------------------------------------------------------- |
-| `title`    | `string`                  | Yes      | Text shown next to the icon                                |
-| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon) |
-| `to`       | `string`                  | No       | Link target. Required for items inside a group             |
-| `onClick`  | `() => void`              | No       | Action handler for items that do not navigate              |
-| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
-| `group`    | `string`                  | No       | `id` of the group to render the item in                    |
+| Param      | Type                      | Required | Description                                                    |
+| ---------- | ------------------------- | -------- | -------------------------------------------------------------- |
+| `title`    | `string`                  | Yes      | Text shown next to the icon                                    |
+| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon)     |
+| `to`       | `string`                  | No       | Destination URL or app path. Required for items inside a group |
+| `onClick`  | `() => void`              | No       | Action handler for items that do not navigate                  |
+| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)                  |
+| `group`    | `string`                  | No       | `id` of the group to render the item in                        |
+| `target`   | `'_blank' \| '_self'`     | No       | HTML anchor target. Invalid values are ignored                 |
 
 `SidebarItemGroupBlueprint` parameters:
 

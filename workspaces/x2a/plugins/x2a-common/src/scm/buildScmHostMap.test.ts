@@ -45,6 +45,9 @@ describe('buildScmHostMap', () => {
     expect(map.get('gitlab.internal.io')).toBe('gitlab');
   });
 
+  // A bare ConfigReader applies no visibility filtering. In the frontend the
+  // `bitbucketCloud` entry is stripped, and `bitbucket.org` then resolves via
+  // the URL heuristic (providers/bitbucket.ts) instead of this map.
   it('maps bitbucketCloud hosts', () => {
     const config = new ConfigReader({
       integrations: {

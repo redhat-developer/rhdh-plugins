@@ -31,6 +31,7 @@ jest.mock('../ClientService', () => ({
 }));
 
 jest.mock('../repoAuth', () => ({
+  ...jest.requireActual('../repoAuth'),
   useRepoAuthentication: () => ({ authenticate: mockAuthenticate }),
 }));
 
@@ -66,6 +67,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { canRunNextPhase, getNextPhase } from '../components/tools';
 import { useBulkRun } from './useBulkRun';
+import { AuthHostNotAllowedError } from '../repoAuth';
 
 const mockCanRunNextPhase = canRunNextPhase as jest.Mock;
 const mockGetNextPhase = getNextPhase as jest.Mock;
@@ -119,7 +121,9 @@ const jsonErrorResponse = (data: unknown, status: number) => ({
 });
 
 const setupAuth = () => {
-  mockAuthenticate.mockResolvedValue([{ token: 'mock-token' }]);
+  mockAuthenticate.mockImplementation(async (requests: unknown[]) =>
+    requests.map(() => ({ token: 'mock-token' })),
+  );
 };
 
 describe('useBulkRun', () => {
@@ -196,13 +200,44 @@ describe('useBulkRun', () => {
 
       await result.current.runAllForProject(project, [makeModule()]);
 
-      expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      // Source and target in one batch, target first.
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
       expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://github.com/org/src', readOnly: true },
+        {
+          descriptor: {
+            repoUrl: 'https://github.com/org/tgt',
+            readOnly: false,
+          },
+          host: 'github.com',
+        },
+        {
+          descriptor: { repoUrl: 'https://github.com/org/src', readOnly: true },
+          host: 'github.com',
+        },
       ]);
-      expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://github.com/org/tgt', readOnly: false },
-      ]);
+    });
+
+    it('starts no run when the auth host guard refuses the repository', async () => {
+      const project = makeProject({
+        sourceRepoUrl: 'https://gitlab.other.example.com/org/src',
+        targetRepoUrl: 'https://gitlab.other.example.com/org/tgt',
+      });
+      mockAuthenticate.mockRejectedValueOnce(
+        new AuthHostNotAllowedError(
+          'The GitLab auth provider is configured for gitlab.com, not gitlab.other.example.com.',
+          'gitlab',
+          'gitlab.other.example.com',
+        ),
+      );
+
+      const { result } = renderHook(() => useBulkRun());
+
+      await expect(
+        result.current.runAllForProject(project, [makeModule()]),
+      ).rejects.toThrow('not gitlab.other.example.com');
+      expect(
+        mockProjectsProjectIdModulesModuleIdRunPost,
+      ).not.toHaveBeenCalled();
     });
 
     it('authenticates cross-provider repos (Bitbucket source, GitHub target)', async () => {
@@ -211,9 +246,10 @@ describe('useBulkRun', () => {
         targetRepoUrl: 'https://github.com/org/tgt',
       });
 
-      mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'gh-target-tok' }])
-        .mockResolvedValueOnce([{ token: 'bb-source-tok' }]);
+      mockAuthenticate.mockResolvedValueOnce([
+        { token: 'gh-target-tok' },
+        { token: 'bb-source-tok' },
+      ]);
       mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'job-1' }),
       );
@@ -222,12 +258,23 @@ describe('useBulkRun', () => {
 
       await result.current.runAllForProject(project, [makeModule()]);
 
-      expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      // Source and target in one batch, target first.
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
       expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://bitbucket.org/ws/src', readOnly: true },
-      ]);
-      expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://github.com/org/tgt', readOnly: false },
+        {
+          descriptor: {
+            repoUrl: 'https://github.com/org/tgt',
+            readOnly: false,
+          },
+          host: 'github.com',
+        },
+        {
+          descriptor: {
+            repoUrl: 'https://bitbucket.org/ws/src',
+            readOnly: true,
+          },
+          host: 'bitbucket.org',
+        },
       ]);
 
       expect(mockProjectsProjectIdModulesModuleIdRunPost).toHaveBeenCalledWith(
@@ -245,9 +292,10 @@ describe('useBulkRun', () => {
       const mod = makeModule({ id: 'mod-x', projectId: 'proj-1' });
       mockGetNextPhase.mockReturnValue('migrate');
 
-      mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'target-tok' }])
-        .mockResolvedValueOnce([{ token: 'source-tok' }]);
+      mockAuthenticate.mockResolvedValueOnce([
+        { token: 'target-tok' },
+        { token: 'source-tok' },
+      ]);
       mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'job-1' }),
       );
@@ -893,9 +941,10 @@ describe('useBulkRun', () => {
     it('calls projectsProjectIdRunPost with correct project ID and auth tokens', async () => {
       const project = makeProject();
 
-      mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'target-tok' }])
-        .mockResolvedValueOnce([{ token: 'source-tok' }]);
+      mockAuthenticate.mockResolvedValueOnce([
+        { token: 'target-tok' },
+        { token: 'source-tok' },
+      ]);
       mockProjectsProjectIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'init-job-1', status: 'pending' }),
       );
@@ -928,12 +977,20 @@ describe('useBulkRun', () => {
 
       await result.current.retriggerInit(project);
 
-      expect(mockAuthenticate).toHaveBeenCalledTimes(2);
+      // Source and target in one batch, target first.
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
       expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://github.com/org/tgt', readOnly: false },
-      ]);
-      expect(mockAuthenticate).toHaveBeenCalledWith([
-        { repoUrl: 'https://github.com/org/src', readOnly: true },
+        {
+          descriptor: {
+            repoUrl: 'https://github.com/org/tgt',
+            readOnly: false,
+          },
+          host: 'github.com',
+        },
+        {
+          descriptor: { repoUrl: 'https://github.com/org/src', readOnly: true },
+          host: 'github.com',
+        },
       ]);
     });
 
@@ -954,6 +1011,9 @@ describe('useBulkRun', () => {
       await result.current.retriggerInit(project);
 
       expect(mockAuthenticate).toHaveBeenCalledTimes(1);
+      expect(mockAuthenticate).toHaveBeenCalledWith([
+        expect.objectContaining({ host: 'github.com' }),
+      ]);
       expect(mockProjectsProjectIdRunPost).toHaveBeenCalledWith({
         path: { projectId: 'proj-1' },
         body: {
@@ -966,9 +1026,10 @@ describe('useBulkRun', () => {
     it('includes userPrompt in the request body when provided', async () => {
       const project = makeProject();
 
-      mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'target-tok' }])
-        .mockResolvedValueOnce([{ token: 'source-tok' }]);
+      mockAuthenticate.mockResolvedValueOnce([
+        { token: 'target-tok' },
+        { token: 'source-tok' },
+      ]);
       mockProjectsProjectIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'init-job-2', status: 'pending' }),
       );
@@ -994,9 +1055,10 @@ describe('useBulkRun', () => {
     it('omits userPrompt from the request body when not provided', async () => {
       const project = makeProject();
 
-      mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'target-tok' }])
-        .mockResolvedValueOnce([{ token: 'source-tok' }]);
+      mockAuthenticate.mockResolvedValueOnce([
+        { token: 'target-tok' },
+        { token: 'source-tok' },
+      ]);
       mockProjectsProjectIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'init-job-3', status: 'pending' }),
       );

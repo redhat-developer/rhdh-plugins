@@ -424,3 +424,7 @@ Seed config comes from `scripts/config-for-rhdh-repo.yaml`. Existing leaf values
 ## CSV Bulk Project Import
 
 See [CSV Bulk Project Import](./docs/csv-bulk-import.md) for the CSV file format, an example, repository URL conventions, and the `RepoAuthentication` scaffolder extension.
+
+## SCM hosts on custom URLs
+
+See [SCM hosts and the X2ARepoUrlPicker field](./docs/scm-hosts.md) for how the repository pickers in the conversion project template derive their host list from the `integrations:` config (GitHub/GitLab hosts plus `bitbucket.org`) and obtain OAuth tokens per provider, bound to the one host named in `x2a.scm.authHosts` (required for every GitHub, GitLab and Bitbucket Cloud host, no default), so self-hosted GitLab and GitHub Enterprise instances work without editing the template. Bitbucket Cloud is offered and authenticated only when `x2a.scm.authHosts.bitbucket` is set; it is hidden silently otherwise. Bitbucket Server is not supported (x2a's Bitbucket provider is Bitbucket Cloud only).
