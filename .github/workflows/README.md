@@ -10,6 +10,8 @@ Handles the release process for a specific workspace from a specified branch (de
 
 Automatic release checks and publication check out the triggering commit, not a moving branch. A SHA guard before npm publication rejects an unexpected checkout. Manual runs still check out the selected input branch.
 
+Publishing uses npm trusted publishing (GitHub Actions OIDC), without `RHDH_NPM_TOKEN`. Configure each published package on npm with `redhat-developer/rhdh-plugins` and the calling workflow filename `release.yml` for automatic main releases. For direct manual dispatches of the reusable workflow, also configure `release_workspace.yml`. The caller and reusable publish job both grant `id-token: write`; publishing fails closed if the package has no matching trusted publisher. Configure and validate each connection with a successful publish within npm's two-day window before relying on it.
+
 After a successful automatic release, calls [update-overlays.yml](./update-overlays.yml) to request an overlays update and comment its PR link on the merged Version Packages PR. Forced manual releases do not trigger this follow-up.
 
 ## [backport.yml](./backport.yml)
@@ -26,7 +28,7 @@ The same release process applies to both branch layouts:
 2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
 3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
-Both maintenance publish jobs check out and verify the triggering SHA before publication. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
+Both maintenance publish jobs check out and verify the triggering SHA before publication. They use npm trusted publishing without `RHDH_NPM_TOKEN`: configure each published package for the `release_workspace_version.yml` workflow on npm. The configuration is per workflow filename, not per release branch, and must be validated by a successful publish within npm's two-day window. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
 
 For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
 
@@ -52,6 +54,12 @@ Workspaces missing from overlays or owned by a different upstream are skipped wi
 - Dispatch requests use GitHub REST API version `2026-03-10`, which returns the new workflow run ID. No run is selected by a timestamp or by searching for the latest run.
 
 Local checks cover workflow syntax (`actionlint`), helper linting (ESLint), and formatting (Prettier). Live cross-repository verification requires an approved test setup. Do not dispatch production updates or publish packages for local validation.
+
+## [remind-unvalidated-release.yml](./remind-unvalidated-release.yml)
+
+On bot-authored `Version Packages (<workspace>)` PRs from this repository, checks only public packages whose `package.json` version changes in the PR (including newly added packages). It compares npm registry publication times with successful publish jobs from the corresponding workflow and target branch, using the version at the merged release commit. A main release cannot validate a prior-version release. It comments once with any packages lacking a matching publish and asks the reviewer to ping `@rhdh-cope` in `#rhdh-plugins-ecosystem` on Slack. The cutoff is supplied as an RFC 3339 UTC timestamp per base branch in the repository Actions variable `TRUSTED_PUBLISHING_CUTOVERS`, for example `{"main":"2026-11-26T12:00:00Z","release-2.1":"2026-11-27T09:00:00Z"}`. Set each entry to the time the token-free workflow reached that branch; omit branches that have not migrated yet. A branch without an entry is skipped with a notice. The workflow sparsely checks out only its helper from the trusted base commit with shallow history and reads PR manifests as data via GitHub API; it never executes PR code. It skips Actions queries when npm shows no post-cutover publish and stops paging runs as soon as all affected packages have been validated. This check assumes the token-free workflows are the only publish paths after the cutover.
+
+The `Trusted publishing validation` job fails while a versioned package has no post-cutover npm publish through the matching release workflow. **Do not add it as a required check**: the first Version Packages PR may need to merge despite this failure to produce the first token-free release. Reviewers should make that decision explicitly. After the initial release, rerun the check on any still-open Version Packages PRs to refresh the result. Verify the first token-free publish and its package output before closing the rollout.
 
 ## [release.yml](./release.yml)
 

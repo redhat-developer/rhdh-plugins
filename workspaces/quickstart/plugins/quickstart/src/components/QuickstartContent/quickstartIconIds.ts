@@ -18,7 +18,7 @@
  * Legacy PascalCase quickstart config icon ids mapped to RHDH common system /
  * Material icon ligature ids for `QuickstartIcon`.
  *
- * Drawer step rows use a separate MUI map in `QuickstartItemIcon` (`commonIcons`)
+ * Drawer step rows use a separate Remix map in `QuickstartItemIcon` (`commonIcons`)
  * and short-circuit before this path — same keys, different glyph targets.
  * Keep both maps aligned when adding a legacy id.
  *

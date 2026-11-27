@@ -136,6 +136,7 @@ async function renderPicker(
         authHosts: options.authHosts ?? {
           gitlab: CUSTOM_HOST,
           github: GITHUB_HOST,
+          bitbucket: 'bitbucket.org',
         },
       },
     },
@@ -384,6 +385,17 @@ describe('X2ARepoUrlPicker (real RepoUrlPicker)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/closed\.\./)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+
+  it('silently hides bitbucket.org when x2a.scm.authHosts.bitbucket is unset', async () => {
+    await renderPicker({ authHosts: { gitlab: CUSTOM_HOST } });
+
+    const select = await hostSelect();
+    await waitFor(() => {
+      expect(select.textContent).toContain(CUSTOM_HOST);
+    });
+    expect(select.textContent).not.toContain('bitbucket.org');
+    expect(screen.queryByText(/are not offered/)).not.toBeInTheDocument();
   });
 
   it('offers only bitbucket.org when no integrations are configured', async () => {

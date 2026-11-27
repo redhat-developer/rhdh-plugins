@@ -306,6 +306,127 @@ describe('adoption-insights plugin (startTestBackend)', () => {
   });
 });
 
+describe('notification preference API across databases', () => {
+  const databases = TestDatabases.create({ ids: ['POSTGRES_15', 'SQLITE_3'] });
+  const url = '/api/adoption-insights/notification-preference';
+
+  describe.each(databases.eachSupportedId())('%s', databaseId => {
+    let server: Server;
+    let knex: Knex;
+
+    beforeAll(async () => {
+      knex = await databases.init(databaseId);
+      ({ server } = await startAdoptionInsightsBackend({ knex }));
+    });
+
+    afterAll(() => {
+      server?.close();
+    });
+
+    it('defaults to off without creating a row', async () => {
+      const res = await request(server).get(url);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ frequency: 'off' });
+      expect(await knex('notification_preferences').select('user_ref')).toEqual(
+        [],
+      );
+    });
+
+    it('stores weekly, then off without deleting the row', async () => {
+      const weekly = await request(server)
+        .put(url)
+        .send({ frequency: 'weekly' });
+      expect(weekly.status).toBe(200);
+      expect(weekly.body).toEqual({ frequency: 'weekly' });
+      expect((await request(server).get(url)).body).toEqual({
+        frequency: 'weekly',
+      });
+
+      const off = await request(server).put(url).send({ frequency: 'off' });
+      expect(off.status).toBe(200);
+      expect(
+        await knex('notification_preferences').select('user_ref', 'frequency'),
+      ).toEqual([{ user_ref: 'user:default/test', frequency: 'off' }]);
+    });
+
+    it('rejects unsupported interval values', async () => {
+      const res = await request(server).put(url).send({ frequency: '7d' });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Invalid notification preference');
+    });
+
+    it('reports extra body keys in formErrors', async () => {
+      const res = await request(server)
+        .put(url)
+        .send({ frequency: 'weekly', userRef: 'user:default/other' });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        message: 'Invalid notification preference',
+        errors: {},
+        formErrors: [expect.stringContaining('userRef')],
+      });
+    });
+
+    it('isolates the signed-in users', async () => {
+      await request(server).put(url).send({ frequency: 'monthly' });
+      const otherUser = mockCredentials.user.header('user:default/other');
+      const otherGet = await request(server)
+        .get(url)
+        .set('Authorization', otherUser);
+      expect(otherGet.body).toEqual({ frequency: 'off' });
+
+      const otherPut = await request(server)
+        .put(url)
+        .set('Authorization', otherUser)
+        .send({ frequency: 'daily' });
+      expect(otherPut.status).toBe(200);
+      expect((await request(server).get(url)).body).toEqual({
+        frequency: 'monthly',
+      });
+    });
+
+    it('works when board-read permission is denied', async () => {
+      const deniedBackend = await startAdoptionInsightsBackend({
+        knex,
+        authorizeResult: AuthorizeResult.DENY,
+      });
+      try {
+        expect((await request(deniedBackend.server).get(url)).status).toBe(200);
+        expect(
+          (
+            await request(deniedBackend.server)
+              .put(url)
+              .send({ frequency: 'weekly' })
+          ).status,
+        ).toBe(200);
+      } finally {
+        deniedBackend.server.close();
+      }
+    });
+
+    it('rejects non-user credentials', async () => {
+      const noUser = await request(server)
+        .get(url)
+        .set('Authorization', mockCredentials.none.header());
+      const service = await request(server)
+        .get(url)
+        .set('Authorization', mockCredentials.service.header());
+      const servicePut = await request(server)
+        .put(url)
+        .set('Authorization', mockCredentials.service.header())
+        .send({ frequency: 'daily' });
+      const invalidServicePut = await request(server)
+        .put(url)
+        .set('Authorization', mockCredentials.service.header())
+        .send({ frequency: 'invalid' });
+      expect(noUser.status).toBe(401);
+      expect(service.status).toBe(401);
+      expect(servicePut.status).toBe(401);
+      expect(invalidServicePut.status).toBe(401);
+    });
+  });
+});
+
 const START = '2025-06-02';
 const END = '2025-06-08';
 const TZ = 'UTC';

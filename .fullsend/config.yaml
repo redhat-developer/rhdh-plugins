@@ -42,8 +42,9 @@ allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/fullsend/
   - https://raw.githubusercontent.com/fullsend-ai/agents/
   - https://github.com/redhat-developer/rhdh-skills/
-create_issues:
-  allow_targets:
-    repos:
-      - redhat-developer/rhdh-plugins
-      - fullsend-ai/fullsend
+tracker:
+  github:
+    allowed_targets:
+      repos:
+        - redhat-developer/rhdh-plugins
+        - fullsend-ai/fullsend

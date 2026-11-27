@@ -1,7 +1,7 @@
 ---
 agent: rhdh/agents/ci-triage.md
 model: opus
-image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:0.57.1
 policy: rhdh/policies/ci-triage.yaml
 role: retro
 slug: fullsend-ai-retro

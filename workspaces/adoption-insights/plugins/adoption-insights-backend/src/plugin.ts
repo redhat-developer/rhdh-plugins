@@ -24,6 +24,8 @@ import { migrate } from './database/migration';
 import { DatabaseFactory } from './database/DatabaseFactory';
 import { EventBatchProcessor } from './domain/EventBatchProcessor';
 import EventApiController from './controllers/EventApiController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
+import { NotificationPreferenceStore } from './database/NotificationPreferenceStore';
 import { schedulePartition } from './database/partition';
 import { getConfigurationOptions } from './utils/config';
 
@@ -72,6 +74,16 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         // Queue configuration
         const options = getConfigurationOptions(config);
         const client = await database.getClient();
+        const notificationPreferenceStore = new NotificationPreferenceStore(
+          client,
+          logger,
+        );
+        const notificationPreferenceController =
+          new NotificationPreferenceController(
+            notificationPreferenceStore,
+            auditor,
+            httpAuth,
+          );
         const db = DatabaseFactory.getDatabase(client, logger);
         const processor = new EventBatchProcessor(db, logger, options);
         const eventApiController = new EventApiController(
@@ -99,6 +111,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
             httpAuth,
             permissions,
             eventApiController,
+            notificationPreferenceController,
           }),
         );
 
