@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.4.1
+
+### Patch Changes
+
+- d8e9720: Remove the redundant `MiddlewareFactory` error handler from the plugin router, since the host `httpRouter` service already adds one after every plugin's routes. Move `@backstage/backend-defaults` to `devDependencies` so it is no longer bundled into the dynamic plugin.
+- 9c7551e: Replace `markitdown-ts` with `unpdf` for AI Notebooks PDF text extraction. The backend no longer depends on the platform-specific `@napi-rs/canvas` binary, so it loads on non-x86-64 architectures, and its install footprint and startup memory are significantly smaller. Unreadable or password-protected PDFs, and PDFs without a text layer, are now rejected with a 400 error that does not include the file content.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.4.1
+
 ## 5.4.0
 
 ### Minor Changes
