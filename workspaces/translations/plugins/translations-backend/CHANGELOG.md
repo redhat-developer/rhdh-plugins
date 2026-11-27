@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.8.0
+
+### Minor Changes
+
+- 2deebcc: Backstage version bump to v1.56.4
+
 ## 0.7.0
 
 ### Minor Changes
