@@ -31,14 +31,18 @@ a valid OCI skill image SHALL produce its own entity using its repository/tag
 key, even when another tag has identical content or declared version. Confirmed
 non-skills SHALL produce no entity.
 
-For OCI skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
+For OCI and npx skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified in
 design D5/D8. The `<discovered-connector-base>` SHALL be resolved through
 Backstage discovery using the configured `connectorPluginId`. The `<sourceId>`
-SHALL be the configured source ID and the `<digest>` SHALL be the verified
-manifest digest from the record. The provider SHALL NOT download or extract
-skill content to construct this annotation. npx skill entities SHALL NOT
-receive a `backstage.io/techdocs-ref` annotation in this increment.
+SHALL be the configured source ID. The digest SHALL identify the verified OCI
+manifest or npx Markdown artifact. The provider SHALL construct the URL from
+the record and configuration without fetching skill content.
+
+For npx entities, the provider SHALL set `rhdh.io/npx-skill-key` to the
+record's original index key. It SHALL set `rhdh.io/npx-skill-registry` only
+when the snapshot response supplies a valid HTTPS registry base in
+`X-Npx-Skill-Registry`. The base SHALL exclude credentials, query, and fragment.
 
 #### Scenario: Source metadata lacks owner and version
 
@@ -82,10 +86,21 @@ receive a `backstage.io/techdocs-ref` annotation in this increment.
 - **AND** the annotation uses the discovery-resolved connector base URL, not a hardcoded address
 - **AND** the provider does not download or extract Markdown to construct the annotation
 
-#### Scenario: npx entity has no techdocs-ref annotation
+#### Scenario: npx entity links to the imported Markdown
 
 - **WHEN** an npx skill record is mapped to an entity
-- **THEN** the entity does not have a `backstage.io/techdocs-ref` annotation
+- **THEN** its `backstage.io/techdocs-ref` is `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` using the npx connector and verified Markdown digest
+
+#### Scenario: Registry and index key identify the install target
+
+- **WHEN** a snapshot advertises `X-Npx-Skill-Registry: https://registry.example/team` and a record has key `summarize-text` and display name `Summarize Text`
+- **THEN** the entity has `rhdh.io/npx-skill-registry` set to `https://registry.example/team` and `rhdh.io/npx-skill-key` set to `summarize-text`
+- **AND** an existing entity receives the annotations even when its digest and observation timestamp are unchanged
+
+#### Scenario: Snapshot has no valid registry base
+
+- **WHEN** the response omits the registry header or supplies an invalid base
+- **THEN** the entity retains the original index key and omits `rhdh.io/npx-skill-registry`
 
 #### Scenario: Several valid skill-image tags in one repository
 

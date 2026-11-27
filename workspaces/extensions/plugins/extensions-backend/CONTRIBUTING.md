@@ -100,15 +100,14 @@ Use plugin `dev/` plus the scoped test command for day-to-day backend work and *
 
 Use the workspace apps when you need **install APIs and the catalog module together**, real catalog entities, or RBAC:
 
-| Command             | What it starts                                               |
-| ------------------- | ------------------------------------------------------------ |
-| `yarn start`        | NFS frontend (`packages/app`) + `packages/backend`           |
-| `yarn start:legacy` | Legacy frontend (`packages/app-legacy`) + `packages/backend` |
+| Command      | What it starts                                     |
+| ------------ | -------------------------------------------------- |
+| `yarn start` | NFS frontend (`packages/app`) + `packages/backend` |
 
 For curl against the workspace backend, add the same `backend.auth.externalAccess` block to gitignored `workspaces/extensions/app-config.local.yaml` (or export `BACKSTAGE_DEV_STATIC_TOKEN` and uncomment the example in `app-config.yaml`). Workspace `app-config.yaml` does not ship a live token.
 
 `packages/backend` already loads `extensions-backend`, `catalog-backend-module-extensions`, and RBAC. Do not add a third full app.
 
-Workspace Playwright (`yarn test:e2e:ci`) covers catalog UI browse, i18n, and accessibility. It is **not** the merge gate for bump-trust (plugin init, router mount, permission rules, backend client). It does **not** cover install/configure flows, RBAC denial, or live dynamic-plugin install. Those belong in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays) or a consumer RHDH deployment.
+Workspace Playwright (`yarn test:e2e`) covers catalog UI browse, i18n, and accessibility. It is **not** the merge gate for bump-trust (plugin init, router mount, permission rules, backend client). It does **not** cover install/configure flows, RBAC denial, or live dynamic-plugin install. Those belong in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays) or a consumer RHDH deployment.
 
 See the [workspace contributor index](../../CONTRIBUTING.md) for package test commands.

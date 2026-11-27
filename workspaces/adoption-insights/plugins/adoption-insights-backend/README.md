@@ -43,6 +43,8 @@ app:
 
 The Adoption Insights Backend plugin has support for the permission framework. The frontend NFS page uses an `if` predicate on `adoption-insights.events.read` so unauthorized users do not see the page or navigation entry.
 
+The notification preference routes require a signed-in user but do not require `adoption-insights.events.read`.
+
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access Adoption Insights backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
   ```CSV
@@ -171,6 +173,33 @@ For example, `GET /api/adoption-insights/events?type=top_templates&start_date=20
 The query requires `adoption-insights.events.read` and also supports `format=csv`. It counts `scaffolder` analytics events with action `create` and subject `Task has been created`, which are emitted when a task is created rather than when it completes. `runs` includes events with no estimate; those events add zero minutes and are excluded from `runs_with_estimate`.
 
 For new Scaffolder create events, the backend reads the Template's `backstage.io/time-saved` annotation from the catalog as the signed-in user. The annotation is an ISO 8601 duration such as `PT8H` or `PT15M`. A missing or invalid annotation, or a failed catalog lookup, leaves the event's value empty. The submitted event value is not used for these events. The backend stores the signed-in user's entity ref as `user_ref` for every newly accepted analytics event. Historical Scaffolder create events stored minutes when an estimate was present, but those values came from the client rather than a catalog lookup. Historical rows are not changed when a template's annotation changes.
+
+### Notification preference
+
+Signed-in users can read and update their own time-saved notification preference. `GET /api/adoption-insights/notification-preference` returns the saved frequency, or `{"frequency":"off"}` when the user has no row. GET does not create a row.
+
+```http
+GET /api/adoption-insights/notification-preference
+```
+
+```json
+{ "frequency": "off" }
+```
+
+`PUT /api/adoption-insights/notification-preference` accepts one frequency: `off`, `daily`, `weekly`, or `monthly`. It reads the user from the caller's credentials. Choosing `off` updates and retains the stored row.
+
+```http
+PUT /api/adoption-insights/notification-preference
+Content-Type: application/json
+
+{"frequency":"monthly"}
+```
+
+```json
+{ "frequency": "monthly" }
+```
+
+Invalid requests return HTTP 400 with `message: "Invalid notification preference"`, `errors` for field-level problems, and `formErrors` for object-level problems such as extra keys. Successful and validation-rejected PUTs produce a `notification-preference-update` audit event. These routes remain available while notification sending is not enabled.
 
 ## Example Request
 

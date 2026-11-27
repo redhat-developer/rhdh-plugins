@@ -95,7 +95,7 @@ The Usage card MUST expose a safe, type-specific usage action when one can be
 derived from the entity. For skills, it MUST use the connector token in
 `rhdh.io/ai-asset-source` to distinguish OCI sources from other sources. OCI
 skills use the `rhdh.io/oci-skill-ref` annotation for their pull command; other
-skills retain the existing `npx` command behavior. It MUST NOT call a Boost
+skills with registry install metadata use the npx discovery base and index key. Legacy skills retain the existing command. It MUST NOT call a Boost
 backend.
 
 #### Scenario: OCI skill usage
@@ -111,9 +111,20 @@ backend.
   missing or unsafe
 - **THEN** the Usage card is not rendered
 
-#### Scenario: Non-OCI skill usage
+#### Scenario: Imported npx skill usage
 
-- **WHEN** a skill does not have the `oci` connector token and its catalog name
+- **WHEN** an npx skill has `rhdh.io/npx-skill-registry` and `rhdh.io/npx-skill-key`
+- **THEN** Copy uses `npx skills add '<registry>' --skill <key>` with the public HTTPS registry URL quoted as one shell argument
+- **AND** the command selects the index key even when the display name and catalog identifier differ
+
+#### Scenario: Incomplete npx install metadata
+
+- **WHEN** either install annotation is present and the pair is incomplete or invalid
+- **THEN** the Usage card omits the copy action
+
+#### Scenario: Legacy non-OCI skill usage
+
+- **WHEN** a skill does not have the `oci` connector token or npx install metadata and its catalog name
   is safe for a command
 - **THEN** the Usage card exposes the existing `npx skills add` command
 

@@ -314,6 +314,21 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Impossibile risincronizzare il piano di migrazione per il progetto "{{name}}"',
     'resyncMigrationPlan.errorStart':
       'Impossibile avviare la risincronizzazione del piano di migrazione',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'Non è stato possibile caricare il selettore dei repository. Si tratta di un problema di compatibilità del plugin, segnalalo.',
+    'scaffolder.repoUrlPicker.authError':
+      'Impossibile ottenere un token di accesso {{provider}}: {{error}}. Verifica che il provider di autenticazione "{{provider}}" sia configurato per questa istanza.',
+    'scaffolder.repoUrlPicker.authRetry': 'Riprova',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      "Gli host {{provider}} non sono disponibili ({{hosts}}): nessun host è impostato per l'autenticazione {{provider}}. Un amministratore deve impostare {{configKey}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      "Gli host {{provider}} diversi da {{authHost}} non sono disponibili ({{hosts}}): l'autenticazione {{provider}} è configurata solo per {{authHost}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      "Gli host {{provider}} non sono disponibili ({{hosts}}): l'autenticazione {{provider}} è configurata per {{authHost}}, che non è presente nella configurazione delle integrazioni.",
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      "L'autenticazione {{provider}} è configurata per {{authHost}}, non per {{host}}. Il suo token di accesso non viene inviato ad altri host.",
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      "Nessun host è impostato per l'autenticazione {{provider}}, quindi non è possibile usare alcun token di accesso {{provider}} per {{host}}. Un amministratore deve impostare {{configKey}}.",
     'scaffolder.rulesAcceptance.loadingRules':
       'Caricamento delle regole in corso...',
     'scaffolder.rulesAcceptance.noRulesConfigured':

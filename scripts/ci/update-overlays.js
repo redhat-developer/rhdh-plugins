@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 
 const sourceRepository = 'redhat-developer/rhdh-plugins';
@@ -21,6 +23,66 @@ const overlays = {
   owner: 'redhat-developer',
   repo: 'rhdh-plugin-export-overlays',
 };
+const npmRegistry = 'https://registry.npmjs.org';
+
+function parseVersion(version) {
+  const match = /^(\d+)\.(\d+)\.(\d+)/.exec(version ?? '');
+  return match ? match.slice(1, 4).map(Number) : undefined;
+}
+
+// Mirrors overlays' backstage-version-compatible.sh: the same minor line, or an
+// older minor on the same major line. A newer source is never selected.
+function isBackstageCompatible(source, target) {
+  const sourceVersion = parseVersion(source);
+  const targetVersion = parseVersion(target);
+  if (!sourceVersion || !targetVersion) return true;
+  const [sourceMajor, sourceMinor] = sourceVersion;
+  const [targetMajor, targetMinor] = targetVersion;
+  return sourceMajor === targetMajor && sourceMinor <= targetMinor;
+}
+
+async function readJson(file) {
+  return JSON.parse(await readFile(file, 'utf8'));
+}
+
+async function listPublicPackages(workspaceDir) {
+  const root = await readJson(path.join(workspaceDir, 'package.json'));
+  const patterns = Array.isArray(root.workspaces)
+    ? root.workspaces
+    : (root.workspaces?.packages ?? []);
+  const dirs = patterns.length ? [] : [workspaceDir];
+  for (const pattern of patterns) {
+    if (!pattern.endsWith('/*')) {
+      dirs.push(path.join(workspaceDir, pattern));
+      continue;
+    }
+    const parent = path.join(workspaceDir, pattern.slice(0, -2));
+    const entries = await readdir(parent, { withFileTypes: true }).catch(
+      () => [],
+    );
+    for (const entry of entries) {
+      if (entry.isDirectory()) dirs.push(path.join(parent, entry.name));
+    }
+  }
+  const packages = [];
+  for (const dir of dirs) {
+    const pkg = await readJson(path.join(dir, 'package.json')).catch(
+      () => undefined,
+    );
+    if (pkg?.name && pkg.version && !pkg.private) {
+      packages.push({ name: pkg.name, version: pkg.version });
+    }
+  }
+  return packages;
+}
+
+async function report(core, message) {
+  core.warning(message);
+  await core.summary
+    ?.addRaw(`> [!WARNING]\n> ${message}\n\n`)
+    .write()
+    .catch(() => {});
+}
 
 function repositoryName(url) {
   return url
@@ -82,7 +144,21 @@ async function findReleasePr({
   return releases.length === 1 ? releases[0] : undefined;
 }
 
-export async function updateOverlays({
+// The packages are already on npm when this runs, so a follow-up problem must
+// not mark the release as failed. Every error is reported as a warning instead.
+export async function updateOverlays(options) {
+  try {
+    await runUpdate(options);
+  } catch (error) {
+    if (error?.stack) options.core.info(error.stack);
+    await report(
+      options.core,
+      `Overlays follow-up for ${options.workspace} did not complete: ${error?.message ?? error}`,
+    );
+  }
+}
+
+async function runUpdate({
   github,
   context,
   core,
@@ -91,6 +167,9 @@ export async function updateOverlays({
   wait = setTimeout,
   attempts = 120,
   interval = 15_000,
+  fetch = globalThis.fetch,
+  repoRoot = process.env.GITHUB_WORKSPACE ?? process.cwd(),
+  npmAttempts = 40,
 }) {
   if (`${context.repo.owner}/${context.repo.repo}` !== sourceRepository) {
     throw new Error(
@@ -175,10 +254,69 @@ export async function updateOverlays({
 
   const baseSource = await readSource(targetBranch);
   if (repositoryName(baseSource?.repo) !== sourceRepository) {
-    core.warning(
+    await report(
+      core,
       `Skipping ${workspace}: no rhdh-plugins workspace in overlays on ${targetBranch}.`,
     );
     return;
+  }
+
+  async function readTargetBackstageVersion() {
+    const { data } = await github.rest.repos.getContent({
+      ...overlays,
+      path: 'versions.json',
+      ref: targetBranch,
+    });
+    return JSON.parse(Buffer.from(data.content, 'base64').toString('utf8'))
+      .backstage;
+  }
+
+  // Overlays never selects a release built on a newer Backstage than the
+  // target branch supports, so dispatching would only end without a PR.
+  async function checkBackstageVersion() {
+    const workspaceDir = path.join(repoRoot, 'workspaces', workspace);
+    const { version: sourceVersion } = await readJson(
+      path.join(workspaceDir, 'backstage.json'),
+    );
+    const targetVersion = await readTargetBackstageVersion();
+    if (isBackstageCompatible(sourceVersion, targetVersion)) return true;
+    await report(
+      core,
+      `Skipping ${workspace}: it uses Backstage ${sourceVersion}, but overlays ${targetBranch} supports Backstage ${targetVersion}. Overlays picks up this release once its Backstage version catches up.`,
+    );
+    return false;
+  }
+
+  // npm publish returns before the registry lists the new versions. Overlays
+  // discovery reads the registry, so dispatching too early keeps the old commit.
+  async function waitForNpm() {
+    const workspaceDir = path.join(repoRoot, 'workspaces', workspace);
+    let missing = await listPublicPackages(workspaceDir);
+    for (let attempt = 0; attempt < npmAttempts && missing.length; attempt++) {
+      if (attempt > 0) await wait(interval);
+      const results = await Promise.all(
+        missing.map(async pkg => {
+          try {
+            const response = await fetch(
+              `${npmRegistry}/${pkg.name.replace('/', '%2F')}`,
+              { headers: { accept: 'application/json' } },
+            );
+            if (!response.ok) return false;
+            const data = await response.json();
+            return Boolean(data.versions?.[pkg.version]);
+          } catch {
+            return false;
+          }
+        }),
+      );
+      missing = missing.filter((_, index) => !results[index]);
+    }
+    if (missing.length) {
+      await report(
+        core,
+        `npm does not list ${missing.map(pkg => `${pkg.name}@${pkg.version}`).join(', ')} yet; dispatching the overlays update anyway.`,
+      );
+    }
   }
 
   const prBranch = `workspaces/${targetBranch}__${workspace}`;
@@ -289,6 +427,9 @@ export async function updateOverlays({
     await comment(existingMatch);
     return;
   }
+
+  if (!(await checkBackstageVersion())) return;
+  await waitForNpm();
 
   const openPr = existingPrs.find(pr => pr.state === 'open');
   const inputs = {

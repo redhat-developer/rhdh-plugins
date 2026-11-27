@@ -22,7 +22,6 @@
     "workspaces/cost-management/plugins/cost-management/package.json",
     "workspaces/dcm/packages/app/package.json",
     "workspaces/dcm/plugins/dcm/package.json",
-    "workspaces/extensions/packages/app-legacy/package.json",
     "workspaces/konflux/packages/app/package.json",
     "workspaces/konflux/plugins/konflux/package.json",
     "workspaces/mcp-integrations/packages/app/package.json",
@@ -30,10 +29,7 @@
     "workspaces/x2a/plugins/x2a-dcr/package.json",
     "workspaces/x2a/plugins/x2a/package.json"
   ],
-  "allowedSourcePathPrefixes": [
-    "workspaces/extensions/packages/app-legacy/",
-    "workspaces/theme/plugins/mui4-test/"
-  ],
+  "allowedSourcePathPrefixes": ["workspaces/theme/plugins/mui4-test/"],
   "allowedSourcePaths": [
     "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.tsx",
     "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.test.tsx",

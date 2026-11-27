@@ -17,6 +17,33 @@
       "gitTag": "@red-hat-developer-hub/backstage-plugin-sandbox@0.1.0",
       "reason": "No longer maintained",
       "archivedDate": "2026-06-10"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-augment",
+      "version": "0.3.0",
+      "workspace": "augment",
+      "plugin": "augment",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-augment@0.3.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-02"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-augment-backend",
+      "version": "0.3.0",
+      "workspace": "augment",
+      "plugin": "augment-backend",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-augment-backend@0.3.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-02"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-augment-common",
+      "version": "0.3.0",
+      "workspace": "augment",
+      "plugin": "augment-common",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-augment-common@0.3.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-02"
     }
   ]
 }

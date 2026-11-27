@@ -28,16 +28,15 @@ backend.add(
 );
 ```
 
-## OCI Skill Documentation URL Reader
+## Skill Documentation URL Reader
 
-In addition to model-card TechDocs, this plugin reads OCI skill documentation
+In addition to model-card TechDocs, this plugin reads OCI and npx skill documentation
 from configured connector destinations.
 
 ### Configuration
 
 Skill documentation sources are read from the
-`catalog.providers.skillsCatalogProvider` config section. Only sources with
-`sourceType: 'oci'` are matched:
+`catalog.providers.skillsCatalogProvider` config section. Sources with `sourceType: 'oci'` or `'npx'` are matched:
 
 ```yaml
 catalog:
@@ -52,7 +51,7 @@ catalog:
 
 ### URL pattern
 
-At service initialization, the reader resolves each configured OCI connector's
+At service initialization, the reader resolves each configured skill connector's
 base URL through Backstage discovery. The synchronous predicate and direct
 `readUrl` calls require that exact origin (scheme, host, and port) and the full
 discovered base pathname. For example:
@@ -67,7 +66,7 @@ additional destination configuration is required. Directly constructed readers
 must receive trusted connector bases; without them, skill documentation is not
 matched. Normal backend registration supplies these bases automatically.
 
-where `<digest>` is a `sha256:<64 hex chars>` OCI manifest digest. URLs
+where `<digest>` is a `sha256:<64 hex chars>` OCI manifest digest or npx Markdown digest. URLs
 with query strings, fragments, URL credentials, extra path segments, or
 invalid digest formats are rejected. Each route segment is decoded once;
 malformed percent encoding is rejected without throwing from reader selection.

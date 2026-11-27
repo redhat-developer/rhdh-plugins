@@ -15,6 +15,7 @@
  */
 import Papa from 'papaparse';
 import { ProjectsPost } from '../../client/src/schema/openapi';
+import { extractAuthHost } from '../scm/extractHost';
 
 /**
  * A single project row parsed from a CSV bulk-import file.
@@ -136,13 +137,26 @@ function parseRow(
         .filter(id => id.length > 0)
     : undefined;
 
+  const sourceRepoUrl = record.sourceRepoUrl.trim();
+  const targetRepoUrl = record.targetRepoUrl?.trim() || sourceRepoUrl;
+  for (const [column, url] of [
+    ['sourceRepoUrl', sourceRepoUrl],
+    ['targetRepoUrl', targetRepoUrl],
+  ]) {
+    if (!extractAuthHost(url)) {
+      throw new Error(
+        `CSV row ${csvRowNumber}: "${column}" is not a plain HTTPS repository URL (use https://, without user@, backslashes or whitespace)`,
+      );
+    }
+  }
+
   return {
     name: record.name.trim(),
     description: record.description?.trim() || '',
     ownedByGroup: record.ownedByGroup?.trim() || undefined,
-    sourceRepoUrl: record.sourceRepoUrl.trim(),
+    sourceRepoUrl,
     sourceRepoBranch: record.sourceRepoBranch.trim(),
-    targetRepoUrl: record.targetRepoUrl?.trim() || record.sourceRepoUrl.trim(),
+    targetRepoUrl,
     targetRepoBranch: record.targetRepoBranch.trim(),
     acceptedRuleIds,
   };

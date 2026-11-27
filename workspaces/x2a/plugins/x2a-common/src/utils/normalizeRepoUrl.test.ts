@@ -117,4 +117,9 @@ describe('normalizeRepoUrl', () => {
       ),
     ).toBe('https://bitbucket.org/myws/my-repo.git');
   });
+  it('leaves a full URL with owner/repo query parameters unchanged', () => {
+    expect(normalizeRepoUrl('https://gitlab.com/o/r?owner=a&repo=b')).toBe(
+      'https://gitlab.com/o/r?owner=a&repo=b',
+    );
+  });
 });

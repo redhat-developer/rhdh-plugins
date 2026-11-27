@@ -16,7 +16,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
-  resolveScmProvider,
   Module,
   ModulePhase,
   Project,
@@ -34,7 +33,7 @@ import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from '../Artifacts';
-import { useRepoAuthentication } from '../../repoAuth';
+import { repoTokenRequest, useRepoAuthentication } from '../../repoAuth';
 import { CurrentPhaseCell } from '../CurrentPhaseCell';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
@@ -147,23 +146,15 @@ export const ModuleTable = ({
       }
 
       try {
-        // Authenticate the repositories
-        const sourceRepoAuthToken = (
+        // Authenticate the repositories in one batch, so a refused host
+        // fails before any sign-in starts.
+        const [sourceRepoAuth, targetRepoAuth] =
           await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.sourceRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(true),
-          ])
-        )[0].token;
-        const targetRepoAuthToken = (
-          await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.targetRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(false),
-          ])
-        )[0].token;
+            repoTokenRequest(project.sourceRepoUrl, hostMap, true),
+            repoTokenRequest(project.targetRepoUrl, hostMap, false),
+          ]);
+        const sourceRepoAuthToken = sourceRepoAuth.token;
+        const targetRepoAuthToken = targetRepoAuth.token;
 
         // Call the phase-run action
         const response =

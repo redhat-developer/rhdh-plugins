@@ -19,14 +19,17 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { LIGHTSPEED_PATH } from '../const';
 
-export type SettingsTab = 'mcp-servers' | 'saved-prompts';
+export type SettingsTab = 'preferences' | 'mcp-servers' | 'saved-prompts';
 
 export const SETTINGS_TAB_PARAM = 'settingsTab';
 
 const VALID_SETTINGS_TABS = new Set<SettingsTab>([
+  'preferences',
   'mcp-servers',
   'saved-prompts',
 ]);
+
+export const DEFAULT_SETTINGS_TAB: SettingsTab = 'preferences';
 
 export const parseSettingsTabParam = (
   value: string | null,
@@ -58,8 +61,8 @@ export const useSettingsPanelUrlState = (
     ? settingsTabFromUrl !== null
     : persistedSettingsTab !== null;
   const activeTab = shouldSyncUrl
-    ? (settingsTabFromUrl ?? 'mcp-servers')
-    : (persistedSettingsTab ?? 'mcp-servers');
+    ? (settingsTabFromUrl ?? DEFAULT_SETTINGS_TAB)
+    : (persistedSettingsTab ?? DEFAULT_SETTINGS_TAB);
 
   const updateSearchParam = useCallback(
     (tab: SettingsTab | null) => {

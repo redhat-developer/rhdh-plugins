@@ -15,7 +15,6 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import HomeIcon from '@mui/icons-material/Home';
 
 import { QuickstartIcon } from './QuickstartIcon';
 
@@ -40,7 +39,7 @@ describe('QuickstartIcon', () => {
 
   it('renders system icon when available', () => {
     mockGetSystemIcon.mockReturnValue(() => (
-      <HomeIcon data-testid="system-home-icon" />
+      <span data-testid="system-home-icon" />
     ));
 
     render(<QuickstartIcon icon="home" />);
@@ -91,7 +90,9 @@ describe('QuickstartIcon', () => {
 
   it('falls back to material ligature for legacy Import icon', () => {
     render(<QuickstartIcon icon="Import" />);
-    expect(screen.getByText('login')).toHaveClass('material-icons-outlined');
+    const ligature = screen.getByText('login');
+    expect(ligature).toHaveClass('material-icons-outlined');
+    expect(ligature).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('falls back to material ligature for legacy SelfService icon', () => {
@@ -111,7 +112,7 @@ describe('QuickstartIcon', () => {
     expect(screen.getByText('settings')).toHaveClass('material-icons-outlined');
   });
 
-  it('renders MUI fallback for invalid icon ids', () => {
+  it('renders Remix fallback for invalid icon ids', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(<QuickstartIcon icon="NotAValidIcon" />);

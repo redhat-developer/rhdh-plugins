@@ -22,7 +22,10 @@ import {
   OAuthApi,
   useApiHolder,
 } from '@backstage/core-plugin-api';
+import { useScmAuthHosts } from '../hooks/useScmAuthHosts';
 import {
+  extractAuthHost,
+  resolveScmProvider,
   resolveScmProviderByName,
   AuthToken,
   AuthTokenDescriptor,
@@ -33,7 +36,8 @@ const isAuthApi = (api: any): api is OAuthApi => {
   return api && typeof api.getAccessToken === 'function';
 };
 
-const providerLabels: Record<ScmProviderName, string> = {
+/** Display names of the SCM providers. */
+export const providerLabels: Record<ScmProviderName, string> = {
   github: 'GitHub',
   gitlab: 'GitLab',
   bitbucket: 'Bitbucket',
@@ -57,8 +61,50 @@ const getProviderToken = async (
   }
 };
 
+/** A token request together with the host the token will be used against. */
+export type HostBoundTokenRequest = {
+  descriptor: AuthTokenDescriptor;
+  /** Host (with a non-default port) of the repository the token is for. */
+  host: string;
+};
+
+/**
+ * Builds the token request for a repository: the descriptor of the SCM
+ * provider that owns `repoUrl`, bound to the repository's host. A URL that
+ * is not a plain HTTPS URL yields an empty host, which the guard rejects.
+ */
+export const repoTokenRequest = (
+  repoUrl: string,
+  hostMap: Map<string, ScmProviderName>,
+  readOnly: boolean,
+): HostBoundTokenRequest => ({
+  descriptor: resolveScmProvider(repoUrl, hostMap).getAuthTokenDescriptor(
+    readOnly,
+  ),
+  host: extractAuthHost(repoUrl) ?? '',
+});
+
+/**
+ * Thrown when a token is requested for a host other than the one the
+ * provider's OAuth app is registered against (`x2a.scm.authHosts`). Retrying
+ * does not help; the configuration or the chosen host has to change.
+ */
+export class AuthHostNotAllowedError extends Error {
+  constructor(
+    message: string,
+    /** Provider whose token was requested. */
+    readonly provider: ScmProviderName,
+    /** Host the token was requested for. */
+    readonly host: string,
+  ) {
+    super(message);
+    this.name = 'AuthHostNotAllowedError';
+  }
+}
+
 export const useRepoAuthentication = () => {
   const apiHolder = useApiHolder();
+  const { authHostFor, isAuthHost } = useScmAuthHosts();
 
   const apiByProvider = useMemo<Record<ScmProviderName, OAuthApi | undefined>>(
     () => ({
@@ -88,10 +134,48 @@ export const useRepoAuthentication = () => {
     }
   }, [apiByProvider]);
 
-  const getToken = useCallback(
-    async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
+  /**
+   * Security boundary: the provider-level OAuth API issues one token per
+   * provider type, valid for a single host. Never hand it out for another
+   * host, even one of the same type. Do not remove this as redundant with the
+   * picker's host filter, which is only a UX nicety.
+   */
+  const assertAuthHost = useCallback(
+    (providerName: ScmProviderName, host: string) => {
+      if (isAuthHost(host, providerName)) return;
+      const label = providerLabels[providerName] ?? providerName;
+      const expected = authHostFor(providerName);
+      let message: string;
+      if (!host) {
+        message = `The repository URL is not a plain HTTPS URL, so no ${label} access token is sent.`;
+      } else if (expected) {
+        message = `The ${label} auth provider is configured for ${expected}, not ${host}. Its access token is not sent to other hosts.`;
+      } else {
+        message = `No host is configured for the ${label} auth provider, so no ${label} access token can be used for ${host}. Set x2a.scm.authHosts.${providerName} to the host the provider is registered against.`;
+      }
+      throw new AuthHostNotAllowedError(message, providerName, host);
+    },
+    [authHostFor, isAuthHost],
+  );
+
+  /**
+   * Returns the OAuth access token exactly as the provider issued it, without
+   * the provider-specific git-over-HTTPS prefix that {@link augmentToken} adds.
+   *
+   * Consumers that hand the token to the x2a backend must pick the right
+   * variant: the `OAUTH_TOKEN_*` secrets written by the CSV bulk import carry
+   * augmented tokens, while `SRC_USER_OAUTH_TOKEN` / `TGT_USER_OAUTH_TOKEN`
+   * carry raw ones because `createProjectAction` augments them server-side.
+   */
+  const getRawToken = useCallback(
+    async (
+      tokenDescriptor: AuthTokenDescriptor,
+      host: string,
+    ): Promise<string> => {
       const providerName = tokenDescriptor.provider as ScmProviderName;
       const api = apiByProvider[providerName];
+
+      assertAuthHost(providerName, host);
 
       if (!api) {
         const label = providerLabels[providerName] ?? providerName;
@@ -100,7 +184,17 @@ export const useRepoAuthentication = () => {
         );
       }
 
-      const rawToken = await getProviderToken(api, tokenDescriptor);
+      return await getProviderToken(api, tokenDescriptor);
+    },
+    [apiByProvider, assertAuthHost],
+  );
+
+  const getToken = useCallback(
+    async ({
+      descriptor: tokenDescriptor,
+      host,
+    }: HostBoundTokenRequest): Promise<AuthToken> => {
+      const rawToken = await getRawToken(tokenDescriptor, host);
       const provider = resolveScmProviderByName(
         tokenDescriptor.provider as ScmProviderName,
       );
@@ -109,27 +203,33 @@ export const useRepoAuthentication = () => {
         provider: tokenDescriptor.provider,
       };
     },
-    [apiByProvider],
+    [getRawToken],
   );
 
   const authenticate = useCallback(
-    async (
-      tokenDescriptors: AuthTokenDescriptor[],
-    ): Promise<Array<AuthToken>> => {
+    async (requests: HostBoundTokenRequest[]): Promise<Array<AuthToken>> => {
+      // Refuse the whole batch before any OAuth flow starts, so an allowed
+      // host earlier in the list does not trigger a sign-in that a refused
+      // host later in the list turns into an error anyway.
+      for (const { descriptor, host } of requests) {
+        assertAuthHost(descriptor.provider as ScmProviderName, host);
+      }
       const authTokens: Array<AuthToken> = [];
-      for (const tokenDescriptor of tokenDescriptors) {
-        authTokens.push(await getToken(tokenDescriptor));
+      for (const request of requests) {
+        authTokens.push(await getToken(request));
       }
       return authTokens;
     },
-    [getToken],
+    [assertAuthHost, getToken],
   );
 
   const response = useMemo(() => {
     return {
       authenticate,
+      getRawToken,
+      assertAuthHost,
     };
-  }, [authenticate]);
+  }, [authenticate, getRawToken, assertAuthHost]);
 
   return response;
 };

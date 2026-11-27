@@ -305,7 +305,7 @@ function isRepeatedObservation(
  * source tuple.
  *
  * Compares the full catalog identity (namespace changes), the TechDocs
- * reference annotation, and the effective `spec.owner` and
+ * and npx install annotations, and the effective `spec.owner` and
  * `spec.lifecycle` values. Owner and lifecycle are compared as already
  * mapped by the snapshot consumer (valid source hints ahead of configured
  * defaults), so a changed default only produces a difference for fields
@@ -314,8 +314,15 @@ function isRepeatedObservation(
 function configuredFieldsChanged(previous: Entity, next: Entity): boolean {
   return (
     stringifyEntityRef(previous) !== stringifyEntityRef(next) ||
-    previous.metadata.annotations?.['backstage.io/techdocs-ref'] !==
-      next.metadata.annotations?.['backstage.io/techdocs-ref'] ||
+    [
+      'backstage.io/techdocs-ref',
+      'rhdh.io/npx-skill-registry',
+      'rhdh.io/npx-skill-key',
+    ].some(
+      key =>
+        previous.metadata.annotations?.[key] !==
+        next.metadata.annotations?.[key],
+    ) ||
     previous.spec?.owner !== next.spec?.owner ||
     previous.spec?.lifecycle !== next.spec?.lifecycle
   );
