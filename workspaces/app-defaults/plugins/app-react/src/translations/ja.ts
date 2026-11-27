@@ -81,5 +81,19 @@ export default createTranslationMessages({
     'catalog.entityTabs.Todo': 'ToDo',
     'catalog.entityTabs.Topology': 'トポロジー',
     'catalog.entityTabs.Workflows': 'ワークフロー',
+    'templateCard.timeSaved.add': '推定節約時間を追加',
+    'templateCard.timeSaved.addTooltip':
+      'このテンプレートの価値が分かるように、template.yaml に次のアノテーションを追加してください:',
+    'templateCard.timeSaved.copied': 'コピーしました',
+    'templateCard.timeSaved.copy': 'アノテーションをコピー',
+    'templateCard.timeSaved.estimate': '推定節約時間: {{duration}}',
+    'templateCard.timeSaved.estimateTooltip':
+      'この数値は、テンプレートを使わない場合にかかる一般的な時間です。テンプレートのオーナーが設定しています。',
+    'templateCard.timeSaved.hour_one': '{{count}} 時間',
+    'templateCard.timeSaved.hour_other': '{{count}} 時間',
+    'templateCard.timeSaved.day_one': '{{count}} 日',
+    'templateCard.timeSaved.day_other': '{{count}} 日',
+    'templateCard.timeSaved.minute_one': '{{count}} 分',
+    'templateCard.timeSaved.minute_other': '{{count}} 分',
   },
 });

@@ -829,7 +829,10 @@ describe('SonataFlowService', () => {
     beforeEach(() => {
       jest.useFakeTimers();
       jest.setSystemTime(NOW);
-      dataIndexServiceMock.fetchInstances = jest.fn();
+      dataIndexServiceMock.fetchStatsInstances = jest.fn();
+      dataIndexServiceMock.fetchLatestInstancesByDefinitionIds = jest
+        .fn()
+        .mockResolvedValue(new Map());
     });
 
     afterEach(() => {
@@ -841,19 +844,35 @@ describe('SonataFlowService', () => {
 
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
-      expect(result).toEqual([]);
-      expect(dataIndexServiceMock.fetchInstances).not.toHaveBeenCalled();
+      expect(result).toEqual({ overviews: [], serviceUrls: {} });
+      expect(dataIndexServiceMock.fetchStatsInstances).not.toHaveBeenCalled();
+      expect(
+        dataIndexServiceMock.fetchLatestInstancesByDefinitionIds,
+      ).not.toHaveBeenCalled();
     });
 
     it('attaches successRatio and runsLastMonth from grouped instance stats', async () => {
       const workflowInfos: WorkflowInfo[] = [
-        { id: 'workflow-a', source: workflowASource },
+        {
+          id: 'workflow-a',
+          source: workflowASource,
+          serviceUrl: 'http://workflow-a',
+        },
       ];
+      const latestInstance = createProcessInstance({
+        id: 'latest-instance',
+        processId: 'workflow-a',
+        state: ProcessInstanceState.Error,
+        start: WITHIN_30_DAYS,
+      });
 
       dataIndexServiceMock.fetchWorkflowInfos = jest
         .fn()
         .mockResolvedValue(workflowInfos);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchLatestInstancesByDefinitionIds = jest
+        .fn()
+        .mockResolvedValue(new Map([['workflow-a', latestInstance]]));
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'instance-1',
           processId: 'workflow-a',
@@ -883,16 +902,15 @@ describe('SonataFlowService', () => {
           start: OUTSIDE_30_DAYS,
         }),
       ]);
-      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
-        .fn()
-        .mockResolvedValue([]);
-
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
-      expect(result).toHaveLength(1);
-      expect(result?.[0]).toMatchObject({
+      expect(result?.overviews).toHaveLength(1);
+      expect(result?.overviews[0]).toMatchObject({
         workflowId: 'workflow-a',
         version: '1.0',
+        lastRunId: 'latest-instance',
+        lastRunStatus: ProcessInstanceState.Error,
+        lastTriggeredMs: new Date(WITHIN_30_DAYS).getTime(),
         workflowRunStats: {
           successRatio: 0.75,
           runsLastMonth: 3,
@@ -900,6 +918,18 @@ describe('SonataFlowService', () => {
           errorCount: 1,
           totalCount: 4,
         },
+      });
+      expect(result?.serviceUrls).toEqual({
+        'workflow-a': 'http://workflow-a',
+      });
+      expect(
+        dataIndexServiceMock.fetchLatestInstancesByDefinitionIds,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        dataIndexServiceMock.fetchLatestInstancesByDefinitionIds,
+      ).toHaveBeenCalledWith({
+        definitionIds: ['workflow-a'],
+        targetEntity: undefined,
       });
     });
 
@@ -912,7 +942,7 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowInfos = jest
         .fn()
         .mockResolvedValue(workflowInfos);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'a-1',
           processId: 'workflow-a',
@@ -942,14 +972,12 @@ describe('SonataFlowService', () => {
           start: WITHIN_30_DAYS,
         }),
       ]);
-      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
-        .fn()
-        .mockResolvedValue([]);
-
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
-      expect(result).toHaveLength(2);
-      expect(result?.find(o => o.workflowId === 'workflow-a')).toMatchObject({
+      expect(result?.overviews).toHaveLength(2);
+      expect(
+        result?.overviews.find(o => o.workflowId === 'workflow-a'),
+      ).toMatchObject({
         workflowRunStats: {
           successRatio: 0.5,
           runsLastMonth: 2,
@@ -958,7 +986,9 @@ describe('SonataFlowService', () => {
           totalCount: 2,
         },
       });
-      expect(result?.find(o => o.workflowId === 'workflow-b')).toMatchObject({
+      expect(
+        result?.overviews.find(o => o.workflowId === 'workflow-b'),
+      ).toMatchObject({
         workflowRunStats: {
           successRatio: 1,
           runsLastMonth: 2,
@@ -977,7 +1007,7 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowInfos = jest
         .fn()
         .mockResolvedValue(workflowInfos);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'other-1',
           processId: 'other-workflow',
@@ -985,14 +1015,10 @@ describe('SonataFlowService', () => {
           start: WITHIN_30_DAYS,
         }),
       ]);
-      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
-        .fn()
-        .mockResolvedValue([]);
-
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
-      expect(result).toHaveLength(1);
-      expect(result?.[0].workflowRunStats).toBeUndefined();
+      expect(result?.overviews).toHaveLength(1);
+      expect(result?.overviews[0].workflowRunStats).toBeUndefined();
     });
 
     it('excludes workflow infos without source', async () => {
@@ -1004,15 +1030,13 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowInfos = jest
         .fn()
         .mockResolvedValue(workflowInfos);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([]);
-      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+      dataIndexServiceMock.fetchStatsInstances = jest
         .fn()
         .mockResolvedValue([]);
-
       const result = await sonataFlowService.fetchWorkflowOverviews({});
 
-      expect(result).toHaveLength(1);
-      expect(result?.[0].workflowId).toBe('workflow-a');
+      expect(result?.overviews).toHaveLength(1);
+      expect(result?.overviews[0].workflowId).toBe('workflow-a');
     });
 
     it('queries instance stats by workflow definition id for entity overview', async () => {
@@ -1037,7 +1061,7 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowInfos = jest
         .fn()
         .mockResolvedValue(workflowInfos);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'instance-1',
           processId: 'hello-world',
@@ -1046,16 +1070,12 @@ describe('SonataFlowService', () => {
           start: WITHIN_30_DAYS,
         }),
       ]);
-      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
-        .fn()
-        .mockResolvedValue([]);
-
       const result = await sonataFlowService.fetchWorkflowOverviews({
         filter: overviewFilter,
         targetEntity,
       });
 
-      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+      expect(dataIndexServiceMock.fetchStatsInstances).toHaveBeenCalledWith({
         definitionIds: ['hello-world'],
         filter: {
           field: 'variables',
@@ -1066,7 +1086,13 @@ describe('SonataFlowService', () => {
           },
         },
       });
-      expect(result?.[0].workflowRunStats).toMatchObject({
+      expect(
+        dataIndexServiceMock.fetchLatestInstancesByDefinitionIds,
+      ).toHaveBeenCalledWith({
+        definitionIds: ['hello-world'],
+        targetEntity,
+      });
+      expect(result?.overviews[0].workflowRunStats).toMatchObject({
         successRatio: 1,
         runsLastMonth: 1,
         successCount: 1,
@@ -1095,7 +1121,7 @@ describe('SonataFlowService', () => {
       jest.useFakeTimers();
       jest.setSystemTime(NOW);
       dataIndexServiceMock.fetchWorkflowSource = jest.fn();
-      dataIndexServiceMock.fetchInstances = jest.fn();
+      dataIndexServiceMock.fetchStatsInstances = jest.fn();
       dataIndexServiceMock.fetchInstancesByDefinitionId = jest
         .fn()
         .mockResolvedValue([]);
@@ -1117,7 +1143,7 @@ describe('SonataFlowService', () => {
       expect(dataIndexServiceMock.fetchWorkflowSource).toHaveBeenCalledWith(
         workflowDefinitionId,
       );
-      expect(dataIndexServiceMock.fetchInstances).not.toHaveBeenCalled();
+      expect(dataIndexServiceMock.fetchStatsInstances).not.toHaveBeenCalled();
       expect(loggerMock.debug).toHaveBeenCalledWith(
         `Workflow source not found: ${workflowDefinitionId}`,
       );
@@ -1127,7 +1153,7 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowSource = jest
         .fn()
         .mockResolvedValue(workflowSource);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'instance-1',
           processId: workflowDefinitionId,
@@ -1161,7 +1187,7 @@ describe('SonataFlowService', () => {
       const result =
         await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
 
-      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+      expect(dataIndexServiceMock.fetchStatsInstances).toHaveBeenCalledWith({
         definitionIds: [workflowDefinitionId],
       });
       expect(result).toMatchObject({
@@ -1181,7 +1207,7 @@ describe('SonataFlowService', () => {
       dataIndexServiceMock.fetchWorkflowSource = jest
         .fn()
         .mockResolvedValue(workflowSource);
-      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+      dataIndexServiceMock.fetchStatsInstances = jest.fn().mockResolvedValue([
         createProcessInstance({
           id: 'other-1',
           processId: 'other-workflow',

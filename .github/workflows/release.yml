@@ -36,6 +36,10 @@ jobs:
   maybe-release-workspace:
     name: Maybe release ${{ matrix.workspace }}
     needs: find-changed-workspaces
+    permissions:
+      contents: read
+      pull-requests: read # Required by changesets-pr in the reusable workflow
+      id-token: write # Required by npm for the reusable release workflow's OIDC publish
     if: ${{ needs.find-changed-workspaces.outputs.workspaces != '[]' }}
     strategy:
       fail-fast: false

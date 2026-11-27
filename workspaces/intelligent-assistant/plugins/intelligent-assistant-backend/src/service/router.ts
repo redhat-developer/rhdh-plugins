@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import type {
   AuthService,
   BackstageCredentials,
@@ -239,7 +238,7 @@ export async function createRouter(
     changeOrigin: true,
     pathRewrite: (path, req) => {
       const userEntityRef = (req as any).userEntityRef;
-      const newPath = rewriteProxyPath(path, userEntityRef);
+      const newPath = rewriteProxyPath(path, userEntityRef, req.method);
 
       if (newPath !== path) {
         logger.info(`Rewriting path from ${path} to ${newPath}`);
@@ -1109,8 +1108,5 @@ export async function createRouter(
     response.status(404).json({ error: 'Requested path is not available' });
   });
 
-  const middleware = MiddlewareFactory.create({ logger, config });
-
-  router.use(middleware.error());
   return router;
 }

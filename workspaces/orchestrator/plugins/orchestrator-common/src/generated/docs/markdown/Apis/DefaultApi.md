@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**abortWorkflow**](DefaultApi.md#abortWorkflow) | **DELETE** /v2/workflows/instances/{instanceId}/abort | Abort a workflow instance |
 | [**executeWorkflow**](DefaultApi.md#executeWorkflow) | **POST** /v2/workflows/{workflowId}/execute | Execute a workflow |
 | [**getInstanceById**](DefaultApi.md#getInstanceById) | **GET** /v2/workflows/instances/{instanceId} | Get Workflow Instance by ID |
+| [**getInstanceInitiators**](DefaultApi.md#getInstanceInitiators) | **POST** /v2/workflows/instances/initiators | Get distinct instance initiators |
 | [**getInstances**](DefaultApi.md#getInstances) | **POST** /v2/workflows/instances | Get instances |
 | [**getWorkflowInputSchemaById**](DefaultApi.md#getWorkflowInputSchemaById) | **GET** /v2/workflows/{workflowId}/inputSchema |  |
 | [**getWorkflowInstances**](DefaultApi.md#getWorkflowInstances) | **POST** /v2/workflows/{workflowId}/instances | Get instances for a specific workflow |
@@ -100,6 +101,33 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getInstanceInitiators"></a>
+# **getInstanceInitiators**
+> List getInstanceInitiators(SearchRequest)
+
+Get distinct instance initiators
+
+    Retrieve unique initiator entity references from up to 500 matching workflow executions
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **SearchRequest** | [**SearchRequest**](../Models/SearchRequest.md)| Filters and pagination for retrieving instance initiators | [optional] |
+
+### Return type
+
+**List**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="getInstances"></a>

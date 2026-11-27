@@ -1,3 +1,92 @@
+## Catalog provider owner and lifecycle default reconciliation
+
+**Last audited:** 2026-11-19T20:04:04Z
+
+Issue #5628: changing `defaultOwner` or `defaultLifecycle` did not update
+already imported skill entities whose content and connector observation were
+unchanged, because the reconciliation planner's repeated-observation short
+circuit and per-entity upsert predicate ignored effective `spec.owner` and
+`spec.lifecycle`. Both decision points now share one comparison helper covering
+entity identity, the TechDocs reference, owner, and lifecycle. Hint resolution
+stays in the snapshot consumer, so valid hints still win independently per
+field. Design D6, the catalog provider spec, and the provider README describe
+the reconciliation. No connector, public API, or database schema change; no
+tasks are reopened. A `patch` changeset covers the provider.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
+## Npx authentication tests and catalog provider docs
+
+**Last audited:** 2026-11-12T22:20:43Z
+
+PR #5497 verifies the existing Backstage default backend authentication on the
+npx connector. The HTTP router already applies the credentials barrier to
+plugin routes; no additional `httpAuth` dependency is needed. Integration tests
+(`plugin.integration.test.ts`) cover unauthenticated, user, and service requests,
+unknown source handling (404), snapshot lifecycle states
+(loading/ready/empty/failed/partial), isolation between npx sources, and
+scheduled refresh.
+The `startConnector` test helper and `NpxConnectorTestConfig` type are added to
+`testUtils.ts`. README is expanded with catalog provider integration guide,
+combined OCI+npx source configuration, and a public Evil Martians index demo.
+RHESS-specific demo verification and joint OCI+npx provider integration remain
+open under tasks 5.3–5.4. Task 3.4's partial-completion note is updated to
+credit PR #5497 integration tests. A `patch` changeset covers the documentation
+and schedule diagnostics without claiming an authentication behavior change.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
+## Npx artifact verification and normalization
+
+**Last audited:** 2026-11-05T00:30:00Z
+
+PR #5452 implements task 3.2 (artifact retrieval, SHA-256 verification, and
+metadata normalization) and advances tasks 3.3 (concurrency limits, digest
+mismatch handling) and 3.4 (atomic snapshot updates, failed skill keys,
+scheduled refresh via `scheduler.scheduleTask`). The `refreshSource` function
+is wrapped in a try-catch to publish a failed snapshot on unexpected errors.
+The README is updated to reflect implemented behavior. Task 3.2 is checked;
+tasks 3.3 and 3.4 retain remaining items (escaped redirect tests, OCI contract
+fixture tests). No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
+## Npx index discovery implementation
+
+**Last audited:** 2026-11-03T22:23:00Z
+
+Task 3.1 now covers bounded index discovery and duplicate-name handling.
+The npx specification records the 1 KiB name limit used to keep untrusted
+failed keys bounded. Task 1.4 still awaits OCI discovery-budget tests.
+Artifact verification and final snapshot publication remain tasks 3.2–3.4.
+No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx demo transport scope
 
 **Last audited:** 2026-10-30T19:11:56Z

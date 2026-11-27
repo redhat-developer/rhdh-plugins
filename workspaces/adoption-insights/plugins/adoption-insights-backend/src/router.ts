@@ -24,20 +24,34 @@ import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 
 import EventApiController from './controllers/EventApiController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
 import { QueryParams } from './types/event-request';
 
 export async function createRouter({
   httpAuth,
   permissions,
   eventApiController,
+  notificationPreferenceController,
 }: {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   eventApiController: EventApiController;
+  notificationPreferenceController: NotificationPreferenceController;
 }): Promise<express.Router> {
   const router = Router();
 
+  // Express's default 100kb body limit applies; the controller also limits
+  // the number of events per request.
   router.use(express.json());
+
+  // Users manage only their own preference; no board-read permission required.
+  // Keep these routes registered regardless of notification sending config.
+  router.get('/notification-preference', (req, res) =>
+    notificationPreferenceController.getPreference(req, res),
+  );
+  router.put('/notification-preference', (req, res) =>
+    notificationPreferenceController.updatePreference(req, res),
+  );
 
   const authorizeUser = async (
     req: Request<{}, {}, {}, QueryParams>,

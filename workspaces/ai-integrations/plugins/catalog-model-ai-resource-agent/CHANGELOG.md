@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent
 
+## 1.0.0
+
+### Major Changes
+
+- 564b576: Revert the RHDH chat-specific `spec.inferenceProvider` and `spec.executionMode` additions to the legacy `AiResource` agent contract (`spec.type: agent`). These fields now belong to the separate `agent-rhdh-chat` spec type provided by `@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat`.
+
+  **Breaking changes**
+
+  - `AgentAiResourceEntityV1alpha1['spec']` no longer declares `inferenceProvider` or `executionMode`, and the agent JSON schema no longer defines them.
+  - The agent catalog processor no longer validates `spec.inferenceProvider` or `spec.executionMode`. Entities that need these fields should use `spec.type: agent-rhdh-chat` instead.
+
+## 0.6.0
+
+### Minor Changes
+
+- 8af3d2f: Add the optional agent `spec.inferenceProvider` object with required non-empty
+  `name` (inference provider identifier) and `model` (model identifier) strings.
+  Keep the existing optional `spec.model` string unchanged.
+  Update schema and ingestion validation, tests, documentation, and examples accordingly.
+
+## 0.5.0
+
+### Minor Changes
+
+- 9e107b2: Add optional `spec.executionMode` field to the agent AiResource entity definition. Accepts `'in-process'` (runs inside the LCore process, no isolation), `'subprocess'` (runs in a child process managed by LCore), or `'sandbox'` (runs in an administrator-predefined sandbox profile). Omitting the field preserves backward compatibility.
+
 ## 0.4.0
 
 ### Minor Changes

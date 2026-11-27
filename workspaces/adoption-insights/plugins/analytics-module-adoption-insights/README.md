@@ -79,16 +79,24 @@ The following optional configuration parameters are available to fine tune adopt
 app:
   analytics:
     adoptionInsights:
-      maxBufferSize: 20 # Optional: Maximum buffer size for event batching (default: 20)
+      maxBufferSize: 20 # Optional: Maximum buffer size for event batching, and the maximum number of events sent per request (default: 20)
       flushInterval: 5000 # Optional: Flush interval in milliseconds for event batching (default: 5000ms)
       debug: false # Optional: Enable debug mode to log every event in the browser console (default: false)
 ```
 
+`maxBufferSize` must be a positive integer. If it is not, the module logs a warning and uses the default of `20`. It must also not exceed the backend's `app.analytics.adoptionInsights.maxEventsPerRequest` (default `100`); otherwise every batch is rejected by the backend and dropped.
+
+### Delivery and retries
+
+Buffered events are sent to `POST /api/adoption-insights/events` in batches of at most `maxBufferSize` events. Only one flush runs at a time; events captured while a flush is in progress are sent by the next flush.
+
+- **HTTP 4xx** (for example a validation error or an oversized batch): the batch is logged to the browser console and dropped. Retrying would fail the same way and block newer events.
+- **Network error or HTTP 5xx**: the failed batch and any remaining events are logged and put back at the front of the queue, then retried on the next flush.
+- The queue of unsent events is capped at 1000 events. When it is full, the oldest events are dropped and a message is logged. Events belonging to a request that is still in flight are not counted until they are requeued.
+
 ### User IDs
 
-This plugin supports sending user context by providing a `userID` and `userName`. This requires instantiating the `AdoptionInsightsAnalyticsApi` instance with an `identityApi` instance passed to it, but this is optional. If omitted the plugin will not send user context to Adoption Insights backend.
-
-By default, it computes `userId` as SHA-256 hash of the current user's `userEntityRef`.
+The analytics API requires `identityApi`. It uses the current user's identity to attach a SHA-256 hash of `userEntityRef` as `context.userId`, and it sends the user's credentials with each batch. The backend skips events without `context.userId`. For accepted events, the backend sets the stored `user_ref` from the authenticated user principal, rather than trusting a client-supplied `userName`. This applies to every accepted analytics event, including non-Scaffolder events.
 
 ```tsx
 // packages/app/src/apis.ts

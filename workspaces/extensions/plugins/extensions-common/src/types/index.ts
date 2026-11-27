@@ -21,4 +21,5 @@ export * from './ExtensionsPackage';
 export * from './ExtensionsPlugin';
 export * from './ExtensionsSupport';
 export * from './ConfigurationResponse';
+export * from './ExtensionsConfigurationResponse';
 export * from './NodeEnvironmentType';

@@ -21,6 +21,7 @@ import express from 'express';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
+import { extractText } from 'unpdf';
 
 import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
@@ -32,6 +33,10 @@ import {
 import { createNotebooksRouter } from './notebooksRouters';
 import { SessionService } from './sessions/sessionService';
 import { VectorStoresOperator } from './VectorStoresOperator';
+
+jest.mock('unpdf', () => ({
+  extractText: jest.fn(),
+}));
 
 const mockUserId = 'user:default/guest';
 
@@ -479,6 +484,41 @@ describe('Notebooks Router', () => {
         expect(response.status).toBe(400);
         expect(response.body.error).toContain('Unsupported file type');
       });
+
+      it('should create a document from a pdf', async () => {
+        (extractText as jest.Mock).mockResolvedValueOnce({
+          totalPages: 1,
+          text: 'PDF text',
+        });
+
+        const response = await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Test PDF')
+          .field('fileType', 'pdf')
+          .attach('file', Buffer.from('%PDF-1.7'), 'test.pdf');
+
+        expect(response.status).toBe(202);
+        expect(response.body.document_id).toBe('Test PDF');
+      });
+
+      it('should return 400 without echoing file content when pdf extraction fails', async () => {
+        (extractText as jest.Mock).mockRejectedValueOnce(
+          new Error('Invalid PDF structure.'),
+        );
+        const content = '%PDF-1.4 truncated secret content';
+
+        const response = await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Broken PDF')
+          .field('fileType', 'pdf')
+          .attach('file', Buffer.from(content), 'broken.pdf');
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toContain(
+          'Failed to extract text from broken.pdf',
+        );
+        expect(JSON.stringify(response.body)).not.toContain(content);
+      });
     });
 
     describe('GET /v1/sessions/:sessionId/documents', () => {
@@ -775,6 +815,39 @@ describe('Notebooks Router', () => {
         .post('/notebooks/v1/sessions')
         .send({ name: 'Test Session' });
       sessionId = response.body.session.session_id;
+    });
+
+    it('should preserve UTF-8 characters split across stream chunks', async () => {
+      const content = 'café';
+      const event = Buffer.from(
+        `event: response.output_text.delta\ndata: ${JSON.stringify({ delta: content })}\n\ndata: [DONE]\n\n`,
+      );
+      // Split between the two UTF-8 bytes of é.
+      const splitIndex = event.indexOf(Buffer.from('é')) + 1;
+      server.use(
+        http.post(
+          `${LIGHTSPEED_CORE_ADDR}/v1/responses`,
+          () =>
+            new HttpResponse(
+              new ReadableStream({
+                start(controller) {
+                  controller.enqueue(event.subarray(0, splitIndex));
+                  controller.enqueue(event.subarray(splitIndex));
+                  controller.close();
+                },
+              }),
+              { headers: { 'Content-Type': 'text/event-stream' } },
+            ),
+        ),
+      );
+
+      const response = await request(app)
+        .post(`/notebooks/v1/sessions/${sessionId}/query`)
+        .send({ query: 'What is in this notebook?' });
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain(content);
+      expect(response.text).toContain('data: [DONE]');
     });
 
     it('should stream notebook content without logging event payloads', async () => {

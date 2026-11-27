@@ -95,7 +95,13 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
+    sort?:
+      | 'createdAt'
+      | 'name'
+      | 'status'
+      | 'moduleErrors'
+      | 'description'
+      | 'ownedBy';
   };
   response: ProjectsGet200Response;
 };

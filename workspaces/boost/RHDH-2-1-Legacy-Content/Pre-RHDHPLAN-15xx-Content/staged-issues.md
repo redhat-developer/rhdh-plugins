@@ -5,6 +5,12 @@
 > `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/`. References below to
 > `security-safety-governance/` are historical: that planning area was removed
 > from the checkout and remains available in Git history.
+>
+> **Cleanup (#5548):** `agent-creation-discovery/`,
+> `ai-chat-interaction-experience/`, and `pluggable-ai-platform-architecture/`
+> were removed. `platform-operations-deployment/` was moved to
+> `RHDHPLAN-1513-potential-openspecs/platform-operations-deployment/`. References
+> below to the old paths are historical.
 
 These issues implement the boost backend in dependency order. Each issue is scoped for a single fullsend `/fs-code` run. Frontend/UI work is excluded and will be covered in a separate set of issues.
 

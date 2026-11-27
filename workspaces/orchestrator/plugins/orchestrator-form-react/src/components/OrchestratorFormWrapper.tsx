@@ -20,7 +20,7 @@ import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import Grid from '@mui/material/Grid';
-import { IChangeEvent, withTheme } from '@rjsf/core';
+import RjsfForm, { IChangeEvent, withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
@@ -44,6 +44,10 @@ import { useStepperContext } from '../utils/StepperContext';
 import { toRootExtraErrors } from '../utils/toRootExtraErrors';
 import { useFieldValidation } from '../utils/useFieldValidation';
 import useValidator from '../utils/useValidator';
+import {
+  getStepSchemaErrors,
+  hasErrorSchemaErrors,
+} from '../utils/validateStepFormData';
 import { AuthRequester } from './AuthRequester';
 import HiddenObjectFieldTemplate from './HiddenObjectFieldTemplate';
 import StepperObjectField from './StepperObjectField';
@@ -67,7 +71,14 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     handleValidateStarted,
     handleValidateEnded,
     clearFormErrorsRef,
+    pendingGoToStepRef,
+    requestFormSubmitRef,
+    completeGoToStep,
   } = useStepperContext();
+  const formRef =
+    useRef<RjsfForm<JsonObject, JSONSchema7, OrchestratorFormContextProps>>(
+      null,
+    );
   const [validationError, setValidationError] = useState<Error | undefined>();
   const validator = useValidator(isMultiStep);
   const { t } = useTranslation();
@@ -98,6 +109,15 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       clearFormErrorsRef.current = undefined;
     };
   }, [clearFormErrorsRef]);
+
+  useEffect(() => {
+    requestFormSubmitRef.current = () => {
+      formRef.current?.submit();
+    };
+    return () => {
+      requestFormSubmitRef.current = undefined;
+    };
+  }, [requestFormSubmitRef]);
 
   if (!formContext) {
     return <div>{t('formDecorator.error')}</div>;
@@ -157,12 +177,92 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       : _extraErrors;
     const hasCurrentStepErrors =
       currentStepErrors && Object.keys(currentStepErrors).length > 0;
+    const pendingTarget = pendingGoToStepRef.current;
 
-    if (
-      !hasCurrentStepErrors &&
-      !_validationError &&
-      activeStep < (numStepsInMultiStepSchema ?? 1)
-    ) {
+    if (hasCurrentStepErrors || _validationError) {
+      if (pendingTarget !== undefined) {
+        pendingGoToStepRef.current = undefined;
+      }
+      return;
+    }
+
+    if (pendingTarget !== undefined) {
+      pendingGoToStepRef.current = undefined;
+      _onSubmit(_formData);
+
+      if (pendingTarget > activeStep + 1) {
+        for (
+          let stepIndex = activeStep + 1;
+          stepIndex < pendingTarget;
+          stepIndex += 1
+        ) {
+          const stepKey = getActiveStepKey(
+            formContext.schema,
+            stepIndex,
+            _formData,
+          );
+          const schemaErrors = getStepSchemaErrors(
+            formContext.schema,
+            _formData,
+            stepIndex,
+          );
+          let intermediateExtraErrors: ErrorSchema<JsonObject> | undefined;
+          let intermediateValidationError: Error | undefined;
+
+          const scopedUiSchema = currentUiSchema?.[stepKey]
+            ? ({
+                [stepKey]: currentUiSchema[stepKey],
+              } as OrchestratorFormContextProps['uiSchema'])
+            : currentUiSchema;
+
+          if (decoratorProps.getExtraErrors) {
+            try {
+              handleValidateStarted();
+              intermediateExtraErrors = await decoratorProps.getExtraErrors(
+                _formData,
+                scopedUiSchema,
+              );
+            } catch (err) {
+              intermediateValidationError = err as Error;
+            } finally {
+              handleValidateEnded();
+            }
+          }
+
+          const extraStepErrors = (
+            stepKey
+              ? intermediateExtraErrors?.[stepKey]
+              : intermediateExtraErrors
+          ) as ErrorSchema<JsonObject> | undefined;
+          const hasExtraStepErrors = hasErrorSchemaErrors(extraStepErrors);
+          const hasSchemaErrors = hasErrorSchemaErrors(schemaErrors);
+
+          if (
+            hasExtraStepErrors ||
+            hasSchemaErrors ||
+            intermediateValidationError
+          ) {
+            setValidationError(intermediateValidationError);
+            const mergedStepErrors: ErrorSchema<JsonObject> = {
+              ...(schemaErrors ?? {}),
+              ...(extraStepErrors ?? {}),
+            };
+            setExtraErrors(
+              normalizeErrorSchema({
+                [stepKey]: mergedStepErrors,
+              }),
+            );
+            completeGoToStep(stepIndex, true);
+            return;
+          }
+        }
+      }
+
+      completeGoToStep(pendingTarget);
+      return;
+    }
+
+    if (activeStep < (numStepsInMultiStepSchema ?? 1)) {
       _onSubmit(_formData);
       handleNext();
     }
@@ -210,6 +310,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       )}
       <Grid item>
         <MuiForm
+          ref={formRef}
           {...omit(decoratorProps, 'getExtraErrors', 'getExtraErrorsForField')}
           widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}

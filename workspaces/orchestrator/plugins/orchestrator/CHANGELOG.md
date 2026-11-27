@@ -1,5 +1,47 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.4.0
+
+### Minor Changes
+
+- 07ae50f: Backstage version bump to v1.56.4
+- 97af548: Add Workflow Builder start-from-scratch: Create menu entry, builder page with identity panel and canvas, starter files, and unsaved-changes close flow.
+
+### Patch Changes
+
+- b319862: Updated dependency `prettier` to `3.10.1`.
+- d25a6bd: Updated dependency `prettier` to `3.10.0`.
+- Updated dependencies [cc65d5f]
+- Updated dependencies [8dfbd19]
+- Updated dependencies [b319862]
+- Updated dependencies [6a72d20]
+- Updated dependencies [d25a6bd]
+- Updated dependencies [07ae50f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.14.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.13.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.13.0
+
+## 6.3.2
+
+### Patch Changes
+
+- 2c22798: reduce Data Index queries for workflow pages
+- Updated dependencies [2c22798]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.2
+
+## 6.3.1
+
+### Patch Changes
+
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- Updated dependencies [dc818df]
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+
 ## 6.3.0
 
 ### Minor Changes

@@ -181,7 +181,7 @@ costManagement:
 
 Schemas: [`cost-management-backend/config.d.ts`](../plugins/cost-management-backend/config.d.ts) · [`cost-management/config.d.ts`](../plugins/cost-management/config.d.ts).
 
-Install / local setup: [`dynamic-plugin.md`](../dynamic-plugin.md) · [`local-dev-setup.md`](./local-dev-setup.md) · [workspace README](../../README.md).
+Install / local setup: [`installing-on-rhdh.md`](../installing-on-rhdh.md) · [`local-dev-setup.md`](./local-dev-setup.md) · [`packaging-and-rhdh-compatibility.md`](./packaging-and-rhdh-compatibility.md) · [workspace README](../../README.md).
 
 ---
 

@@ -66,6 +66,8 @@ Both `sourceRepoUrl` and `targetRepoUrl` accept two formats. All URLs are normal
 | GitLab    | `gitlab.com?owner=myuser&repo=myrepo`                            |
 | Bitbucket | `bitbucket.org?workspace=myworkspace&project=myproj&repo=myrepo` |
 
+A full URL must use `https://` and must not contain credentials (`user@host`), backslashes or whitespace. Such rows are rejected with an error naming the row and column, because the host an access token is sent to must be unambiguous.
+
 For Bitbucket, the `project` parameter is organizational metadata and is not part of the clone URL. Only `workspace` and `repo` are used.
 
 For self-hosted instances (e.g. GitHub Enterprise, self-hosted GitLab), the corresponding host should be used in place of the public domain. The host must be listed in the `integrations:` section of `app-config.yaml` so the plugin can detect the correct SCM provider. See [SCM Provider Detection](../README.md#scm-provider-detection).

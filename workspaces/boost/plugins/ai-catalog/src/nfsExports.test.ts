@@ -46,9 +46,10 @@ describe('AI Catalog NFS exports', () => {
     ]);
   });
 
-  it('registers the page, filters, and entity cards under the AI Catalog namespace', () => {
+  it('registers the page, sidebar item, filters, and entity cards under the AI Catalog namespace', () => {
     const ids = [
       'page:ai-catalog/ai-catalog',
+      'sidebar-item:ai-catalog/ai-catalog',
       'ai-catalog-filter:ai-catalog/category',
       'ai-catalog-filter:ai-catalog/owner',
       'ai-catalog-filter:ai-catalog/provider',

@@ -15,11 +15,36 @@
  */
 export default {
   data: [
-    { entityref: 'template:default/example-go-template-1', count: 1000 },
-    { entityref: 'template:default/example-go-template-2', count: 20 },
-    { entityref: 'template:default/example-go-template-3', count: 30 },
-    { entityref: 'template:default/example-go-template-4', count: 40 },
+    {
+      entityref: 'template:default/example-go-template-1',
+      count: 1000,
+      runs: 3,
+      minutes: 135.5,
+    },
+    {
+      entityref: 'template:default/example-go-template-2',
+      count: 20,
+      runs: 4,
+      minutes: 0,
+    },
+    {
+      entityref: 'template:default/example-go-template-3',
+      count: 30,
+      runs: 1,
+      minutes: 15,
+    },
+    {
+      entityref: 'template:default/example-go-template-4',
+      count: 40,
+      runs: 2,
+      minutes: 90,
+    },
     { entityref: 'template:default/example-go-template-5', count: 50 },
-    { entityref: 'template:default/example-go-template-6', count: 60 },
+    {
+      entityref: 'template:default/example-go-template-6',
+      count: 60,
+      runs: 1,
+      minutes: 1500,
+    },
   ],
 };

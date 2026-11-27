@@ -8,6 +8,9 @@ app:
           redirects:
             - from: /
               to: /ai-catalog
+    - sidebar-item:ai-catalog/ai-catalog:
+        config:
+          priority: 200
     - api:app/app-language:
         config:
           defaultLanguage: en
@@ -76,6 +79,8 @@ catalog:
               Group,
               User,
             ]
+    - type: file
+      target: ../../plugins/agentic-chat-backend/examples/legal-agent.json
 
 ai-catalog:
   entityProviders:
@@ -248,3 +253,7 @@ boost:
     showAllNamespaces: true
     skipTlsVerify: true
     verboseStreamLogging: true
+
+# LCORE development server for Agentic Chat.
+agentic-chat:
+  servicePort: 8090 # Optional: default is 8090

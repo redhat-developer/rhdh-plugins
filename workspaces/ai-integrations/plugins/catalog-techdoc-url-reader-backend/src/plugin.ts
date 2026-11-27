@@ -75,7 +75,11 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
     const dir =
       options?.targetDir ??
       (await fs.promises.mkdtemp(
-        platformPath.join(this.workDir, 'backstage-'),
+        // MkDocs compares page paths against the physical docs directory.
+        platformPath.join(
+          await fs.promises.realpath(this.workDir),
+          'backstage-',
+        ),
       ));
 
     // Write a minimal mkdocs.yml that the TechDocs builder (mkdocs)
@@ -156,7 +160,7 @@ export function readBridgeConfig(id: string, config: Config): BridgeConfig {
   };
 }
 
-// ─── OCI skill TechDocs source configuration ────────────────────────
+// ─── skill TechDocs source configuration ────────────────────────
 
 /** Digest format: sha256:<64 lowercase hex digits>. */
 const DIGEST_RE = /^sha256:[0-9a-f]{64}$/;
@@ -169,11 +173,8 @@ export type SkillSourceConfig = {
 };
 
 /**
- * Read OCI skill source configurations from
+ * Read skill source configurations from
  * `catalog.providers.skillsCatalogProvider.*.sources[]`.
- *
- * Only `oci` source types are supported;
- * `npx` sources are skipped.
  *
  * Source IDs that are blank, `.`, or `..` are rejected because URL
  * parsing normalizes literal and encoded dot segments, making them
@@ -199,8 +200,8 @@ export function readSkillSourceConfigs(config: Config): SkillSourceConfig[] {
 
     for (const sourceConfig of sourcesConfig) {
       const sourceType = safeGetOptionalString(sourceConfig, 'sourceType');
-      if (sourceType !== 'oci') {
-        continue; // npx and other source types are not supported
+      if (sourceType !== 'oci' && sourceType !== 'npx') {
+        continue;
       }
 
       const connectorPluginId = safeGetOptionalString(
@@ -251,7 +252,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   /**
    * Legacy factory for model-card URLs only; skill documentation fails closed
    * without discovery-resolved connector bases. Register
-   * `catalogTechdocUrlReaderPlugin` for OCI skill documentation support.
+   * `catalogTechdocUrlReaderPlugin` for skill documentation support.
    */
   static factory: ReaderFactory = ({ config, logger }) => {
     const reader = new ModeCatalogBridgeTechdocUrlReader(config, logger);
@@ -306,7 +307,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   }
 
   /**
-   * Match a URL against configured OCI skill source destinations.
+   * Match a URL against configured skill source destinations.
    *
    * Requires the discovered origin and complete base pathname, followed by
    *   /skilldocs/<sourceId>/<digest>
@@ -376,7 +377,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       return this.readModelCardUrl(url, bc, options);
     }
 
-    // Try OCI skill docs match
+    // Try skill docs match
     const sc = this.matchingSkillSourceConfig(parsedUrl);
     if (sc) {
       return this.readSkillDocsUrl(url, sc, options);
@@ -426,7 +427,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   }
 
   /**
-   * Fetch OCI skill documentation from the connector.
+   * Fetch skill documentation from the connector.
    *
    * - Authenticates with `auth.getPluginRequestToken` targeting the
    *   connector plugin's registered pluginId.
@@ -457,7 +458,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       }
 
       this.logger.info(
-        `Fetching OCI skill documentation from ${url} (connector: ${source.connectorPluginId})`,
+        `Fetching skill documentation from ${url} (connector: ${source.connectorPluginId})`,
       );
       response = await fetch(url, {
         method: 'GET',

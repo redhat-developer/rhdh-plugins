@@ -70,7 +70,6 @@ export const AddRepositoriesFormFooter = () => {
       variant="contained"
       color="primary"
       onClick={handleSubmit as any}
-      sx={{ mr: 1 }}
       disabled={disableCreate || isSubmitting}
       startIcon={
         isSubmitting && <CircularProgress size="20px" color="inherit" />
@@ -86,15 +85,14 @@ export const AddRepositoriesFormFooter = () => {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'left',
+        gap: 1,
         position: 'fixed',
         bottom: 0,
         pt: 2,
         pb: 4,
         pl: 3,
-        backgroundColor: theme =>
-          theme.palette.mode === 'light'
-            ? '#fff'
-            : theme.palette.navigation.background,
+        // Content surface (not nav chrome) so light/dark toggles stay correct under MF.
+        backgroundColor: theme => theme.palette.background.paper,
         width: '100%',
         borderTopStyle: 'groove',
         borderColor: 'divider',

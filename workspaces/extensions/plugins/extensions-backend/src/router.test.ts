@@ -569,6 +569,31 @@ describe('createRouter', () => {
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ enabled: true });
     });
+
+    it('should report installation disabled with error when config file is missing', async () => {
+      mockInstallationDataService.getInitializationError.mockReturnValueOnce(
+        new InstallationInitError(
+          InstallationInitErrorReason.FILE_NOT_EXISTS,
+          'The file /opt/app-root/src/dynamic-plugins.yaml is missing',
+        ),
+      );
+
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+        config: FILE_INSTALL_CONFIG,
+      });
+      const response = await request(backendServer).get(
+        '/api/extensions/plugins/configure',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({
+        enabled: false,
+        error: {
+          reason: 'FILE_NOT_EXISTS',
+          message: 'The file /opt/app-root/src/dynamic-plugins.yaml is missing',
+        },
+      });
+    });
   });
 
   describe('GET /plugin/:namespace/:name', () => {

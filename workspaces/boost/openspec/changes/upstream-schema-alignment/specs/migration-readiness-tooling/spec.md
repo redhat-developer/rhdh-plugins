@@ -22,7 +22,11 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: CLI enumerates AI Asset entities from catalog API
+### Requirement: Catalog entity enumeration
+
+The tooling MUST enumerate AI Asset entities from the Backstage catalog API using annotation-based filtering.
+
+#### Scenario: CLI enumerates AI Asset entities from catalog API
 
 **GIVEN** a Backstage catalog with AI Asset entities  
 **WHEN** the dry-run CLI is executed: `npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness --catalog-url <url> [--token <token>]`  
@@ -34,7 +38,11 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: Per-entity mapping report generated
+### Requirement: Per-entity migration report
+
+The tooling MUST produce a per-entity report showing current mapping, target mapping, confidence level, and required transformations.
+
+#### Scenario: Per-entity mapping report generated
 
 **GIVEN** AI Asset entities enumerated from the catalog  
 **WHEN** the dry-run tool processes each entity  
@@ -48,7 +56,7 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: Field transformation requirements identified
+#### Scenario: Field transformation requirements identified
 
 **GIVEN** an AI Asset entity with current kind/type  
 **WHEN** the dry-run tool analyzes the entity  
@@ -62,7 +70,7 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: Confidence level reported per entity
+#### Scenario: Confidence level reported per entity
 
 **GIVEN** the annotation specification defines confidence levels per mapping  
 **WHEN** the dry-run tool generates a per-entity report  
@@ -75,7 +83,11 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: Read-only mode (no destructive changes)
+### Requirement: No destructive changes
+
+The tooling MUST NOT modify catalog entities, delete data, or change configuration during analysis.
+
+#### Scenario: Read-only mode (no destructive changes)
 
 **GIVEN** the dry-run tool is executed  
 **WHEN** it queries the catalog and analyzes entities  
@@ -88,7 +100,11 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: JSON output format
+### Requirement: Output format support
+
+The tooling MUST support both machine-readable JSON and human-readable text output formats.
+
+#### Scenario: JSON output format
 
 **GIVEN** the dry-run tool completes analysis  
 **WHEN** the user requests JSON output: `--output-format json`  
@@ -138,7 +154,7 @@ The tooling MUST report migration readiness without modifying catalog entities.
 
 ---
 
-## Scenario: Human-readable output format
+#### Scenario: Human-readable output format
 
 **GIVEN** the dry-run tool completes analysis  
 **WHEN** the user requests human-readable output: `--output-format text` (default)  
@@ -174,7 +190,11 @@ Actual migration is future work pending upstream RFC finalization.
 
 ---
 
-## Scenario: Handles entities with missing annotations gracefully
+### Requirement: Graceful handling of partial data
+
+The tooling MUST handle missing or incomplete annotations without crashing or producing misleading reports.
+
+#### Scenario: Handles entities with missing annotations gracefully
 
 **GIVEN** a catalog entity without `rhdh.io/ai-asset-category` annotation  
 **WHEN** the dry-run tool enumerates entities  

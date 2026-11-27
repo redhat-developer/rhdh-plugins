@@ -32,9 +32,9 @@ describe('collectDistinctInitiatorEntities', () => {
     expect(
       collectDistinctInitiatorEntities(
         [
-          { initiatorEntity: 'user:development/guest' },
-          { initiatorEntity: 'user:development/guest' },
-          { initiatorEntity: 'user:default/alice' },
+          'user:development/guest',
+          'user:development/guest',
+          'user:default/alice',
         ],
         ['user:default/bob'],
       ),
@@ -47,13 +47,13 @@ describe('collectDistinctInitiatorEntities', () => {
 });
 
 describe('useRunByFilterItems', () => {
-  const listInstances = jest.fn();
+  const listInstanceInitiators = jest.fn();
   const getEntitiesByRefs = jest.fn();
 
   const wrapper = ({ children }: { children: ReactNode }) =>
     createElement(TestApiProvider, {
       apis: [
-        [orchestratorApiRef, { listInstances }],
+        [orchestratorApiRef, { listInstanceInitiators }],
         [catalogApiRef, { getEntitiesByRefs }],
       ],
       children,
@@ -64,13 +64,8 @@ describe('useRunByFilterItems', () => {
   });
 
   it('loads run-by options from workflow instances', async () => {
-    listInstances.mockResolvedValue({
-      data: {
-        items: [
-          { initiatorEntity: 'user:development/guest' },
-          { initiatorEntity: 'user:default/alice' },
-        ],
-      },
+    listInstanceInitiators.mockResolvedValue({
+      data: ['user:development/guest', 'user:default/alice'],
     });
     getEntitiesByRefs.mockResolvedValue({
       items: [
@@ -94,7 +89,7 @@ describe('useRunByFilterItems', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(listInstances).toHaveBeenCalledWith(
+    expect(listInstanceInitiators).toHaveBeenCalledWith(
       expect.objectContaining({ pageSize: 500, offset: 0 }),
       undefined,
     );
@@ -116,12 +111,12 @@ describe('useRunByFilterItems', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(listInstances).not.toHaveBeenCalled();
+    expect(listInstanceInitiators).not.toHaveBeenCalled();
     expect(result.current.items).toEqual([]);
   });
 
   it('returns empty items when there are no initiator refs', async () => {
-    listInstances.mockResolvedValue({ data: { items: [] } });
+    listInstanceInitiators.mockResolvedValue({ data: [] });
 
     const { result } = renderHook(
       () => useRunByFilterItems({ enabled: true }),
@@ -135,7 +130,7 @@ describe('useRunByFilterItems', () => {
   });
 
   it('returns empty items when listing instances fails', async () => {
-    listInstances.mockRejectedValue(new Error('backend down'));
+    listInstanceInitiators.mockRejectedValue(new Error('backend down'));
 
     const { result } = renderHook(
       () => useRunByFilterItems({ enabled: true }),

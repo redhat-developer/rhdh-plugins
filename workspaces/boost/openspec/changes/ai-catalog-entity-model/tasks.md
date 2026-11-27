@@ -7,73 +7,96 @@
 
 ## 1. Annotation Scheme Definition and Validation (P0) — _RHIDP-15258_
 
-- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
-- [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
-- [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
-- [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
-- [ ] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
+The five minimum feature categories are `agent`, `skill`, `mcp-server`,
+`ai-model`, and `model-server`. The existing `rule` value below is retained
+for compatibility, not as a sixth minimum deliverable. SDK code and fixture
+reconciliation belong to RHIDP-18762; future shared/per-kind design belongs
+to RHIDP-18839.
+
+- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
+- [x] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
+- [x] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
+- [x] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
+- [x] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
 - [ ] 1.6 Implement CatalogProcessor validator rejecting entities with missing/invalid `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, or `rhdh.io/ai-asset-source` annotations — gated to entities carrying any `rhdh.io/ai-asset-*` annotation (RHIDP-15255)
 - [ ] 1.7 Add unit tests for CatalogProcessor validator covering valid and invalid annotation values (RHIDP-15255)
 
 ## 2. Entity Provider SDK Package Scaffolding (P0) — _RHIDP-15258_
 
-> **Cross-connector dependencies:** RHIDP-15260 is blocked by RHIDP-15265 (endpoint/credential config schema), RHIDP-15329 (shared CA bundle utility), and RHIDP-15330 (error isolation contract). The SDK must export the configuration schema, CA bundle utility, and error-handling guarantees defined by those stories.
+> **Minimum SDK boundary:** RHIDP-15265/RHIDP-15329 are historical
+> cross-connector references, not prerequisites requiring new SDK configuration
+> or CA exports. Existing helpers stay in `ai-catalog-connector-utils`. Full
+> air-gapped qualification does not gate minimum SDK reconciliation/publication.
+> Per-entity fault isolation and contextual logging remain minimum behavior
+> under RHIDP-15330; generic configuration examples remain in scope.
 
-- [ ] 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`, `CHANGELOG.md` (RHIDP-15260)
-- [ ] 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()` (RHIDP-15259)
-- [ ] 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern (RHIDP-15259)
-- [ ] 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION` (RHIDP-15260)
+- [x] 2.1 Create the `ai-catalog-entity-provider-sdk` package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`) with package metadata, README, and changelog; use workspace TypeScript defaults (RHIDP-15260)
+- [x] 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()` (RHIDP-15259)
+- [x] 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern (RHIDP-15259)
+- [x] 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION` (RHIDP-15260)
 - [ ] 2.5 Implement `validateAIAssetEntity(entity: Entity): void` utility throwing on missing/invalid annotations (RHIDP-15260)
 - [ ] 2.6 Add unit tests for `validateAIAssetEntity()` covering all validation rules (RHIDP-15260)
 - [ ] 2.7 Publish SDK package to npm registry with semver versioning (RHIDP-15260)
-- [ ] 2.8 Implement `DeltaSyncManager` class wrapping `applyMutation({ type: 'delta' })` API (RHIDP-15262)
-- [ ] 2.9 Add `applyDelta({ added, updated, removed, nextCursor })` method translating connector deltas to catalog mutations (RHIDP-15262)
-- [ ] 2.10 Implement sync cursor persistence via a pluggable `CursorStore` interface (SDK ships `InMemoryCursorStore`; a durable DB-backed store is the consuming backend plugin's responsibility) (RHIDP-15262)
-- [ ] 2.11 Implement `getCursor(): Promise<string | undefined>` method retrieving the last persisted cursor for the manager's construction-time `locationKey` (RHIDP-15262)
-- [ ] 2.12 Implement fallback to full refresh when cursor invalid or missing (RHIDP-15262)
-- [ ] 2.13 Add unit tests for delta sync framework covering cursor persistence, fallback, mutation translation (RHIDP-15262)
+- [x] 2.8 Implement `DeltaSyncManager` class wrapping `applyMutation({ type: 'delta' })` API (RHIDP-15262)
+- [x] 2.9 Add `applyDelta({ added, updated, removed, nextCursor })` method translating connector deltas to catalog mutations (RHIDP-15262)
+- [x] 2.10 Implement sync cursor persistence via a pluggable `CursorStore` interface (SDK ships `InMemoryCursorStore`; a durable DB-backed store is the consuming backend plugin's responsibility) (RHIDP-15262)
+- [x] 2.11 Implement `getCursor(): Promise<string | undefined>` method retrieving the last persisted cursor for the manager's construction-time `locationKey` (RHIDP-15262)
+- [ ] 2.12 ~~Implement framework-managed fallback to full refresh when cursor invalid or missing~~ (RHIDP-15262) — **DEFERRED** to RHIDP-18840. Existing consumers own refresh orchestration; no shared fallback implementation is required by this baseline.
+- [x] 2.13 Add unit tests for the existing delta helper covering mutation translation and cursor read/write/reset through `CursorStore` (RHIDP-15262)
 
-## 3. Neo4j Sync Adapter Interface (P0) — _RHIDP-15258_
+## ~~3. Neo4j Sync Adapter Interface (P0)~~ REMOVED
 
-- [ ] 3.1 Define `Neo4jSyncAdapter` TypeScript interface with methods: `createNode()`, `updateNode()`, `deleteNode()`, `createRelationship()` (RHIDP-15303)
-- [ ] 3.2 Define `RelationshipType` union type with constants: `DEPENDS_ON`, `USES_TOOL`, `BELONGS_TO`, `SIMILAR_TO`, `IMPLEMENTED_BY`, `INCLUDES` (RHIDP-15303)
-- [ ] 3.3 Export `Neo4jSyncAdapter` interface from SDK package (RHIDP-15303)
-- [ ] 3.4 Add JSDoc documentation to interface explaining when to use each method and relationship type (RHIDP-15303)
+> Removed from minimum scope (RHIDP-18761). Neo4j knowledge graph
+> integration is archived — see
+> `openspec/changes/archive/2026-11-06-neo4j-knowledge-graph/`.
 
-## 4. SkillBundle Metadata Schema (P0) — _RHIDP-15258_
+## ~~4. SkillBundle Metadata Schema (P0)~~ REMOVED
 
-- [ ] 4.1 Define `SkillBundleMetadata` TypeScript type with fields: `name`, `version`, `description?`, `author?`, `tags?`, `runtime?`, `mcp?` (RHIDP-15303)
-- [ ] 4.2 Export `SkillBundleMetadata` type from SDK package (RHIDP-15303)
-- [ ] 4.3 Add JSDoc documentation with example skillcard.yaml structure (RHIDP-15303)
+> Removed from minimum scope (RHIDP-18761). SkillBundle/skillcard.yaml
+> contracts are archived — see
+> `openspec/changes/archive/2026-11-06-oci-skill-registry/` and
+> `openspec/changes/archive/2026-11-06-oci-skill-connector/`.
 
 ## 5. Provider Implementations (P1) — _RHIDP-15258_
 
-- [ ] 5.1 ~~Update Kagenti provider to emit entities with all three required annotations~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15255)
 - [x] 5.2 OGX provider annotation emission is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); its model and agent providers emit category, source, and normalized-version annotations (RHIDP-15255)
-- [ ] 5.3 ~~Verify Kagenti provider compiles against SDK interface without errors~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15259)
 - [x] 5.4 Verify that the OGX providers use Backstage `EntityProvider` and the SDK annotation/version utilities; this is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md) and its targeted test suite (RHIDP-15259)
 
-## 6. Air-Gapped Deployment Support (P1) — _Moved to RHIDP-15316 (RHDHPLAN-1510)_
+## 6. Configuration References and Deferred Air-Gapped Qualification — _RHIDP-15316 (RHDHPLAN-1510)_
 
-- [ ] 6.1 Add custom CA bundle support via `NODE_EXTRA_CA_CERTS` environment variable for all providers (RHIDP-15329)
-- [ ] 6.2 Add custom CA bundle support via explicit `caCertPath` app-config field + `https.Agent` configuration (RHIDP-15329)
-- [ ] 6.3 Implement startup validation rejecting plaintext credentials with descriptive error message (RHIDP-15265)
-- [ ] 6.4 Add `$env` reference support for all credential fields (clientId, clientSecret, API keys) backed by mounted K8s Secrets (RHIDP-15265)
-- [ ] 6.5 Implement configurable endpoint URLs (`baseUrl`) for all providers with startup validation (RHIDP-15265)
-- [ ] 6.6 Create reference app-config YAML example for air-gapped deployment (RHIDP-15266)
-- [ ] 6.7 Create reference Helm chart `values.yaml` example for air-gapped deployment (RHIDP-15266)
-- [ ] 6.8 Create reference Operator CR example for air-gapped deployment (RHIDP-15266)
+### Full deployment qualification — DEFERRED / stretch
+
+The historical tasks below do not gate the minimum SDK. This deferral does not
+remove existing shared utilities or generic endpoint, CA, Secret, and schedule
+examples.
+
+- [ ] 6.1 ~~Add custom CA bundle support via `NODE_EXTRA_CA_CERTS` environment variable for all providers~~ (RHIDP-15329) — **DEFERRED — stretch qualification**
+- [ ] 6.2 ~~Add custom CA bundle support via explicit `caCertPath` app-config field + `https.Agent` configuration~~ (RHIDP-15329) — **DEFERRED — stretch qualification**
+- [ ] 6.3 ~~Implement startup validation rejecting plaintext credentials with descriptive error message~~ (RHIDP-15265) — **DEFERRED — stretch qualification**
+- [ ] 6.4 ~~Add `$env` reference support for all credential fields (clientId, clientSecret, API keys) backed by mounted K8s Secrets~~ (RHIDP-15265) — **DEFERRED — stretch qualification**
+- [ ] 6.5 ~~Implement configurable endpoint URLs (`baseUrl`) for all providers with startup validation~~ (RHIDP-15265) — **DEFERRED — stretch qualification**
+
+### Generic reference examples — retained
+
+- [ ] 6.6 Create reference app-config YAML for generic connector configuration (endpoints, CA bundles, Secret references, and schedules) without claiming deployment qualification (RHIDP-15266)
+- [ ] 6.7 Create reference Helm chart `values.yaml` for the generic connector configuration pattern (RHIDP-15266)
+- [ ] 6.8 Create reference Operator CR for the generic connector configuration pattern (RHIDP-15266)
 
 ## 7. Performance and Resilience Testing (P1) — _Distributed_
 
-### Load Testing — _RHIDP-15294 (OCI Skill Registry)_
+### Load Testing — _RHIDP-15294 (OCI Skill Registry)_ — **Stretch**
 
-- [ ] 7.1 Create load test harness generating 5,000+ AI asset entities (distributed across categories) (RHIDP-15268)
-- [ ] 7.2 Measure baseline p95 latency for catalog queries without AI Catalog entities (RHIDP-15268)
-- [ ] 7.3 Measure with-AI-Catalog p95 latency with 5,000+ entities ingested (RHIDP-15268)
-- [ ] 7.4 Validate p95 latency degradation ≤10% SLA; fail test if violated (RHIDP-15268)
-- [ ] 7.5 Measure processing-loop duration (entity emission → catalog API availability) (RHIDP-15268)
-- [ ] 7.6 Document load test execution steps and reproducibility in `tests/load/README.md` (RHIDP-15268)
+> Deferred from minimum baseline (RHIDP-18761). 5,000-entity load/SLA
+> acceptance is a stretch goal.
+> The identifiers below preserve historical traceability only. They do not
+> authorize implementation or create coding-story mappings for this baseline.
+
+- [ ] 7.1 ~~Create load test harness generating 5,000+ AI asset entities (distributed across categories)~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.2 ~~Measure baseline p95 latency for catalog queries without AI Catalog entities~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.3 ~~Measure with-AI-Catalog p95 latency with 5,000+ entities ingested~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.4 ~~Validate p95 latency degradation ≤10% SLA; fail test if violated~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.5 ~~Measure processing-loop duration (entity emission → catalog API availability)~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.6 ~~Document load test execution steps and reproducibility in `tests/load/README.md`~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
 
 ### Error Resilience — _RHIDP-15316 (Cross-Connector)_
 
@@ -95,19 +118,19 @@
 
 ## 9. Documentation and Examples (P2) — _RHIDP-15258_
 
-- [ ] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage, Neo4j adapter, SkillBundle schema (RHIDP-15260)
+- [x] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage (RHIDP-15260)
 - [ ] 9.2 Add code examples to README showing provider implementation (RHIDP-15260)
-- [ ] 9.3 Document version normalization rules in SDK README with examples (RHIDP-15255)
-- [ ] 9.4 Document air-gapped configuration pattern as generic "AI Catalog connector configuration" for reuse by all connectors (RHIDP-15266)
-- [ ] 9.5 Create `CHANGELOG.md` with initial version entry (RHIDP-15260)
+- [x] 9.3 Document version normalization rules in SDK README with examples (RHIDP-15255)
+- [ ] 9.4 Document generic "AI Catalog connector configuration" examples for endpoints, CA bundles, Secret references, and schedules without claiming full air-gapped qualification (RHIDP-15266)
+- [x] 9.5 Create `CHANGELOG.md` with initial version entry (RHIDP-15260)
 
 ## 10. Verify
 
 - [ ] 10.1 Verify all three annotations are enforced by CatalogProcessor validator (reject entities with missing/invalid values)
 - [x] 10.2 Verify OGX provider annotation emission through the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); targeted model and agent tests cover category, source, and normalized-version annotations
-- [ ] 10.3 Verify delta sync framework falls back to full refresh when cursor invalid
-- [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
-- [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error
-- [ ] 10.6 Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities
+- [x] 10.3 Verify `getCursor()` returns `undefined` for absent/cleared state and `clearCursor()` resets only the configured `locationKey` without initiating a full mutation; automated fallback remains deferred to RHIDP-18840
+- [ ] 10.4 ~~Verify custom CA bundles are honored for TLS connections in air-gapped deployment~~ — **DEFERRED — stretch qualification**
+- [ ] 10.5 ~~Verify startup validation rejects plaintext credentials with descriptive error~~ — **DEFERRED — stretch qualification**
+- [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ (RHIDP-15268) — **DEFERRED — stretch, tracked under RHIDP-15294, outside minimum scope**
 - [ ] 10.7 Verify single entity failures are isolated and remaining entities are ingested
 - [ ] 10.8 Verify migration design document has upstream maintainer or RHDH architect sign-off

@@ -57,7 +57,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper style={{ width: '100%' }}>
+      <Paper sx={{ width: '100%' }}>
         {numberOfApprovalTools > 1 && (
           <ApprovalTool
             approvalTool={values.approvalTool}

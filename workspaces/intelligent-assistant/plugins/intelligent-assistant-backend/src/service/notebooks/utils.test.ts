@@ -290,6 +290,38 @@ describe('utils', () => {
       });
     });
 
+    it('should preserve session fields when metadata contains conflicting keys', () => {
+      const session = {
+        session_id: 'test-session-id',
+        user_id: 'user:default/guest',
+        name: 'Test Session',
+        description: 'Test description',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z',
+        metadata: {
+          user_id: 'user:default/other',
+          name: 'Metadata name',
+          description: 'Metadata description',
+          created_at: '2000-01-01T00:00:00Z',
+          updated_at: '2000-01-02T00:00:00Z',
+          conversation_id: 'conv-123',
+          custom_field: 'custom-value',
+        },
+      };
+      const originalMetadata = { ...session.metadata };
+
+      expect(buildVectorStoreMetadata(session)).toEqual({
+        user_id: 'user:default/guest',
+        name: 'Test Session',
+        description: 'Test description',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z',
+        conversation_id: 'conv-123',
+        custom_field: 'custom-value',
+      });
+      expect(session.metadata).toEqual(originalMetadata);
+    });
+
     it('should handle session without metadata', () => {
       const session = {
         session_id: 'test-session-id',

@@ -49,6 +49,7 @@ const extensionsTranslationIt = createTranslationMessages({
     'status.disabled': 'Disabilitato',
     'status.partiallyInstalled': 'Parzialmente installato',
     'status.updateAvailable': 'Aggiornamento disponibile',
+    'status.restartRequired': 'È necessario riavviare',
     'role.backend': 'Backend',
     'role.backendModule': 'Modulo backend',
     'role.frontend': 'Frontend',
@@ -284,12 +285,20 @@ const extensionsTranslationIt = createTranslationMessages({
       'Errore durante la lettura del file di configurazione. ',
     'tooltips.productionDisabled':
       "L'installazione del plugin è disabilitata nell'ambiente di produzione.",
-    'tooltips.extensionsDisabled':
-      "L'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
+    'tooltips.extensionsDisabledInstallPlugin':
+      'Impossibile installare il plugin. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
+    'tooltips.extensionsDisabledInstallPackage':
+      'Impossibile installare il pacchetto. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
+    'tooltips.extensionsDisabledManagePlugin':
+      'Impossibile gestire il plugin. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
+    'tooltips.extensionsDisabledManagePackage':
+      'Impossibile gestire il pacchetto. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
     'tooltips.noPermissions':
       "L'utente non dispone delle autorizzazioni necessarie per installare plugin o visualizzarne le configurazioni. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'tooltips.missingDynamicArtifact':
       "Impossibile gestire questo {{type}}. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo spec.dynamicArtifact richiesto.",
+    'tooltips.restartRequired':
+      'È necessario un riavvio della piattaforma affinché questa modifica abbia effetto.',
     'aria.openPlugin': 'Apri il plugin {{name}}',
     'aria.closeDialog': 'Chiudi finestra di dialogo',
     'aria.expandSection': 'Espandi sezione',

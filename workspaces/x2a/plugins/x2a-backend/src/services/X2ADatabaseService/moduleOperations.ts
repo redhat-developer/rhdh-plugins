@@ -185,4 +185,16 @@ export class ModuleOperations {
 
     return updatedCount;
   }
+
+  async listPortfolioModules(
+    projectIds: string[],
+  ): Promise<Record<string, unknown>[]> {
+    if (projectIds.length === 0) {
+      return [];
+    }
+    const rows = await this.#dbClient('modules')
+      .whereIn('project_id', projectIds)
+      .select('id', 'project_id', 'removed_at');
+    return rows;
+  }
 }

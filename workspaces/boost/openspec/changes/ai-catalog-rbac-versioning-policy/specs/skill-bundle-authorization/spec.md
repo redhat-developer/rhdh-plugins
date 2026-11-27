@@ -1,8 +1,10 @@
+> **Deferred:** This draft does not apply to the current AI Catalog baseline. Do not implement or promote these requirements until an approved Skills architecture defines bundle ownership, representation, serving, and bundle-level authorization. The archived Neo4j proposal is not that contract.
+
 ## ADDED Requirements
 
 ### Requirement: Bundle members are authorized at read time
 
-RHDH SHALL authorize each SkillBundle member against its canonical Catalog entity with `catalog.entity.read` when bundle details are read, not when a bundle is created, stored, or indexed.
+When an approved future bundle-serving contract exists, RHDH SHALL authorize each SkillBundle member against its canonical Catalog entity with `catalog.entity.read` when bundle details are read, not when a bundle is created, stored, or indexed.
 
 #### Scenario: Members are separate Catalog entities
 
@@ -16,7 +18,7 @@ RHDH SHALL authorize each SkillBundle member against its canonical Catalog entit
 - **THEN** the backend resolves their canonical Catalog entity identifiers and removes unauthorized members before serialization
 - **AND** omitted member identifiers, names, counts, and metadata are not leaked
 
-#### Scenario: Neo4j contains the bundle relationship
+#### Scenario: A future derived graph contains bundle relationships
 
 - **WHEN** a derived Neo4j query returns `INCLUDES` relationships for a bundle
 - **THEN** the backend does not treat graph membership as authorization
@@ -40,7 +42,7 @@ A bundle containing both authorized and unauthorized skills SHALL return the aut
 
 ### Requirement: Bundle-level authorization requires an owning representation contract
 
-RHDHPLAN-1507 already specifies Neo4j `SkillBundle` nodes, `INCLUDES` relationships, and references to canonical skill entity identifiers. RHDHPLAN-1507 or the owning Skills architecture SHALL complete that contract by reconciling bundle-definition ownership with Neo4j's derived-index role and defining the serving API and bundle-level authorization target before SkillBundle serving behavior is implemented.
+No accepted current contract establishes Neo4j `SkillBundle` nodes, `INCLUDES` relationships, or canonical bundle-member identifiers. The archived Neo4j proposal is historical and does not establish those requirements. Before any future SkillBundle serving behavior is implemented, RHDHPLAN-1507 or the owning Skills architecture SHALL define bundle ownership, representation, serving API, and bundle-level authorization target.
 
 #### Scenario: Bundle serving contract remains incomplete
 

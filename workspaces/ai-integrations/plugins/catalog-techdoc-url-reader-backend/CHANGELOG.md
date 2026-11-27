@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.9.0
+
+### Minor Changes
+
+- a73f884: Render verified npx skill Markdown in the catalog Docs tab using the configured npx connector and the imported artifact digest. Publish the registry base URL and original index key for the Boost install command.
+
+## 0.8.1
+
+### Patch Changes
+
+- d98a614: Use explicit revalidation cache mode for conditional OCI skill documentation reads.
+  This prevents Node fetch from adding request headers that suppress the connector's
+  304 response, allowing matching ETags to produce NotModifiedError and reuse cached
+  TechDocs content. Model-card requests and public APIs are unchanged.
+
 ## 0.8.0
 
 ### Minor Changes

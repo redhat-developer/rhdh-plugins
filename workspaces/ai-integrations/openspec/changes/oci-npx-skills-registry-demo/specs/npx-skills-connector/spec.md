@@ -8,6 +8,8 @@ invoke `npx` nor clone or crawl Git repositories. It SHALL refresh at startup
 and on a non-overlapping Backstage schedule, defaulting to ten minutes.
 Discovery entry `name` SHALL be the stable record key within the configured
 source; changes to a Markdown display name SHALL NOT change that key.
+An entry name longer than 1 KiB in UTF-8 SHALL be rejected as incomplete
+discovery without copying the oversized key into the failed-key list.
 
 #### Scenario: Archive entry
 
@@ -64,7 +66,61 @@ SHALL return 404.
 - **WHEN** the first discovery attempt has not completed
 - **THEN** the endpoint returns `loading`, empty skills and failed-key arrays, and `observedAt: null`
 
+#### Scenario: Total discovery failure
+
+- **WHEN** discovery returns no entries and no index page could be parsed
+- **THEN** the connector publishes a `failed` snapshot
+- **AND** no artifact processing is attempted
+
+#### Scenario: Unhandled exception during discovery or processing
+
+- **WHEN** an unexpected exception is thrown by discovery or artifact processing
+- **THEN** the connector catches it and publishes a `failed` snapshot
+- **AND** the error is logged
+
 #### Scenario: Successful empty discovery
 
 - **WHEN** the entire index is retrieved and validated successfully and contains no supported skills
 - **THEN** the endpoint returns `ready` with empty skills and failed-key arrays and a completion time
+
+### Requirement: Registry base for CLI discovery
+
+The snapshot endpoint SHALL advertise the registry base in `X-Npx-Skill-Registry`
+when the configured index URL ends in `/.well-known/agent-skills/index.json`
+and has no query string. It SHALL preserve the registry's path prefix.
+
+#### Scenario: Well-known index under a registry path
+
+- **WHEN** the index URL is `https://registry.example/team/.well-known/agent-skills/index.json`
+- **THEN** `GET /skills/:sourceId` returns `X-Npx-Skill-Registry: https://registry.example/team`
+
+#### Scenario: Custom index URL
+
+- **WHEN** the configured index uses a custom path or includes a query string
+- **THEN** the snapshot response omits the registry header
+
+### Requirement: Digest-verified npx skill documentation
+
+The connector SHALL expose authenticated `GET /skilldocs/:sourceId/:digest`.
+It SHALL resolve the artifact URL from the configured source's current snapshot
+and apply the same origin, redirect, and size limits used during import.
+
+#### Scenario: Markdown matches the imported digest
+
+- **WHEN** the snapshot contains the requested digest and the fetched bytes match its SHA-256
+- **THEN** the connector returns the original bytes as `text/markdown` with the quoted digest as the ETag
+
+#### Scenario: Reader has the current document
+
+- **WHEN** the digest is in the source snapshot and `If-None-Match` equals its quoted ETag
+- **THEN** the connector returns 304 and the ETag without fetching the artifact again
+
+#### Scenario: Unknown source or revision
+
+- **WHEN** the source is unknown or its current snapshot has no record with that digest
+- **THEN** the connector returns 404 before fetching any artifact
+
+#### Scenario: Upstream Markdown changed after import
+
+- **WHEN** the fetched bytes have a different SHA-256 from the requested digest
+- **THEN** the connector returns 409 without serving the changed Markdown

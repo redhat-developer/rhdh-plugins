@@ -52,7 +52,11 @@ import { usePackage } from '../hooks/usePackage';
 import { usePackageConfig } from '../hooks/usePackageConfig';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
-import { useInstallationContext } from './InstallationContext';
+import {
+  getPackageInstallationKey,
+  useInstallationContext,
+  withPackageInstallationEntry,
+} from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 import {
   apiErrorMessage,
@@ -258,13 +262,21 @@ export const ExtensionsPackageEditContent = ({
       });
 
       if ((res as any)?.status === 'OK') {
-        const updated = {
-          ...installedPackages,
-          [pkg.metadata.title ?? pkg.metadata.name]: t(
-            'install.packageUpdated',
+        const packageKey = getPackageInstallationKey({
+          title: pkg.metadata.title,
+          name: pkg.metadata.name,
+        });
+        const aliasKeys = [pkg.spec?.packageName].filter((k): k is string =>
+          Boolean(k),
+        );
+        setInstalledPackages(
+          withPackageInstallationEntry(
+            installedPackages,
+            packageKey,
+            'update',
+            aliasKeys,
           ),
-        };
-        setInstalledPackages(updated);
+        );
         queryClient.invalidateQueries({
           queryKey: [
             'extensionsApi',
@@ -372,6 +384,7 @@ export const ExtensionsPackageEditContent = ({
             configError === ExtensionsStatus.INSTALLATION_DISABLED,
             !pkg.spec?.dynamicArtifact,
             false,
+            true,
           )}
         >
           <Typography component="span">

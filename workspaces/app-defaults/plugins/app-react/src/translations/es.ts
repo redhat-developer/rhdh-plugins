@@ -81,5 +81,19 @@ export default createTranslationMessages({
     'catalog.entityTabs.Todo': 'Tareas pendientes',
     'catalog.entityTabs.Topology': 'Topología',
     'catalog.entityTabs.Workflows': 'Workflows',
+    'templateCard.timeSaved.add': 'Añadir tiempo est. ahorrado',
+    'templateCard.timeSaved.addTooltip':
+      'Ayude a otros a ver el valor de esta plantilla. Añada esta anotación a su template.yaml:',
+    'templateCard.timeSaved.copied': 'Copiado',
+    'templateCard.timeSaved.copy': 'Copiar anotación',
+    'templateCard.timeSaved.estimate': 'Tiempo est. ahorrado: {{duration}}',
+    'templateCard.timeSaved.estimateTooltip':
+      'Este número refleja el tiempo habitual para hacer este trabajo sin la plantilla, según el propietario.',
+    'templateCard.timeSaved.hour_one': '{{count}} hora',
+    'templateCard.timeSaved.hour_other': '{{count}} horas',
+    'templateCard.timeSaved.day_one': '{{count}} día',
+    'templateCard.timeSaved.day_other': '{{count}} días',
+    'templateCard.timeSaved.minute_one': '{{count}} minuto',
+    'templateCard.timeSaved.minute_other': '{{count}} minutos',
   },
 });

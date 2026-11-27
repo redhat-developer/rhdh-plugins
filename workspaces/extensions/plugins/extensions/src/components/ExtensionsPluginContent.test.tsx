@@ -37,6 +37,22 @@ import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../queryclient';
+import {
+  InstallationContextProvider,
+  resetInstallationStore,
+  useInstallationContext,
+} from './InstallationContext';
+
+const PackagesPendingProbe = () => {
+  const { installedPackages } = useInstallationContext();
+  return (
+    <div data-testid="packages-pending">
+      {Object.entries(installedPackages)
+        .map(([key, action]) => `${key}:${action}`)
+        .join(',')}
+    </div>
+  );
+};
 
 const mockNavigate = jest.fn();
 
@@ -95,6 +111,7 @@ queryClient.setDefaultOptions({
 });
 
 beforeEach(() => {
+  resetInstallationStore();
   usePluginConfigurationPermissionsMock.mockReturnValue({
     data: {
       write: 'ALLOW',
@@ -137,7 +154,9 @@ const renderWithProviders = (ui: ReactNode) =>
       ]}
     >
       <BrowserRouter>
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <InstallationContextProvider>{ui}</InstallationContextProvider>
+        </QueryClientProvider>
       </BrowserRouter>
     </TestApiProvider>,
   );
@@ -245,6 +264,33 @@ describe('ExtensionsPluginContent', () => {
     expect(installButton).toBeDisabled();
   });
 
+  it('should have the Actions button disabled when installation is blocked for an installed plugin', async () => {
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+        error: {
+          reason: 'FILE_NOT_EXISTS',
+          message: 'The file /opt/app-root/src/dynamic-plugins.yaml is missing',
+        },
+      },
+    });
+
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: ExtensionsPluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByText, getByTestId, queryByTestId } = renderWithProviders(
+      <ExtensionsPluginContent plugin={installedPlugin} />,
+    );
+    expect(getByText('Actions')).toBeInTheDocument();
+    expect(getByTestId('actions-disabled')).toBeDisabled();
+    expect(queryByTestId('install-disabled')).not.toBeInTheDocument();
+  });
+
   it('should render the Actions button', async () => {
     usePluginPackagesMock.mockReturnValue({
       isLoading: false,
@@ -335,7 +381,7 @@ describe('ExtensionsPluginContent', () => {
     expect(getByTestId('disable-plugin')).toBeInTheDocument();
   });
 
-  it('navigates to the catalog tab after disabling a plugin', async () => {
+  it('keeps the drawer open and shows Restart required after disabling a plugin', async () => {
     usePluginPackagesMock.mockReturnValue({
       isLoading: false,
       data: packages,
@@ -349,17 +395,62 @@ describe('ExtensionsPluginContent', () => {
       },
     };
 
-    const { getByTestId } = renderWithProviders(
-      <ExtensionsPluginContent plugin={installedPlugin} />,
+    const { getByTestId, findByTestId } = renderWithProviders(
+      <>
+        <ExtensionsPluginContent plugin={installedPlugin} />
+        <PackagesPendingProbe />
+      </>,
     );
     fireEvent.click(getByTestId('plugin-actions'));
     fireEvent.click(getByTestId('disable-plugin'));
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalled();
-    });
-    expect(mockNavigate).not.toHaveBeenCalledWith(
-      '/extensions/installed-plugins',
+    expect(await findByTestId('restart-required-status')).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    // Plugin disable also mirrors pending state onto its packages for the
+    // Installed packages table.
+    expect(await findByTestId('packages-pending')).toHaveTextContent(
+      '@backstage-community/plugin-3scale-backend:disable',
     );
+  });
+
+  it('clears Restart required after reverting a disable', async () => {
+    usePluginPackagesMock.mockReturnValue({
+      isLoading: false,
+      data: packages,
+    });
+
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: ExtensionsPluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByTestId, findByTestId, queryByTestId } = renderWithProviders(
+      <>
+        <ExtensionsPluginContent plugin={installedPlugin} />
+        <PackagesPendingProbe />
+      </>,
+    );
+
+    fireEvent.click(getByTestId('plugin-actions'));
+    fireEvent.click(getByTestId('disable-plugin'));
+    expect(await findByTestId('restart-required-status')).toBeInTheDocument();
+    expect(await findByTestId('packages-pending')).toHaveTextContent(
+      '@backstage-community/plugin-3scale-backend:disable',
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('plugin-actions')).toBeInTheDocument();
+    });
+    fireEvent.click(getByTestId('plugin-actions'));
+    fireEvent.click(getByTestId('enable-plugin'));
+
+    await waitFor(() => {
+      expect(queryByTestId('restart-required-status')).not.toBeInTheDocument();
+    });
+    expect(getByTestId('packages-pending')).toHaveTextContent('');
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

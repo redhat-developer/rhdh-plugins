@@ -45,6 +45,11 @@ import {
   ExtensionsConfigurationAlert,
   BackendRestartAlert,
 } from './SharedAlerts';
+import {
+  InstallationWarning,
+  type InstallationWarningConfig,
+} from './InstallationWarning';
+import { isInstallationInfrastructureError } from '../utils';
 import { useTranslation } from '../hooks/useTranslation';
 
 const EmptyState = ({ isError }: { isError?: boolean }) => {
@@ -139,8 +144,15 @@ export const ExtensionsCatalogContent = () => {
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
 
+  const installationInfraError = isInstallationInfrastructureError(
+    extensionsConfig.data?.error?.reason,
+  );
+  const showInstallationWarning =
+    !isProductionEnvironment && installationInfraError;
   const showExtensionsConfigurationAlert =
-    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+    !isProductionEnvironment &&
+    !extensionsConfig.data?.enabled &&
+    !installationInfraError;
 
   const installedPluginsCount = Object.entries(installedPlugins)?.length ?? 0;
 
@@ -174,6 +186,11 @@ export const ExtensionsCatalogContent = () => {
       {!filteredPlugins.isLoading && (
         <>
           {isProductionEnvironment && <ProductionEnvironmentAlert />}
+          {showInstallationWarning && (
+            <InstallationWarning
+              configData={extensionsConfig.data as InstallationWarningConfig}
+            />
+          )}
           {showExtensionsConfigurationAlert && <ExtensionsConfigurationAlert />}
         </>
       )}

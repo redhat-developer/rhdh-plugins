@@ -30,8 +30,20 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Inicie y realice el seguimiento de la conversión asíncrona de automatización existente a playbooks Ansible listos para producción.',
     'table.columns.name': 'Nombre',
     'table.columns.status': 'Estado',
+    'portfolio.noModules': 'Aún no se han descubierto módulos.',
+    'portfolio.published': '{{n}} de {{m}} módulos publicados',
+    'portfolio.modulesInError': '{{count}} módulos con error',
+    'portfolio.inputTokens': '{{count}} tokens de entrada',
+    'portfolio.outputTokens': '{{count}} tokens de salida',
+    'portfolio.expand': 'Expandir el resumen de la cartera',
+    'portfolio.collapse': 'Contraer el resumen de la cartera',
+    'portfolio.modules': 'Módulos',
+    'portfolio.projects': 'Proyectos',
     'table.columns.statusSortDisabledTooltip':
       'La ordenación por estado no está disponible cuando el número de proyectos supera {{threshold}}',
+    'table.columns.inError': 'Con error',
+    'table.columns.inErrorSortDisabledTooltip':
+      'La ordenación por errores de módulo no está disponible cuando el número de proyectos supera {{threshold}}',
     'table.columns.sourceRepo': 'Repositorio de origen',
     'table.columns.targetRepo': 'Repositorio de destino',
     'table.columns.createdAt': 'Creado el',
@@ -302,6 +314,21 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'No se pudo volver a sincronizar el plan de migración para el proyecto "{{name}}"',
     'resyncMigrationPlan.errorStart':
       'No se pudo iniciar la resincronización del plan de migración',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'No se pudo cargar el selector de repositorios. Se trata de un problema de compatibilidad del complemento, infórmelo.',
+    'scaffolder.repoUrlPicker.authError':
+      'No se pudo obtener un token de acceso de {{provider}}: {{error}}. Compruebe que el proveedor de autenticación "{{provider}}" está configurado para esta instancia.',
+    'scaffolder.repoUrlPicker.authRetry': 'Reintentar',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      'No se ofrecen hosts de {{provider}} ({{hosts}}): no hay ningún host definido para el inicio de sesión de {{provider}}. Un administrador debe definir {{configKey}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      'No se ofrecen hosts de {{provider}} distintos de {{authHost}} ({{hosts}}): el inicio de sesión de {{provider}} solo está configurado para {{authHost}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      'No se ofrecen hosts de {{provider}} ({{hosts}}): el inicio de sesión de {{provider}} está configurado para {{authHost}}, que no figura en la configuración de integraciones.',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      'El inicio de sesión de {{provider}} está configurado para {{authHost}}, no para {{host}}. Su token de acceso no se envía a otros hosts.',
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      'No hay ningún host definido para el inicio de sesión de {{provider}}, por lo que no se puede usar ningún token de acceso de {{provider}} para {{host}}. Un administrador debe definir {{configKey}}.',
     'scaffolder.rulesAcceptance.loadingRules': 'Cargando reglas…',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'No hay reglas configuradas.',

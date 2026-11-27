@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk
 
+## 2.0.0
+
+### Major Changes
+
+- 719a89f: Reconcile SDK exports and category vocabulary to the agreed 2.2 minimum baseline. Remove `skill-bundle` from the Zod schema, `AIAssetCategory` type union, `AI_ASSET_CATEGORIES`, validation diagnostics, tests, README, and API report. The active category vocabulary is now `agent`, `skill`, `rule`, `mcp-server`, `ai-model`, and `model-server`. Replace obsolete Kagenti provider examples with current OGX references. Update entity fixtures to use `kind: AiResource` with `spec.type: agent`. Clarify delta sync JSDoc: consuming providers own durable persistence and cursor clearing does not initiate a full refresh.
+
+  Breaking change from SDK 1.x: `skill-bundle` is no longer an accepted category.
+  Remove it from consumer `AIAssetCategory` values and provider annotation inputs
+  before upgrading. Entities with that category now fail SDK validation.
+
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- 8b22d1b: Restore AI Catalog SDK source files, tests, and specification documents from the RHDH 2.1 archive into their active package paths for RHDH 2.2 reconciliation. Add public provider interfaces, the `AIAssetValidator` processor, `DeltaSyncManager` and cursor-store contracts, `validateAIAssetEntity`, `AIAssetCategory`, and `AI_ASSET_CATEGORIES`. Keep the Zod category schema internal and preserve the validator's processor methods in generated declarations. Restored helpers remain unregistered pending reconciliation.
+
+  Escape control characters in rejected category diagnostics without changing the
+  input used for validation.
+
 ## 1.1.0
 
 ### Minor Changes

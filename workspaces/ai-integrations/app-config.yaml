@@ -194,6 +194,11 @@ catalog:
           - connectorPluginId: skill-image-connector
             sourceId: skillimage-skills
             sourceType: oci
+          # Uncomment after enabling npxSkillConnector below to show its
+          # verified skills in the catalog alongside OCI sources.
+          # - connectorPluginId: npx-skill-connector
+          #   sourceId: public-agent-skills
+          #   sourceType: npx
         defaultOwner: team-skills
         defaultLifecycle: experimental
         namespace: default
@@ -239,6 +244,16 @@ skillImageConnector:
         - quay.io
       quayDiscovery:
         organization: skillimage
+# Uncomment to try the npx connector with a public Agent Skills v0.2 index.
+# Its snapshot will appear at /api/npx-skill-connector/skills/public-agent-skills.
+# npxSkillConnector:
+#   sources:
+#     - id: public-agent-skills
+#       indexUrl: https://evilmartians.com/.well-known/agent-skills/index.json
+#       schedule:
+#         frequency: { minutes: 10 }
+#         timeout: { minutes: 10 }
+#         initialDelay: { seconds: 0 }
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

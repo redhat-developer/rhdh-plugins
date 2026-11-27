@@ -104,3 +104,60 @@
 {"ts":"2026-09-14T21:05:28Z","phase":"any","event":"skill.invoked","name":"openspec-audit-change"}
 {"ts":"2026-09-14T21:15:33Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md, specs/mcp-registry-annotation-projection/spec.md","input":"Apply pass-1 audit autofix batch (D11 refuse set, reserved source-location, URL-typed leaf, remotes [] fixtures)","output":"1.5/2.7 list vbscript blob //host; reserved examples include source-location; 3.4 D11 membership; 4.1 empty remotes fixtures"}
 {"ts":"2026-09-14T21:28:42Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). Pass-1 autofix applied; pass-2 schema rename skipped. Remaining: skip-or-disambiguate, null-omit MAY, sanitization, .openspec.yaml, proposal length."}
+{"ts":"2026-11-09T21:48:36Z","phase":"any","event":"turn.start","input":"Reconcile implemented OpenSpec tasks against current implementation evidence."}
+{"ts":"2026-11-09T21:48:37Z","phase":"apply","event":"mode.chosen","mode":"direct","input":"Use direct mode for task-checkbox documentation reconciliation; verify each item against code, tests, and docs."}
+{"ts":"2026-11-09T21:48:37Z","phase":"any","event":"skill.invoked","name":"openspec-apply-change"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"1.1"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"1.2"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"1.3"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"1.4"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"1.5"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.1"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.2"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.3"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.4"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.5"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.6"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"2.7"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"3.1"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"3.2"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"3.3"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"3.4"}
+{"ts":"2026-11-09T22:04:34Z","phase":"apply","event":"task.start","ref":"3.5"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"3.6"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.1"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.3"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.4"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.5"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.6"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.start","ref":"4.7"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"1.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"1.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"1.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"1.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"1.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.6","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"2.7","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"3.6","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"4.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:35Z","phase":"apply","event":"task.complete","ref":"4.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:36Z","phase":"apply","event":"task.complete","ref":"4.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:36Z","phase":"apply","event":"task.complete","ref":"4.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:36Z","phase":"apply","event":"task.complete","ref":"4.6","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:36Z","phase":"apply","event":"task.complete","ref":"4.7","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:36Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Reconcile completed work and stale task wording","output":"Checked only tasks supported by current implementation evidence"}
+{"ts":"2026-11-09T22:06:52Z","phase":"any","event":"decision","input":"Reconcile completed checklist work against current evidence","output":"Leave task 4.2 open pending explicit schema-validator evidence for every mapped entity."}
+{"ts":"2026-11-09T22:06:52Z","phase":"any","event":"turn.end","output":"Marked mapping, projection, fixtures, tests, and consumer docs complete; left explicit upstream schema conformance verification open."}
+{"ts":"2026-11-10T14:45:32Z","phase":"any","event":"turn.start","input":"Record a limited audit of the task-status reconciliation for PR 5474."}
+{"ts":"2026-11-10T14:49:42Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"Address final PR 5474 review and maintainer direction.","output":"Recorded limited checkbox-only reconciliation review and preserved historical audit findings."}
+{"ts":"2026-11-10T14:55:19Z","phase":"any","event":"turn.end","output":"Recorded limited task-status audit review; preserved historical findings and open acceptance tasks. Formatting passed."}

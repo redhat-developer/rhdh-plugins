@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 3.3.1
+
+### Patch Changes
+
+- c161b0e: Cap BUI dialog max-height under the masthead without forcing full viewport height, so content-sized dialogs such as Scorecard data sources keep their natural size.
+
 ## 3.3.0
 
 ### Minor Changes

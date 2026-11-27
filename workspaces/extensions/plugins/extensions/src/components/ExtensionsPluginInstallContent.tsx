@@ -139,8 +139,7 @@ export const ExtensionsPluginInstallContent = ({
         plugins: configArray,
       };
 
-      const configYaml = yaml.stringify(configObject);
-      codeEditor.setValue(configYaml);
+      codeEditor.setValue(yaml.stringify(configObject));
     } else {
       const dynamicPluginYaml = {
         plugins: (packages ?? []).map(pkg => {
@@ -230,10 +229,11 @@ export const ExtensionsPluginInstallContent = ({
           [plugin.metadata.title ?? plugin.metadata.name]: isPluginInstalled(
             plugin?.spec?.installStatus,
           )
-            ? t('install.pluginUpdated')
-            : t('install.pluginInstalled'),
+            ? 'update'
+            : 'install',
         };
         setInstalledPlugins(updatedPlugins);
+        // Catalog hosts BackendRestartAlert and plugin cards with Restart required.
         navigate('/extensions');
       } else {
         setIsSubmitting(false);
@@ -269,6 +269,8 @@ export const ExtensionsPluginInstallContent = ({
     t,
     !extensionsConfig?.data?.enabled,
     missingDynamicArtifact,
+    true,
+    isPluginInstalled(plugin?.spec?.installStatus),
   );
 
   const showInstallationWarning =

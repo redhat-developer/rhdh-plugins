@@ -110,7 +110,8 @@ test.describe('Test Quick Start plugin', () => {
       testInfo,
       'quick-start-user-accessibility.json',
       {
-        exclude: ['table', '.v5-MuiButton-textInherit'],
+        // Host MUI spinner can appear without a name during page load
+        exclude: ['table', '[data-testid="loading-indicator"]'],
       },
     );
 
@@ -120,20 +121,13 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.importApplication.ctaTitle,
       '/bulk-import',
     );
-    await uiHelper.clickLinkByText(
-      translations.steps.importApplication.ctaTitle,
-      {
-        exact: true,
-      },
-    );
+    await uiHelper.clickCtaByHref('/bulk-import');
     await page.getByText(translations.steps.learnAboutCatalog.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.learnAboutCatalog.ctaTitle,
       '/catalog',
     );
-    await uiHelper.clickLinkByText(
-      translations.steps.learnAboutCatalog.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/catalog');
     await uiHelper.verifyHeading('My Company Catalog');
     await page
       .getByText(translations.steps.exploreSelfServiceTemplates.title)
@@ -142,18 +136,16 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.exploreSelfServiceTemplates.ctaTitle,
       '/create',
     );
-    await uiHelper.clickLinkByText(
-      translations.steps.exploreSelfServiceTemplates.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/create');
     await expect(page).toHaveURL(/\/create/);
+    // Drawer should remain open across in-app navigations
+    await uiHelper.verifyText(translations.header.title);
     await page.getByText(translations.steps.findAllLearningPaths.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.findAllLearningPaths.ctaTitle,
       '/learning-paths',
     );
-    await uiHelper.clickLinkByText(
-      translations.steps.findAllLearningPaths.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/learning-paths');
     const progress100Pattern = new RegExp(
       translations.footer.progress.replace('{{progress}}', '100'),
     );

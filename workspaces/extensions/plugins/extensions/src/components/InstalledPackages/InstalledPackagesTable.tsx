@@ -54,6 +54,11 @@ import {
   ExtensionsConfigurationAlert,
   BackendRestartAlert,
 } from '../SharedAlerts';
+import {
+  InstallationWarning,
+  type InstallationWarningConfig,
+} from '../InstallationWarning';
+import { isInstallationInfrastructureError } from '../../utils';
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
@@ -244,6 +249,7 @@ export const InstalledPackagesTable = () => {
         const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, ''); // NOSONAR
         return {
           displayName: cleanedName,
+          installationKey: rawName,
           // Show the npm package name directly from dynamic-plugins-info record
           packageName: p.name,
           parentPlugin: entity?.spec?.partOf?.[0] ?? '',
@@ -316,12 +322,24 @@ export const InstalledPackagesTable = () => {
     ? t('installedPackages.table.emptyMessages.noResults')
     : t('installedPackages.table.emptyMessages.noRecords');
 
+  const installationInfraError = isInstallationInfrastructureError(
+    extensionsConfig.data?.error?.reason,
+  );
+  const showInstallationWarning =
+    !isProductionEnvironment && installationInfraError;
   const showExtensionsConfigurationAlert =
-    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+    !isProductionEnvironment &&
+    !extensionsConfig.data?.enabled &&
+    !installationInfraError;
 
   return (
     <>
       {isProductionEnvironment && <ProductionEnvironmentAlert />}
+      {showInstallationWarning && (
+        <InstallationWarning
+          configData={extensionsConfig.data as InstallationWarningConfig}
+        />
+      )}
       {showExtensionsConfigurationAlert && <ExtensionsConfigurationAlert />}
       <BackendRestartAlert
         count={installedPackagesCount}

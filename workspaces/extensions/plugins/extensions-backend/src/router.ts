@@ -356,9 +356,26 @@ export async function createRouter(
   });
 
   router.get('/plugins/configure', async (_req, res) => {
-    const isPluginInstallationEnabled =
+    const isConfigEnabled =
       config.getOptionalBoolean('extensions.installation.enabled') ?? false;
-    res.json({ enabled: isPluginInstallationEnabled });
+    const initError = installationDataService.getInitializationError();
+
+    // Only report installation as enabled when config allows it and the
+    // installation storage initialized successfully. Otherwise the UI would offer Edit/Disable actions that fail.
+    if (!isConfigEnabled || initError) {
+      res.json({
+        enabled: false,
+        ...(initError && {
+          error: {
+            reason: initError.reason,
+            message: initError.message,
+          },
+        }),
+      });
+      return;
+    }
+
+    res.json({ enabled: true });
   });
 
   router.get('/plugin/:namespace/:name', async (req, res) => {
