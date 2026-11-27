@@ -2197,4 +2197,46 @@ describe('intelligent-assistant router tests', () => {
       expect(response.statusCode).toEqual(500);
     });
   });
+
+  describe('error responses for unparsable JSON bodies', () => {
+    // Errors thrown by the plugin's routes are answered by a plugin-level
+    // `MiddlewareFactory.error()` handler (the host `httpRouter` service adds one
+    // after every plugin's routes), so `request.url` is relative to the plugin
+    // mount point. If they fell through to the root router's handler instead, the
+    // url would include the `/api/intelligent-assistant` prefix.
+    it('rejects malformed JSON for POST /v1/feedback', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/feedback')
+        .set('Content-Type', 'application/json')
+        .send('{');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.objectContaining({
+          name: 'SyntaxError',
+          message: expect.any(String),
+        }),
+        request: { method: 'POST', url: '/v1/feedback' },
+        response: { statusCode: 400 },
+      });
+    });
+
+    it('rejects oversized JSON for POST /v1/saved-prompts', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/saved-prompts')
+        .send({ name: 'Large prompt', content: 'x'.repeat(110 * 1024) });
+
+      expect(response.status).toBe(413);
+      expect(response.body).toEqual({
+        error: expect.objectContaining({
+          name: 'PayloadTooLargeError',
+          message: expect.any(String),
+        }),
+        request: { method: 'POST', url: '/v1/saved-prompts' },
+        response: { statusCode: 413 },
+      });
+    });
+  });
 });

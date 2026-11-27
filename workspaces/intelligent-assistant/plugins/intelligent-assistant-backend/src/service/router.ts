@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import type {
   AuthService,
   BackstageCredentials,
@@ -1084,8 +1083,5 @@ export async function createRouter(
     response.status(404).json({ error: 'Requested path is not available' });
   });
 
-  const middleware = MiddlewareFactory.create({ logger, config });
-
-  router.use(middleware.error());
   return router;
 }
