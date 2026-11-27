@@ -16,19 +16,15 @@
 
 import { InputError } from '@backstage/errors';
 
-import { convertToMarkdown } from './markitdownClient';
+import { extractText } from 'unpdf';
 
-jest.mock('markitdown-ts', () => {
-  const convertBuffer = jest.fn();
-  return {
-    MarkItDown: jest.fn(() => ({ convertBuffer })),
-    __mockConvertBuffer: convertBuffer,
-  };
-});
+import { convertToMarkdown } from './documentConverter';
 
-function getMockConvertBuffer(): jest.Mock {
-  return require('markitdown-ts').__mockConvertBuffer;
-}
+jest.mock('unpdf', () => ({
+  extractText: jest.fn(),
+}));
+
+const mockExtractText = extractText as jest.Mock;
 
 describe('convertToMarkdown', () => {
   beforeEach(() => {
@@ -49,7 +45,7 @@ describe('convertToMarkdown', () => {
         );
 
         expect(result).toBe(content);
-        expect(getMockConvertBuffer()).not.toHaveBeenCalled();
+        expect(mockExtractText).not.toHaveBeenCalled();
       },
     );
 
@@ -59,7 +55,7 @@ describe('convertToMarkdown', () => {
       const result = await convertToMarkdown(buffer, 'data.JSON', 'JSON');
 
       expect(result).toBe('{"key": "value"}');
-      expect(getMockConvertBuffer()).not.toHaveBeenCalled();
+      expect(mockExtractText).not.toHaveBeenCalled();
     });
 
     it('should handle empty buffer for plaintext', async () => {
@@ -80,80 +76,138 @@ describe('convertToMarkdown', () => {
 
       expect(result).toBe(content);
     });
-  });
 
-  describe('markitdown conversion', () => {
-    it('should convert non-plaintext files via markitdown', async () => {
-      getMockConvertBuffer().mockResolvedValue({
-        markdown: '# Converted Content',
-      });
+    it('should not normalize whitespace for plaintext', async () => {
+      const content = '\n{\r\n  "a": 1\r\n\n\n\n}\n';
 
       const result = await convertToMarkdown(
-        Buffer.from('binary data'),
-        'doc.pdf',
-        'pdf',
+        Buffer.from(content),
+        'data.json',
+        'json',
       );
 
-      expect(result).toBe('# Converted Content');
-      expect(getMockConvertBuffer()).toHaveBeenCalledWith(expect.any(Buffer), {
-        file_extension: '.pdf',
-      });
+      expect(result).toBe(content);
     });
+  });
 
-    it('should convert txt files via markitdown', async () => {
-      getMockConvertBuffer().mockResolvedValue({
-        markdown: 'plain text content',
-      });
+  describe('text files', () => {
+    it.each(['txt', 'md'])(
+      'should return text for %s files without calling unpdf',
+      async fileType => {
+        const result = await convertToMarkdown(
+          Buffer.from('# Heading\n\nParagraph'),
+          `notes.${fileType}`,
+          fileType,
+        );
 
+        expect(result).toBe('# Heading\n\nParagraph');
+        expect(mockExtractText).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should normalize CRLF and CR line endings', async () => {
       const result = await convertToMarkdown(
-        Buffer.from('plain text content'),
+        Buffer.from('a\r\nb\rc\n'),
         'readme.txt',
         'txt',
       );
 
-      expect(result).toBe('plain text content');
-      expect(getMockConvertBuffer()).toHaveBeenCalled();
+      expect(result).toBe('a\nb\nc');
     });
 
-    it('should convert md files via markitdown', async () => {
-      getMockConvertBuffer().mockResolvedValue({
-        markdown: '# Heading\n\nParagraph',
-      });
-
+    it('should trim and collapse runs of blank lines', async () => {
       const result = await convertToMarkdown(
-        Buffer.from('# Heading\n\nParagraph'),
+        Buffer.from('\n\n  # Title\n\n\n\n\nBody  \n\n\n'),
         'notes.md',
         'md',
       );
 
-      expect(result).toBe('# Heading\n\nParagraph');
+      expect(result).toBe('# Title\n\nBody');
     });
 
-    it('should throw InputError when conversion produces no output', async () => {
-      getMockConvertBuffer().mockResolvedValue({ markdown: '' });
+    it('should strip a UTF-8 byte order mark', async () => {
+      const result = await convertToMarkdown(
+        Buffer.from('\uFEFFText with BOM\n'),
+        'bom.txt',
+        'txt',
+      );
 
+      expect(result).toBe('Text with BOM');
+    });
+
+    it.each([
+      ['empty', ''],
+      ['whitespace-only', '  \n\n\t\r\n'],
+    ])('should throw InputError for %s text files', async (_label, content) => {
       await expect(
-        convertToMarkdown(Buffer.from('data'), 'bad.pdf', 'pdf'),
+        convertToMarkdown(Buffer.from(content), 'empty.txt', 'txt'),
       ).rejects.toThrow(InputError);
       await expect(
-        convertToMarkdown(Buffer.from('data'), 'bad.pdf', 'pdf'),
+        convertToMarkdown(Buffer.from(content), 'empty.txt', 'txt'),
+      ).rejects.toThrow(/no output/i);
+    });
+  });
+
+  describe('pdf files', () => {
+    it('should extract text from pdf files via unpdf', async () => {
+      mockExtractText.mockResolvedValue({
+        totalPages: 1,
+        text: 'Extracted text',
+      });
+
+      const result = await convertToMarkdown(
+        Buffer.from('%PDF-1.7'),
+        'doc.pdf',
+        'pdf',
+      );
+
+      expect(result).toBe('Extracted text');
+      expect(mockExtractText).toHaveBeenCalledWith(expect.any(Uint8Array), {
+        mergePages: true,
+      });
+    });
+
+    it('should normalize extracted text', async () => {
+      mockExtractText.mockResolvedValue({
+        totalPages: 2,
+        text: '\nPage one\r\n\n\n\nPage two\n\n',
+      });
+
+      const result = await convertToMarkdown(
+        Buffer.from('%PDF-1.7'),
+        'doc.pdf',
+        'pdf',
+      );
+
+      expect(result).toBe('Page one\n\nPage two');
+    });
+
+    it('should throw InputError when no text is extracted', async () => {
+      mockExtractText.mockResolvedValue({ totalPages: 1, text: '  \n' });
+
+      await expect(
+        convertToMarkdown(Buffer.from('%PDF-1.7'), 'scanned.pdf', 'pdf'),
+      ).rejects.toThrow(InputError);
+      await expect(
+        convertToMarkdown(Buffer.from('%PDF-1.7'), 'scanned.pdf', 'pdf'),
       ).rejects.toThrow(/no output/i);
     });
 
-    it('should throw InputError when conversion returns null result', async () => {
-      getMockConvertBuffer().mockResolvedValue(null);
+    it('should wrap extraction failures in InputError without echoing file content', async () => {
+      const content = '%PDF-1.4 secret file content';
+      mockExtractText.mockRejectedValue(new Error('Invalid PDF structure.'));
 
-      await expect(
-        convertToMarkdown(Buffer.from('data'), 'bad.pdf', 'pdf'),
-      ).rejects.toThrow(InputError);
-    });
+      const error = await convertToMarkdown(
+        Buffer.from(content),
+        'broken.pdf',
+        'pdf',
+      ).catch(e => e);
 
-    it('should throw InputError when markdown field is undefined', async () => {
-      getMockConvertBuffer().mockResolvedValue({});
-
-      await expect(
-        convertToMarkdown(Buffer.from('data'), 'bad.pdf', 'pdf'),
-      ).rejects.toThrow(InputError);
+      expect(error).toBeInstanceOf(InputError);
+      expect(error.message).toMatch(
+        /Failed to extract text from broken\.pdf.*Invalid PDF structure/,
+      );
+      expect(error.message).not.toContain(content);
     });
   });
 
@@ -174,7 +228,7 @@ describe('convertToMarkdown', () => {
     });
 
     it('should accept when extension matches declared type', async () => {
-      getMockConvertBuffer().mockResolvedValue({ markdown: 'ok' });
+      mockExtractText.mockResolvedValue({ totalPages: 1, text: 'ok' });
 
       const result = await convertToMarkdown(
         Buffer.from('data'),
@@ -200,20 +254,18 @@ describe('convertToMarkdown', () => {
         );
 
         expect(result).toBe(content);
-        expect(getMockConvertBuffer()).not.toHaveBeenCalled();
+        expect(mockExtractText).not.toHaveBeenCalled();
       },
     );
 
     it('should accept filename without extension', async () => {
-      getMockConvertBuffer().mockResolvedValue({ markdown: 'ok' });
-
       const result = await convertToMarkdown(
         Buffer.from('data'),
         'Makefile',
         'txt',
       );
 
-      expect(result).toBe('ok');
+      expect(result).toBe('data');
     });
   });
 });
