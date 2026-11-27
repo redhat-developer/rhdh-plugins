@@ -21,7 +21,6 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { Gitlab } from '@gitbeaker/rest';
-import { BasePaginationRequestOptions, PaginationTypes } from '@gitbeaker/core';
 import type {
   MRsRequestParams,
   MRsResponse,
@@ -30,6 +29,8 @@ import type {
 } from '../types';
 import { parseJobsResponse } from '../utils/parseJobsResponse';
 import { parseMergeRequestsResponse } from './utils/parseMergeRequestsResponse';
+
+type JobsAllOptions = NonNullable<Parameters<Gitlab['Jobs']['all']>[1]>;
 
 export class GitlabREST {
   private readonly logger: LoggerService;
@@ -92,12 +93,12 @@ export class GitlabREST {
 
     // GitLab accepts repeated scope[] query params; gitbeaker types only a
     // single JobScope in this release, so cast options for array callers.
-    const jobParams: BasePaginationRequestOptions<PaginationTypes> = {
+    const jobParams = {
       ...(scope && scope.length > 0 ? { scope } : {}),
       ...(perPage !== undefined ? { perPage } : {}),
       ...(maxPages !== undefined ? { maxPages } : {}),
       ...(page !== undefined ? { page } : {}),
-    };
+    } as JobsAllOptions;
 
     const response = await api.Jobs.all(projectSlug, jobParams);
 
