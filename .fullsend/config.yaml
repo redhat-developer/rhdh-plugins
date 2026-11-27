@@ -31,6 +31,9 @@ agents:
   # or /fs-cve-pr-review on a PR. Posts advisory PASS/FAIL/PARTIAL; no merge.
   - name: cve-reviewer
     source: rhdh/harness/cve-review.yaml
+  # Dependabot CVE lockfile bumps via Fullsend CVE schedule.
+  - name: cve-bump
+    source: rhdh/harness/cve-bump.yaml
 roles:
   - triage
   - coder
