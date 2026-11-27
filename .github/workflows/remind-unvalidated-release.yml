@@ -3,7 +3,7 @@ name: Notify COPE about unvalidated trusted publishing
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
-    branches: [main, 'release-*']
+    branches: [main, 'release-*', 'release-1.*/*']
 
 permissions:
   contents: read
