@@ -21,9 +21,6 @@ import {
   type ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-/** Bitbucket Cloud has a single public host, so it needs no config. */
-const BITBUCKET_CLOUD_HOST = 'bitbucket.org';
-
 /**
  * Host (with a non-default port), lowercased. Accepts a bare host or a URL,
  * so the auth provider's `audience` (`https://gitlab.example.com`) can be
@@ -40,8 +37,11 @@ export const normalizeHost = (host: string | undefined) => {
  * `x2a.scm.authHosts`.
  *
  * Backstage auth providers are configured per provider type, so the token
- * they issue is only valid for one host. There is deliberately no default: an
- * unset key means no host of that type may be sent a token.
+ * they issue is only valid for one host. There is deliberately no default for
+ * any provider: an unset key means no host of that type may be sent a token.
+ * Bitbucket Cloud has a single valid host, `bitbucket.org`; set
+ * `x2a.scm.authHosts.bitbucket` to it to offer and authenticate Bitbucket.
+ * Any other value does not match and leaves it hidden.
  */
 export function useScmAuthHosts() {
   const config = useApi(configApiRef);
@@ -53,7 +53,9 @@ export function useScmAuthHosts() {
       gitlab: normalizeHost(
         config.getOptionalString('x2a.scm.authHosts.gitlab'),
       ),
-      bitbucket: BITBUCKET_CLOUD_HOST,
+      bitbucket: normalizeHost(
+        config.getOptionalString('x2a.scm.authHosts.bitbucket'),
+      ),
     };
     return {
       /** Host the provider's token may be used for, if configured. */

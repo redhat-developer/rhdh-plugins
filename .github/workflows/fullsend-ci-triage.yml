@@ -91,10 +91,9 @@ jobs:
       issues: write
       packages: read
       pull-requests: write
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74 # v0.45.0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@d11de3ea0dde5aa652110b6716c19e000c426df7 # v0.57.1
     with:
       event_action: ci_failure
-      install_mode: per-repo
       matrix: ${{ needs.prepare.outputs.matrix }}
       mint_url: ${{ vars.FULLSEND_MINT_URL }}
       gcp_region: ${{ vars.FULLSEND_GCP_REGION }}

@@ -48,8 +48,8 @@ test('positive and negative triage/fix fixtures match their schema expectations'
   }
 });
 
-test('new workflows pin actions and Fullsend v0.45 exactly', () => {
-  const pinnedFullsend = '3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74';
+test('new workflows pin actions and Fullsend v0.57.1 exactly', () => {
+  const pinnedFullsend = 'd11de3ea0dde5aa652110b6716c19e000c426df7';
   for (const file of [
     '.github/workflows/fullsend-ci-triage.yml',
     '.github/workflows/fullsend-ci-repair.yml',
@@ -68,11 +68,11 @@ test('new workflows pin actions and Fullsend v0.45 exactly', () => {
   }
 });
 
-test('CI repair overrides GitHub forge scripts and uses the v0.45 base', () => {
+test('CI repair overrides GitHub forge scripts and uses the v0.57.1 base', () => {
   const fix = YAML.parse(read('.fullsend/rhdh/harness/ci-repair.yaml'));
   assert.match(
     fix.base,
-    /agents\/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748\/harness\/fix\.yaml/,
+    /agents\/ea29de9bb8b1729b04c0597b48a5c7aae62deb71\/harness\/fix\.yaml/,
   );
   assert.equal(fix.forge.github.pre_script, 'rhdh/scripts/pre-ci-fix.sh');
   assert.equal(fix.forge.github.post_script, 'rhdh/scripts/post-ci-fix.sh');
@@ -117,6 +117,14 @@ test('workflow permissions and artifact scope remain constrained', () => {
   assert.equal(triage.jobs.triage.permissions.contents, 'write');
   assert.equal(repair.jobs.prepare.permissions['pull-requests'], 'read');
   assert.equal(repair.jobs.repair.permissions.contents, 'write');
+  assert.deepEqual(repair.on.pull_request.types, ['labeled']);
+  assert.ok(repair.on.workflow_dispatch);
+  for (const job of ['prepare', 'cleanup']) {
+    assert.match(
+      repair.jobs[job].if,
+      /github\.event\.pull_request\.head\.repo\.id == github\.repository_id/,
+    );
+  }
 
   const ci = read('.github/workflows/ci.yml');
   assert.match(ci, /retention-days:\s*7/);
