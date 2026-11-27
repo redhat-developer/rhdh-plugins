@@ -22,6 +22,7 @@ import {
 } from '@backstage/backend-test-utils';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import EventApiController from './controllers/EventApiController';
+import NotificationPreferenceController from './controllers/NotificationPreferenceController';
 import { createRouter } from './router';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
@@ -64,10 +65,7 @@ describe('createRouter', () => {
       }),
     };
 
-    const mockHttpAuth = mockServices.httpAuth.mock();
-    jest
-      .mocked(mockHttpAuth.credentials)
-      .mockResolvedValue(mockCredentials.user('user:default/test-user'));
+    const httpAuth = mockServices.httpAuth();
 
     const eventApiController = new EventApiController(
       mockEventDatabase as any,
@@ -75,15 +73,27 @@ describe('createRouter', () => {
       mockServices.rootConfig.mock(),
       mockAuditor as any,
       mockServices.auth.mock(),
-      mockHttpAuth,
+      httpAuth,
       mockServices.discovery.mock(),
       { getEntityByRef: jest.fn() } as any,
       mockServices.logger.mock(),
     );
 
+    const mockPreferenceStore = {
+      get: jest.fn().mockResolvedValue(undefined),
+      set: jest.fn().mockResolvedValue({ previous: undefined }),
+    };
+    const notificationPreferenceController =
+      new NotificationPreferenceController(
+        mockPreferenceStore as any,
+        mockAuditor as any,
+        httpAuth,
+      );
+
     const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
+      httpAuth,
       eventApiController,
+      notificationPreferenceController,
       permissions: mockServices.permissions.mock({
         authorize: async () => [{ result: authorizeResult }],
       }),
@@ -136,5 +146,39 @@ describe('createRouter', () => {
   it('should return the health of the API service', async () => {
     const response = await request(app).get('/health');
     expect(response.body).toEqual({ status: 'ok' });
+  });
+
+  it('gets and updates the caller notification preference', async () => {
+    const get = await request(app).get('/notification-preference');
+    expect(get.status).toBe(200);
+    expect(get.body).toEqual({ frequency: 'off' });
+
+    const put = await request(app)
+      .put('/notification-preference')
+      .send({ frequency: 'weekly' });
+    expect(put.status).toBe(200);
+    expect(put.body).toEqual({ frequency: 'weekly' });
+  });
+
+  it('allows preference routes when board-read permission is denied', async () => {
+    await setupApp(AuthorizeResult.DENY);
+    const get = await request(app).get('/notification-preference');
+    const put = await request(app)
+      .put('/notification-preference')
+      .send({ frequency: 'daily' });
+    expect(get.status).toBe(200);
+    expect(put.status).toBe(200);
+  });
+
+  it('rejects requests without user credentials on preference routes', async () => {
+    const get = await request(app)
+      .get('/notification-preference')
+      .set('Authorization', mockCredentials.none.header());
+    const put = await request(app)
+      .put('/notification-preference')
+      .set('Authorization', mockCredentials.none.header())
+      .send({ frequency: 'daily' });
+    expect(get.status).toBe(401);
+    expect(put.status).toBe(401);
   });
 });

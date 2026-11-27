@@ -207,6 +207,27 @@ describe('UsageCard', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows the selected registry skill on the Copy button’s code snippet', async () => {
+    await renderWithEntity({
+      ...skillEntity,
+      metadata: {
+        name: 'skill-abc123',
+        title: 'Write a good README',
+        annotations: {
+          'rhdh.io/ai-asset-source': 'npx/public-agent-skills',
+          'rhdh.io/npx-skill-registry': 'https://evilmartians.com',
+          'rhdh.io/npx-skill-key': 'good-readme',
+        },
+      },
+    });
+    expect(screen.getByRole('code')).toHaveTextContent(
+      "npx skills add 'https://evilmartians.com' --skill good-readme",
+    );
+    expect(
+      screen.getByRole('button', { name: 'Copy text' }),
+    ).toBeInTheDocument();
+  });
+
   it('renders Podman pull command for OCI skill entities', async () => {
     await renderWithEntity(ociSkillEntity);
 

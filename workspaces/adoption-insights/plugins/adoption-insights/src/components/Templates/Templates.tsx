@@ -31,11 +31,16 @@ import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
+import {
+  EMPTY_TIME_SAVED,
+  formatTotalTimeSaved,
+} from '../../utils/totalTimeSaved';
 
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
 import { useEntityMetadataMap } from '../../hooks/useEntityMetadataMap';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const Templates = () => {
@@ -43,6 +48,7 @@ const Templates = () => {
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
   const { t } = useTranslation();
+  const locale = useLanguage();
 
   const { templates, loading, error } = useTemplates({ limit });
 
@@ -146,7 +152,9 @@ const Templates = () => {
                 );
                 const entityHrefLink = `/create/templates/${namespace}/${name}`;
                 const displayName =
-                  entityMetadataMap[template.entityref]?.title ?? name ?? '--';
+                  entityMetadataMap[template.entityref]?.title ??
+                  name ??
+                  EMPTY_TIME_SAVED;
 
                 const tooltipTitle = [
                   template.entityref,
@@ -167,7 +175,7 @@ const Templates = () => {
                   >
                     <TableCell
                       sx={{
-                        width: '50%',
+                        width: '45%',
                         minWidth: 0,
                       }}
                     >
@@ -204,8 +212,18 @@ const Templates = () => {
                         </Link>
                       </Tooltip>
                     </TableCell>
-                    <TableCell sx={{ width: '50%' }}>
-                      {Number(template.count).toLocaleString('en-US') ?? '--'}
+                    <TableCell sx={{ width: '20%' }}>
+                      {Number.isFinite(Number(template.count))
+                        ? Number(template.count).toLocaleString('en-US')
+                        : EMPTY_TIME_SAVED}
+                    </TableCell>
+                    <TableCell sx={{ width: '35%' }}>
+                      {formatTotalTimeSaved(
+                        template.minutes,
+                        (part, count) =>
+                          t(`table.timeSaved.${part}` as any, { count } as any),
+                        locale,
+                      )}
                     </TableCell>
                   </TableRow>
                 );

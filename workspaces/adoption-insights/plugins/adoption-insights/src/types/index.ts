@@ -82,6 +82,8 @@ export type CatalogEntitiesResponse = {
 export type Templates = {
   entityref: string;
   count: number;
+  runs?: number;
+  minutes?: number;
 };
 
 export type TemplatesResponse = {

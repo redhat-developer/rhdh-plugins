@@ -77,7 +77,10 @@ the configured npx sources. The provider resolves the connector's base URL
 through Backstage service discovery and obtains a service token targeted to
 `npx-skill-connector` for each snapshot request.
 
-npx skill entities do not receive a `backstage.io/techdocs-ref` annotation.
+The catalog Docs tab renders the digest-verified Markdown through the connector's
+authenticated `/skilldocs/:sourceId/:digest` route. A fresh build requires the
+artifact to be available upstream. For a standard well-known discovery index,
+the snapshot response also supplies its CLI base in `X-Npx-Skill-Registry`.
 
 ### Combining OCI and npx sources
 

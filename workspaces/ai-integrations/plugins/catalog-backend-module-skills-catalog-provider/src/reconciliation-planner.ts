@@ -28,7 +28,7 @@
  * design D6's status table.
  */
 
-import { stringifyEntityRef } from '@backstage/catalog-model';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import type {
@@ -88,18 +88,14 @@ export function calculateReconciliationPlan(
   }
 
   // ─── Repeated observation: same observedAt → idempotent ──────────
-  // A configuration namespace change is independent of connector freshness.
-  // Do not suppress that identity change just because content/timestamp repeats.
+  // Configuration-derived changes (namespace, TechDocs reference, and
+  // effective owner/lifecycle defaults) are independent of connector
+  // freshness. Do not suppress them just because content/timestamp repeats.
   const configurationChanged = mappedEntities.some(mapped =>
     previousState.entities.some(
       previous =>
         tuplesEqual(previous.tuple, mapped.tuple) &&
-        (stringifyEntityRef(previous.entity) !==
-          stringifyEntityRef(mapped.entity) ||
-          previous.entity.metadata.annotations?.[
-            'backstage.io/techdocs-ref'
-          ] !==
-            mapped.entity.metadata.annotations?.['backstage.io/techdocs-ref']),
+        configuredFieldsChanged(previous.entity, mapped.entity),
     ),
   );
   if (
@@ -172,10 +168,10 @@ export function calculateReconciliationPlan(
     if (
       !previous ||
       previous.digest !== digest ||
-      previous.entity.metadata.annotations?.['backstage.io/techdocs-ref'] !==
-        entity.metadata.annotations?.['backstage.io/techdocs-ref']
+      configuredFieldsChanged(previous.entity, entity)
     ) {
-      // New entity or content changed — plan upsert
+      // New entity, content changed, or configuration-derived fields
+      // (TechDocs reference, effective owner/lifecycle) changed — plan upsert
       upserts.push({ tuple, catalogName, digest, entity });
     }
 
@@ -301,6 +297,35 @@ function isRepeatedObservation(
     return false;
   }
   return snapshotAt === committedAt;
+}
+
+/**
+ * Determines whether configuration-derived fields differ between a
+ * previously committed entity and a newly mapped entity for the same
+ * source tuple.
+ *
+ * Compares the full catalog identity (namespace changes), the TechDocs
+ * and npx install annotations, and the effective `spec.owner` and
+ * `spec.lifecycle` values. Owner and lifecycle are compared as already
+ * mapped by the snapshot consumer (valid source hints ahead of configured
+ * defaults), so a changed default only produces a difference for fields
+ * that actually resolved to that default.
+ */
+function configuredFieldsChanged(previous: Entity, next: Entity): boolean {
+  return (
+    stringifyEntityRef(previous) !== stringifyEntityRef(next) ||
+    [
+      'backstage.io/techdocs-ref',
+      'rhdh.io/npx-skill-registry',
+      'rhdh.io/npx-skill-key',
+    ].some(
+      key =>
+        previous.metadata.annotations?.[key] !==
+        next.metadata.annotations?.[key],
+    ) ||
+    previous.spec?.owner !== next.spec?.owner ||
+    previous.spec?.lifecycle !== next.spec?.lifecycle
+  );
 }
 
 /**

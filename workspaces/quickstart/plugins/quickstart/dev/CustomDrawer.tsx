@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-
-import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
+import styles from './CustomDrawer.module.css';
 
 /**
  * @internal
@@ -39,47 +36,25 @@ export type CustomDrawerProps = {
 export const CustomDrawer = (props: CustomDrawerProps) => {
   const {
     children,
-    minWidth = 400,
-    maxWidth = 800,
+    minWidth: _minWidth = 400,
+    maxWidth: _maxWidth = 800,
     initialWidth = 400,
     isDrawerOpen,
     drawerWidth,
-    onWidthChange,
-    ...drawerProps
+    onWidthChange: _onWidthChange,
   } = props;
 
-  // Ensure anchor is always 'right' and not overridden by drawerProps
-  const { anchor: _, ...restDrawerProps } = drawerProps;
+  const width = drawerWidth || initialWidth;
 
   return (
-    <Drawer
-      {...restDrawerProps}
-      anchor="right"
-      sx={{
-        '& .v5-MuiDrawer-paper': {
-          width: drawerWidth || initialWidth,
-          boxSizing: 'border-box',
-          backgroundColor: theme => {
-            const themeConfig = theme as ThemeConfig;
-            return (
-              themeConfig.palette?.rhdh?.general?.sidebarBackgroundColor ||
-              theme.palette.background.paper
-            );
-          },
-          justifyContent: 'space-between',
-        },
-        // Only apply header offset when global header exists
-        'body:has(#global-header) &': {
-          '& .v5-MuiDrawer-paper': {
-            top: '64px !important',
-            height: 'calc(100vh - 64px) !important',
-          },
-        },
-      }}
-      variant="persistent"
-      open={isDrawerOpen}
+    <aside
+      className={[styles.root, isDrawerOpen ? styles.open : '']
+        .filter(Boolean)
+        .join(' ')}
+      style={{ width }}
+      aria-hidden={!isDrawerOpen}
     >
-      <Box sx={{ height: '100%', position: 'relative' }}>{children}</Box>
-    </Drawer>
+      <div className={styles.content}>{children}</div>
+    </aside>
   );
 };

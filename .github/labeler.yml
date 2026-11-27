@@ -7,9 +7,6 @@ workspace/ai-integrations:
 workspace/app-defaults:
   - 'Workspace\\s*app-defaults'
 
-workspace/augment:
-  - 'Workspace\\s*augment'
-
 workspace/bulk-import:
   - 'Workspace\\s*bulk-import'
 

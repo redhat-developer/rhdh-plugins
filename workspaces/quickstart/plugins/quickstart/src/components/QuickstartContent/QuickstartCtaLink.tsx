@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
+
+import { Button, ButtonLink } from '@backstage/ui';
+import { RiExternalLinkLine } from '@remixicon/react';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
@@ -26,12 +26,17 @@ export type QuickstartCtaLinkProps = {
   onClick: () => void;
 };
 
+/**
+ * MUI LinkButton `variant="outlined"` → BUI ButtonLink `variant="secondary"`.
+ * Anchor-backed so Ctrl/Cmd-click, middle-click, and copy-link work; onPress
+ * still marks the step complete.
+ */
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   const { t } = useTranslation();
 
   if (!cta) {
     return (
-      <Button color="primary" variant="outlined" onClick={onClick}>
+      <Button variant="secondary" onPress={() => onClick()}>
         {t('button.gotIt')}
       </Button>
     );
@@ -43,31 +48,28 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
 
   if (isExternalLink) {
     return (
-      <Button
-        color="primary"
-        variant="outlined"
-        component="a"
+      <ButtonLink
+        variant="secondary"
         href={cta.link}
+        data-cta-href={cta.link}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={onClick}
-        endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
-        sx={{ gap: '5px' }}
+        iconEnd={<RiExternalLinkLine size={15} />}
+        onPress={() => onClick()}
       >
         {finalText}
-      </Button>
+      </ButtonLink>
     );
   }
 
   return (
-    <Button
-      color="primary"
-      variant="outlined"
-      component={Link}
-      to={cta.link}
-      onClick={onClick}
+    <ButtonLink
+      variant="secondary"
+      href={cta.link}
+      data-cta-href={cta.link}
+      onPress={() => onClick()}
     >
       {finalText}
-    </Button>
+    </ButtonLink>
   );
 };

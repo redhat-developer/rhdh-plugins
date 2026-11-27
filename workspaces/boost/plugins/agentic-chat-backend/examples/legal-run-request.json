@@ -1,0 +1,6 @@
+{
+  "agentRef": "airesource:default/legal-chat",
+  "query": "What is FantaCo's policy for software licenses?",
+  "provider": "openai",
+  "model": "gpt-4o"
+}
