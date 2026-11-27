@@ -1,5 +1,42 @@
 # @red-hat-developer-hub/backstage-plugin-dcm-common
 
+## 2.1.0
+
+### Minor Changes
+
+- 66c1975: Align Catalog Item Instance types with the catalog OpenAPI: move
+  `resource_ids` to the top level (alongside `run_id`) and remove it from
+  `spec`. Instances table reads `resource_ids` again so the column is no
+  longer blank.
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+- 1a8807f: Align Resources types with the latest service-type-instances OpenAPI spec:
+  replace `provider_name` with `agent_name`, replace `deleted`/`delete_time`
+  with `deletion_status`, and update list query params (`service_type`,
+  `agent_name` replace `provider`).
+- bcc1e28: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 8a20f54: Disable Backstage permissions by default in the standalone DCM UI image.
+
+  Standalone/compose deployments now set `permission.enabled` to false via
+  `PERMISSION_ENABLED` (default false) in `app-config.production.yaml`, so
+  catalog entity-type loading no longer depends on `/api/permission/authorize`
+  when the RBAC backend has not finished initializing. Set
+  `PERMISSION_ENABLED=true` when configuring real OIDC and RBAC.
+
+- fbab9df: Support DCM authentication-disabled deployments without a host OIDC provider.
+
+  The DCM frontend now avoids OIDC API resolution and token forwarding when
+  `dcm.auth.enabled` is false, while preserving host-provided client overrides
+  and OIDC token forwarding for authentication-enabled deployments. The backend proxy continues to require
+  normal RHDH authentication and omits the DCM upstream Authorization header
+  when DCM authentication is disabled.
+
+- a9b743d: Split image generation into dedicated OCI and Docker scripts with an interactive entrypoint.
+
+  `generate-image.sh` now prompts for image type and version (or accepts `oci|docker <version>`). OCI builds always push `:VERSION` and tag `:latest` via skopeo; Docker builds always push `:VERSION` and `:main`.
+
 ## 2.0.0
 
 ### Major Changes
