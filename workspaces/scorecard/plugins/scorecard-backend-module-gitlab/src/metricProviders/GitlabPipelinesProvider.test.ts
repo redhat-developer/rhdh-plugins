@@ -157,35 +157,31 @@ describe('GitlabPipelinesProvider', () => {
         1,
         sourceUrl,
         projectSlug,
-        since7d,
+        { since: since7d },
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         2,
         sourceUrl,
         projectSlug,
-        since7d,
-        'success',
+        { since: since7d, status: 'SUCCESS' },
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         3,
         sourceUrl,
         projectSlug,
-        since7d,
-        'failed',
+        { since: since7d, status: 'FAILED' },
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         4,
         sourceUrl,
         projectSlug,
-        since1d,
-        'success',
+        { since: since1d, status: 'SUCCESS' },
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         5,
         sourceUrl,
         projectSlug,
-        since1d,
-        'failed',
+        { since: since1d, status: 'FAILED' },
       );
     });
 

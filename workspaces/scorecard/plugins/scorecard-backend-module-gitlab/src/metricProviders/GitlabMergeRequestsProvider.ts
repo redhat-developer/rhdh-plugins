@@ -96,16 +96,12 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
 
     const [openMRs, openedMRs, closedMRs] = await Promise.all([
       this.gitlabClient.getOpenMergeRequestsCount(target, projectSlug),
-      this.gitlabClient.getOpenedMergeRequestsCount(
-        target,
-        projectSlug,
-        since7d,
-      ),
-      this.gitlabClient.getClosedMergeRequestsCount(
-        target,
-        projectSlug,
-        since7d,
-      ),
+      this.gitlabClient.getOpenedMergeRequestsCount(target, projectSlug, {
+        since: since7d,
+      }),
+      this.gitlabClient.getClosedMergeRequestsCount(target, projectSlug, {
+        since: since7d,
+      }),
     ]);
 
     return new Map([

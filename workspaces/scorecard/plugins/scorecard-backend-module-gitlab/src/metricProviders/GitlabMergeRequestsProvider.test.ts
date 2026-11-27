@@ -141,10 +141,10 @@ describe('GitlabMergeRequestsProvider', () => {
       ).toHaveBeenCalledWith(sourceUrl, projectSlug);
       expect(
         mockedClientInstance.getOpenedMergeRequestsCount,
-      ).toHaveBeenCalledWith(sourceUrl, projectSlug, since7d);
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, { since: since7d });
       expect(
         mockedClientInstance.getClosedMergeRequestsCount,
-      ).toHaveBeenCalledWith(sourceUrl, projectSlug, since7d);
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, { since: since7d });
     });
 
     it('should throw when project-slug annotation is missing', async () => {

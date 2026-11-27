@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { GitlabJobItem } from '../types';
+import type { JobsResponseItem } from '../types';
 import { shouldContinueJobsPaging } from './shouldContinueJobsPaging';
 
 describe('shouldContinueJobsPaging', () => {
   const since = new Date('2024-01-10T00:00:00Z');
 
   function job(
-    overrides: Partial<GitlabJobItem> & Pick<GitlabJobItem, 'created_at'>,
-  ): GitlabJobItem {
+    overrides: Partial<JobsResponseItem> & Pick<JobsResponseItem, 'created_at'>,
+  ): JobsResponseItem {
     return overrides;
   }
 

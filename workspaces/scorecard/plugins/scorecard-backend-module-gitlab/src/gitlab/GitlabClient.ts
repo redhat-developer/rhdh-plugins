@@ -16,273 +16,95 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import {
-  DefaultGitlabCredentialsProvider,
-  ScmIntegrations,
-} from '@backstage/integration';
-import { Gitlab } from '@gitbeaker/rest';
+import { GitlabGraphql } from './graphQL/GitlabGraphQL';
+import { GitlabREST } from './rest/GitlabREST';
 import type {
-  GitlabApi,
-  GitlabIssuesRequestAttributes,
-  GitlabMergeRequestsRequestAttributes,
-  ScanPagesOptions,
-  AllIssuesResponse,
-  AllMergeRequestsResponse,
-  AllPipelinesResponse,
-  AllJobsResponse,
-  GitlabJobsWindowStats,
-  GitlabJobItem,
-  GitlabPipelineItem,
-  FetchJobsWindowOptions,
-  GitlabJobsRequestAttributes,
-  GitlabPipelinesRequestAttributes,
-  GitlabIssueItem,
-  GitlabMergeRequestItem,
+  JobsResponse,
+  JobsWindowStatsOptions,
+  JobsResponseItem,
+  JobsRequestParams,
+  JobsWindowStatsResult,
+  RequestURL,
+  ProjectSlug,
+  MRsResponseItem,
+  PipelinesCountRequestParams,
+  MRsCountOptions,
+  MRsCountResult,
+  IssuesCountOptions,
 } from './types';
-import { resolveTotalCount } from './utils/resolveTotalCount';
-import { parseIssuesResponse } from './utils/parseIssuesResponse';
-import { parseMergeRequestsResponse } from './utils/parseMergeRequestsResponse';
-import { parsePipelinesResponse } from './utils/parsePipelinesResponse';
-import { parseJobsResponse } from './utils/parseJobsResponse';
 import { countIfTimestampInWindow } from './utils/countIfTimestampInWindow';
-import { shouldContinueJobsPaging } from './utils/shouldContinueJobsPaging';
 import { isTimestampInWindow } from './utils/isTimestampInWindow';
+import { isGraphqlFeatureError } from './utils/isGraphqlFeatureError';
+import { shouldContinueJobsPaging } from './utils/shouldContinueJobsPaging';
+import { scanPages } from '../utils/scanPages';
+import { ISSUE_STATUSES, MERGE_REQUEST_STATUSES } from './constants';
 
 export class GitlabClient {
-  private static readonly MAX_PAGES = 10;
-  private static readonly PAGE_SIZE = 100;
-  private static readonly FETCH_ITEMS_LIMIT = 1000;
-
-  private readonly integrations: ScmIntegrations;
-  private readonly credentialsProvider: DefaultGitlabCredentialsProvider;
+  private readonly rest: GitlabREST;
   private readonly logger: LoggerService;
+  private readonly graphql: GitlabGraphql;
 
-  constructor(config: Config, logger: LoggerService) {
-    this.integrations = ScmIntegrations.fromConfig(config);
-
-    this.credentialsProvider =
-      DefaultGitlabCredentialsProvider.fromIntegrations(this.integrations);
+  constructor(
+    config: Config,
+    logger: LoggerService,
+    options?: {
+      graphql?: GitlabGraphql;
+      rest?: GitlabREST;
+    },
+  ) {
     this.logger = logger;
+    this.graphql = options?.graphql ?? new GitlabGraphql(config, logger);
+    this.rest = options?.rest ?? new GitlabREST(config, logger);
   }
 
-  private async getGitlabApi(url: string): Promise<GitlabApi> {
-    const gitlabIntegration = this.integrations.gitlab.byUrl(url);
-    if (!gitlabIntegration) {
-      throw new Error(`Missing GitLab integration for '${url}'`);
-    }
-
-    const { token } = await this.credentialsProvider.getCredentials({ url });
-
-    if (!token) {
-      throw new Error(
-        `No GitLab token provided for '${url}'. Configure integrations.gitlab token (Backend Service Integration).`,
-      );
-    }
-
-    return new Gitlab({
-      host: gitlabIntegration.config.baseUrl,
-      oauthToken: token,
-    });
-  }
-
-  private async scanPages<TItem, TResult>(
-    options: ScanPagesOptions<TItem, TResult>,
-  ): Promise<TResult> {
-    const {
-      fetchPage,
-      getValue,
-      initialResult,
-      context,
-      fetchItemsLimit = GitlabClient.FETCH_ITEMS_LIMIT,
-      shouldContinue,
-    } = options;
-
-    const result = initialResult;
-    let scanned = 0;
-
-    const limitReached = () => {
-      this.logger.warn(
-        `Reached fetch limit while counting ${context} ` +
-          `(fetchItemsLimit=${fetchItemsLimit}, maxPages=${GitlabClient.MAX_PAGES}). ` +
-          'Counts cannot be completed without scanning more candidates.',
-      );
-
-      return result;
-    };
-
-    for (
-      let page = 1;
-      page <= GitlabClient.MAX_PAGES && scanned < fetchItemsLimit;
-      page++
-    ) {
-      const items = await fetchPage(page, GitlabClient.PAGE_SIZE);
-
-      if (items.length === 0) {
-        return result;
-      }
-
-      for (const item of items) {
-        if (scanned >= fetchItemsLimit) return limitReached();
-
-        scanned++;
-        getValue(item, result);
-      }
-
-      if (items.length < GitlabClient.PAGE_SIZE) return result;
-
-      if (shouldContinue && !shouldContinue(items, GitlabClient.PAGE_SIZE)) {
-        return result;
-      }
-
-      if (page === GitlabClient.MAX_PAGES) return limitReached();
-    }
-
-    return result;
-  }
-
-  async getIssues(
-    url: string,
-    projectSlug: string,
-    requestAttributes: GitlabIssuesRequestAttributes = {},
-  ): Promise<AllIssuesResponse> {
-    const api = await this.getGitlabApi(url);
-
-    const response = await api.Issues.all({
-      projectId: projectSlug,
-      page: 1,
-      ...requestAttributes,
-    });
-
-    return parseIssuesResponse(response, this.logger);
-  }
-
-  async getIssuesCount(
-    url: string,
-    projectSlug: string,
-    options?: GitlabIssuesRequestAttributes,
+  async getOpenIssuesCount(
+    url: RequestURL,
+    projectSlug: ProjectSlug,
   ): Promise<number> {
-    const requestAttributes = {
-      ...options,
-      perPage: 1,
-      maxPages: 1,
-      showExpanded: true,
-    };
-
-    const issues = await this.getIssues(url, projectSlug, requestAttributes);
-
-    return resolveTotalCount(
-      issues.paginationInfo?.total,
-      `issues in '${projectSlug}'`,
-    );
-  }
-
-  async getOpenIssuesCount(url: string, projectSlug: string): Promise<number> {
-    return this.getIssuesCount(url, projectSlug, { state: 'opened' });
+    return this.graphql.projectIssueCount(url, {
+      projectPath: projectSlug,
+      state: ISSUE_STATUSES.OPENED,
+    });
   }
 
   async getOpenedIssuesCount(
-    url: string,
-    projectSlug: string,
-    since: Date,
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: IssuesCountOptions,
   ): Promise<number> {
-    return this.getIssuesCount(url, projectSlug, {
+    const { since } = options;
+
+    return this.graphql.projectIssueCount(url, {
+      projectPath: projectSlug,
       createdAfter: since.toISOString(),
     });
   }
 
   async getClosedIssuesCount(
-    url: string,
-    projectSlug: string,
-    since: Date,
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: IssuesCountOptions,
   ): Promise<number> {
-    const { count } = await this.scanPages<GitlabIssueItem, { count: number }>({
-      fetchPage: async (page, perPage) => {
-        const { data } = await this.getIssues(url, projectSlug, {
-          state: 'closed',
-          updatedAfter: since.toISOString(),
-          page,
-          perPage,
-          maxPages: 1,
-        });
-        return data;
-      },
-      getValue: (item, result) =>
-        countIfTimestampInWindow(item.closed_at, since, result),
-      initialResult: { count: 0 },
-      context: `closed issues in '${projectSlug}'`,
-    });
+    const { since } = options;
 
-    return count;
-  }
-
-  async getMergeRequests(
-    url: string,
-    projectSlug: string,
-    requestAttributes: GitlabMergeRequestsRequestAttributes = {},
-  ): Promise<AllMergeRequestsResponse> {
-    const api = await this.getGitlabApi(url);
-
-    const response = await api.MergeRequests.all({
-      projectId: projectSlug,
-      page: 1,
-      ...requestAttributes,
-    });
-
-    return parseMergeRequestsResponse(response, this.logger);
-  }
-
-  async getMergeRequestsCount(
-    url: string,
-    projectSlug: string,
-    options?: GitlabMergeRequestsRequestAttributes,
-  ): Promise<number> {
-    const requestAttributes = {
-      ...options,
-      perPage: 1,
-      maxPages: 1,
-      showExpanded: true,
-    };
-
-    const mergeRequests = await this.getMergeRequests(
-      url,
-      projectSlug,
-      requestAttributes,
-    );
-
-    return resolveTotalCount(
-      mergeRequests.paginationInfo?.total,
-      `merge requests in '${projectSlug}'`,
-    );
-  }
-
-  async getOpenMergeRequestsCount(
-    url: string,
-    projectSlug: string,
-  ): Promise<number> {
-    return this.getMergeRequestsCount(url, projectSlug, { state: 'opened' });
-  }
-
-  async getOpenedMergeRequestsCount(
-    url: string,
-    projectSlug: string,
-    since: Date,
-  ): Promise<number> {
-    return this.getMergeRequestsCount(url, projectSlug, {
-      createdAfter: since.toISOString(),
+    return this.graphql.projectIssueCount(url, {
+      projectPath: projectSlug,
+      closedAfter: since.toISOString(),
     });
   }
 
-  async getClosedMergeRequestsCount(
-    url: string,
-    projectSlug: string,
-    since: Date,
+  private async getClosedMergeRequestsCountRest(
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: MRsCountOptions,
   ): Promise<number> {
+    const { since } = options;
     const updatedAfter = since.toISOString();
 
     const [closed, merged] = await Promise.all([
-      this.scanPages<GitlabMergeRequestItem, { count: number }>({
+      scanPages<MRsResponseItem, MRsCountResult>(this.logger, {
         fetchPage: async (page, perPage) => {
-          const { data } = await this.getMergeRequests(url, projectSlug, {
+          const { data } = await this.rest.mergeRequests(url, projectSlug, {
             state: 'closed',
             updatedAfter,
             page,
@@ -296,9 +118,9 @@ export class GitlabClient {
         initialResult: { count: 0 },
         context: `closed merge requests in '${projectSlug}'`,
       }),
-      this.scanPages<GitlabMergeRequestItem, { count: number }>({
+      scanPages<MRsResponseItem, MRsCountResult>(this.logger, {
         fetchPage: async (page, perPage) => {
-          const { data } = await this.getMergeRequests(url, projectSlug, {
+          const { data } = await this.rest.mergeRequests(url, projectSlug, {
             state: 'merged',
             updatedAfter,
             page,
@@ -317,88 +139,98 @@ export class GitlabClient {
     return closed.count + merged.count;
   }
 
-  async getPipelines(
-    url: string,
-    projectSlug: string,
-    requestAttributes: GitlabPipelinesRequestAttributes = {},
-  ): Promise<AllPipelinesResponse> {
-    const api = await this.getGitlabApi(url);
-
-    const response = await api.Pipelines.all(projectSlug, {
-      page: 1,
-      ...requestAttributes,
+  async getOpenMergeRequestsCount(
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+  ): Promise<number> {
+    return this.graphql.projectMergeRequestCount(url, {
+      projectPath: projectSlug,
+      state: MERGE_REQUEST_STATUSES.OPENED,
     });
+  }
 
-    return parsePipelinesResponse(response, this.logger);
+  async getOpenedMergeRequestsCount(
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: MRsCountOptions,
+  ): Promise<number> {
+    const { since } = options;
+
+    return this.graphql.projectMergeRequestCount(url, {
+      projectPath: projectSlug,
+      createdAfter: since.toISOString(),
+    });
+  }
+
+  async getClosedMergeRequestsCount(
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: MRsCountOptions,
+  ): Promise<number> {
+    const { since } = options;
+    const sinceIso = since.toISOString();
+
+    try {
+      const [closedCount, mergedCount] = await Promise.all([
+        this.graphql.projectMergeRequestCount(url, {
+          projectPath: projectSlug,
+          closedAfter: sinceIso,
+          closedBefore: new Date().toISOString(),
+        }),
+        this.graphql.projectMergeRequestCount(url, {
+          projectPath: projectSlug,
+          mergedAfter: sinceIso,
+        }),
+      ]);
+
+      return closedCount + mergedCount;
+    } catch (error) {
+      if (!isGraphqlFeatureError(error)) {
+        throw error;
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+
+      this.logger.warn(
+        `GitLab GraphQL closed merge request filters are unsupported for '${projectSlug}' ` +
+          `(requires GitLab ≥ 18.6 for closedAfter); falling back to REST: ${message}`,
+      );
+
+      return this.getClosedMergeRequestsCountRest(url, projectSlug, options);
+    }
   }
 
   async getPipelinesCount(
-    url: string,
-    projectSlug: string,
-    since: Date,
-    status?: GitlabPipelinesRequestAttributes['status'],
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    requestParams: PipelinesCountRequestParams,
   ): Promise<number> {
-    // GitLab list-pipelines has no started_after/finished_after. updatedAfter
-    // only bounds candidates. We count by started_at or finished_at.
-    const timestampField = status ? 'finished_at' : 'started_at';
-    const statusLabel = status ?? 'started';
-
-    const { count } = await this.scanPages<
-      GitlabPipelineItem,
-      { count: number }
-    >({
-      fetchPage: async (page, perPage) => {
-        const { data } = await this.getPipelines(url, projectSlug, {
-          updatedAfter: since.toISOString(),
-          ...(status ? { status } : {}),
-          page,
-          perPage,
-          maxPages: 1,
-        });
-        return data;
-      },
-      getValue: (item, result) =>
-        countIfTimestampInWindow(item[timestampField], since, result),
-      initialResult: { count: 0 },
-      context: `${statusLabel} pipelines in '${projectSlug}'`,
+    return this.graphql.projectPipelinesCount(url, {
+      projectPath: projectSlug,
+      updatedAfter: requestParams.since.toISOString(),
+      status: requestParams.status,
     });
-
-    return count;
   }
 
   async getJobs(
-    url: string,
-    projectSlug: string,
-    requestAttributes: GitlabJobsRequestAttributes = {},
-  ): Promise<AllJobsResponse> {
-    const api = await this.getGitlabApi(url);
-    const { scope, page = 1, perPage, maxPages } = requestAttributes;
-
-    // GitLab accepts repeated scope[] query params; gitbeaker types only a
-    // single JobScope in this release, so cast options for array callers.
-    const jobOptions = {
-      ...(scope && scope.length > 0 ? { scope } : {}),
-      page,
-      ...(perPage !== undefined ? { perPage } : {}),
-      ...(maxPages !== undefined ? { maxPages } : {}),
-    } as {
-      page: number;
-      perPage?: number;
-      maxPages?: number;
-    };
-
-    const response = await api.Jobs.all(projectSlug, jobOptions);
-    return parseJobsResponse(response, this.logger);
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    requestParams: JobsRequestParams = {},
+  ): Promise<JobsResponse> {
+    return this.rest.jobs(url, projectSlug, requestParams);
   }
 
   async getJobsWindowStats(
-    url: string,
-    projectSlug: string,
-    options: FetchJobsWindowOptions,
-  ): Promise<GitlabJobsWindowStats> {
+    url: RequestURL,
+    projectSlug: ProjectSlug,
+    options: JobsWindowStatsOptions,
+  ): Promise<JobsWindowStatsResult> {
     const { since, scope, fetchItemsLimit } = options;
 
-    return this.scanPages<GitlabJobItem, GitlabJobsWindowStats>({
+    return scanPages<JobsResponseItem, JobsWindowStatsResult>(this.logger, {
+      fetchItemsLimit,
+      context: `jobs in '${projectSlug}'`,
+      initialResult: { started: 0, successful: 0, failed: 0 },
       fetchPage: async (page, perPage) => {
         const { data } = await this.getJobs(url, projectSlug, {
           scope,
@@ -421,9 +253,6 @@ export class GitlabClient {
           }
         }
       },
-      initialResult: { started: 0, successful: 0, failed: 0 },
-      context: `jobs in '${projectSlug}'`,
-      fetchItemsLimit,
       shouldContinue: items => shouldContinueJobsPaging(items, since),
     });
   }

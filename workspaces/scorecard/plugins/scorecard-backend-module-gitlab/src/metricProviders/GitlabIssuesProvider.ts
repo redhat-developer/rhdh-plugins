@@ -95,8 +95,12 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
 
     const [openIssues, openedIssues, closedIssues] = await Promise.all([
       this.gitlabClient.getOpenIssuesCount(target, projectSlug),
-      this.gitlabClient.getOpenedIssuesCount(target, projectSlug, since7d),
-      this.gitlabClient.getClosedIssuesCount(target, projectSlug, since7d),
+      this.gitlabClient.getOpenedIssuesCount(target, projectSlug, {
+        since: since7d,
+      }),
+      this.gitlabClient.getClosedIssuesCount(target, projectSlug, {
+        since: since7d,
+      }),
     ]);
 
     return new Map([

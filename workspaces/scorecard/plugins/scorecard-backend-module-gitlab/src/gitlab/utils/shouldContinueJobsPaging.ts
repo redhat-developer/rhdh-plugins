@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { GitlabJobItem } from '../types';
+import type { JobsResponseItem } from '../types';
 import { isTimestampInWindow } from './isTimestampInWindow';
 
 function pageHasJobActivityInWindow(
-  items: GitlabJobItem[],
+  items: JobsResponseItem[],
   since: Date,
 ): boolean {
   return items.some(
@@ -29,7 +29,7 @@ function pageHasJobActivityInWindow(
 }
 
 export function shouldContinueJobsPaging(
-  items: GitlabJobItem[],
+  items: JobsResponseItem[],
   since: Date,
 ): boolean {
   const oldestItem = items.at(-1);

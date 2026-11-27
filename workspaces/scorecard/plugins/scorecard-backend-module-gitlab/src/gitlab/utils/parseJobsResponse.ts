@@ -15,12 +15,12 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { AllJobsResponse, GitlabJobItem } from '../types';
+import type { JobsResponse, JobsResponseItem } from '../types';
 
 export function parseJobsResponse(
   response: unknown,
   logger: LoggerService,
-): AllJobsResponse {
+): JobsResponse {
   // gitbeaker returns Job[] unless showExpanded is set.
   if (Array.isArray(response)) {
     return { data: response.map(toJobItem) };
@@ -44,7 +44,7 @@ export function parseJobsResponse(
     paginationInfo?: { total?: unknown };
   };
 
-  const result: AllJobsResponse = {
+  const result: JobsResponse = {
     data: expanded.data.map(toJobItem),
   };
 
@@ -58,7 +58,7 @@ export function parseJobsResponse(
   return result;
 }
 
-function toJobItem(item: unknown): GitlabJobItem {
+function toJobItem(item: unknown): JobsResponseItem {
   if (!(item instanceof Object)) {
     throw new TypeError('Unexpected GitLab job item: expected an object');
   }

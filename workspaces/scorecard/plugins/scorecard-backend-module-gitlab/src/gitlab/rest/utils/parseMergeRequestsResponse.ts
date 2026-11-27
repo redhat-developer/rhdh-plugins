@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
+import type { MRsResponse, MRsResponseItem } from '../../types';
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { AllIssuesResponse, GitlabIssueItem } from '../types';
 
-export function parseIssuesResponse(
+export function parseMergeRequestsResponse(
   response: unknown,
   logger: LoggerService,
-): AllIssuesResponse {
-  // gitbeaker returns Issue[] unless showExpanded is set.
+): MRsResponse {
+  // gitbeaker returns MergeRequest[] unless showExpanded is set.
   if (Array.isArray(response)) {
-    return { data: response.map(toIssueItem) };
+    return { data: response.map(toMergeRequestItem) };
   }
 
   if (
@@ -34,9 +34,12 @@ export function parseIssuesResponse(
     )
   ) {
     logger.error(
-      `Unexpected response from GitLab Issues API: ${JSON.stringify(response)}`,
+      `Unexpected response from GitLab Merge Requests API: ${JSON.stringify(
+        response,
+      )}`,
     );
-    throw new Error('Unexpected response from GitLab Issues API');
+
+    throw new Error('Unexpected response from GitLab Merge Requests API');
   }
 
   const expanded = response as {
@@ -44,12 +47,13 @@ export function parseIssuesResponse(
     paginationInfo?: { total?: unknown };
   };
 
-  const result: AllIssuesResponse = {
-    data: expanded.data.map(toIssueItem),
+  const result: MRsResponse = {
+    data: expanded.data.map(toMergeRequestItem),
   };
 
   if (expanded.paginationInfo instanceof Object) {
     const { total } = expanded.paginationInfo;
+
     result.paginationInfo = {
       total: typeof total === 'number' ? total : undefined,
     };
@@ -58,23 +62,38 @@ export function parseIssuesResponse(
   return result;
 }
 
-function toIssueItem(item: unknown): GitlabIssueItem {
+function toMergeRequestItem(item: unknown): MRsResponseItem {
   if (!(item instanceof Object)) {
-    throw new TypeError('Unexpected GitLab issue item: expected an object');
+    throw new TypeError(
+      'Unexpected GitLab merge request item: expected an object',
+    );
   }
 
   const closedAt = (item as { closed_at?: unknown }).closed_at;
+  const mergedAt = (item as { merged_at?: unknown }).merged_at;
+
   if (
     closedAt !== undefined &&
     closedAt !== null &&
     typeof closedAt !== 'string'
   ) {
     throw new TypeError(
-      'Unexpected GitLab issue item: closed_at must be a string or null',
+      'Unexpected GitLab merge request item: closed_at must be a string or null',
+    );
+  }
+
+  if (
+    mergedAt !== undefined &&
+    mergedAt !== null &&
+    typeof mergedAt !== 'string'
+  ) {
+    throw new TypeError(
+      'Unexpected GitLab merge request item: merged_at must be a string or null',
     );
   }
 
   return {
-    closed_at: closedAt as string | null | undefined,
+    closed_at: closedAt as MRsResponseItem['closed_at'],
+    merged_at: mergedAt as MRsResponseItem['merged_at'],
   };
 }

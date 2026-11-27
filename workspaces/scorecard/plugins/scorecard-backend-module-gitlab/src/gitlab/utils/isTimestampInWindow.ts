@@ -16,7 +16,7 @@
 
 export function isTimestampInWindow(
   value: string | null | undefined,
-  since: Date,
+  since: Date | string,
 ): boolean {
-  return typeof value === 'string' && new Date(value) >= since;
+  return typeof value === 'string' && new Date(value) >= new Date(since);
 }

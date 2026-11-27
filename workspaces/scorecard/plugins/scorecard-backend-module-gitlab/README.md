@@ -8,9 +8,9 @@ Before installing this module, ensure that the Scorecard backend plugin is integ
 
 This module also requires a GitLab integration to be configured in your `app-config.yaml`. It uses Backstage's standard GitLab integration configuration, you can check the [docs](https://backstage.io/docs/integrations/gitlab/locations/#configuration) to see all options.
 
-Authentication uses **Backend Service Integration** only: configure a token under `integrations.gitlab` in `app-config.yaml`. **User-Delegated Operations (OAuth / signed-in user tokens) are not supported.**
+Authentication uses **Backend Service Integration** only: configure a token under `integrations.gitlab` in `app-config.yaml`. **User-Delegated Operations (OAuth / signed-in user tokens) are not supported.** The token must allow API reads (`read_api` or `api`) for both the REST API and the [GitLab GraphQL API](https://docs.gitlab.com/api/graphql/).
 
-The GitLab host is resolved from each entity's **source location** (`backstage.io/source-location` or managed-by location) via `getEntitySourceLocation`, not hardcoded to `gitlab.com`. Configure an `integrations.gitlab` entry that matches that host (including self-hosted GitLab).
+The GitLab host is resolved from each entity's **source location** (`backstage.io/source-location` or managed-by location) via `getEntitySourceLocation`, not hardcoded to `gitlab.com`. Configure an `integrations.gitlab` entry that matches that host (including self-hosted GitLab). GraphQL calls use `{baseUrl}/api/graphql` from that integration.
 
 ```yaml
 # app-config.yaml — gitlab.com
@@ -104,13 +104,22 @@ For self-hosted GitLab, point the source location at that host (for example `url
 
 Success ratio metrics are `successful / (successful + failed)` as a percentage. Pending, running, and canceled pipelines/jobs are ignored. When there are no successful or failed items in the window, the ratio metric is omitted and stored as a calculation error.
 
-Closed issues/MRs (`gitlab.closedIssues7d`, `gitlab.closedMergeRequests7d`) use `state=closed`/`merged` with `updatedAfter` only to bound candidates (GitLab has no `closedAfter` list filter). The Scorecard backend then counts rows whose `closed_at` or `merged_at` falls in the window. Candidate pages use the same client-side cap as jobs (1000 items / 10 pages); when the cap is hit the client logs a warning and returns a truncated count. Items closed or merged in the window but not updated since the window start never enter the candidate set and are not counted.
+### How metrics are fetched
 
-Pipeline and job started windows count rows whose `started_at` falls in the window. Successful/failed (and therefore ratio) windows count rows whose `finished_at` falls in the window with the matching status. Pending, running, and canceled items are ignored for success/failed/ratios; jobs or pipelines with no `started_at` are excluded from started counts.
+| Area           | API                                | Notes                                                                                                                                                                               |
+| -------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issues         | GraphQL                            | Connection `count` with `state`, `createdAfter`, or `closedAfter`                                                                                                                   |
+| Merge requests | GraphQL (REST only if unsupported) | GraphQL `count` with `state`, `createdAfter`, `closedAfter`, or `mergedAfter`. REST fallback only when the instance lacks MR window filters (e.g. `closedAfter` before GitLab 18.6) |
+| Pipelines      | GraphQL                            | Cursor-pages `pipelines` nodes (`startedAt` / `finishedAt`), bounded by `updatedAfter`                                                                                              |
+| Jobs           | REST                               | Project Jobs API walk                                                                                                                                                               |
 
-Pipelines use `updatedAfter` only to bound candidates (GitLab has no `started_after` / `finished_after` list filter), then count by `started_at` or `finished_at` with the same client-side cap as closed issues (1000 items / 10 pages). Items started or finished in the window but not updated since the window start never enter the candidate set and are not counted.
+**Issues.** Open/opened/closed window counts use GraphQL connection totals (`state`, `createdAfter`, `closedAfter`). Closed counts are real closures in the window, not “closed items with recent updates.”
 
-Job metrics for a time window use a single Jobs API walk (no per-status fetches). The walk pages with the same 1000-item / 10-page cap and stops when a page has no `started_at`/`finished_at` activity in the window and its oldest `created_at` is before the window start; when the cap is hit the client logs a warning and returns a truncated count.
+**Merge requests.** Prefer GraphQL connection totals. Open and opened-in-window counts always use GraphQL. `gitlab.closedMergeRequests7d` is the sum of `closedAfter` + `mergedAfter` counts. MR `closedAfter` requires GitLab **≥ 18.6**; if GraphQL reports that filter as unknown/unsupported, the client logs a warning and falls back to REST for that closed window only (`updatedAfter` candidate scan + `closed_at` / `merged_at` filtering, with a 1000-item / 10-page cap). Other GraphQL failures (auth, network, HTTP errors) are not retried via REST.
+
+**Pipelines (acceptance semantics).** Started windows count GraphQL nodes whose `startedAt` is in the window. Successful/failed (and ratio) windows filter by GraphQL status (`SUCCESS` / `FAILED`) and count nodes whose `finishedAt` is in the window. Pending, running, and canceled pipelines are ignored for success/failed/ratios. Candidates are bounded with `updatedAfter` (start/finish updates the pipeline). GraphQL connections return at most 100 nodes per page; this module cursor-pages up to a 1000-item safety cap and logs a warning when truncated. Pipelines started or finished in the window but not updated since the window start may be missed.
+
+**Jobs.** Time-window metrics use a single REST Jobs API walk (no per-status fetches). Started counts use `started_at`; successful/failed use `finished_at` + status. The walk pages with a 1000-item / 10-page cap and stops when a page has no `started_at`/`finished_at` activity in the window and its oldest `created_at` is before the window start; when the cap is hit the client logs a warning and returns a truncated count.
 
 ## Available Providers
 

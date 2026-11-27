@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-import { Gitlab } from '@gitbeaker/rest';
+export type RequestURL = string;
 
-export type GitlabApi = InstanceType<typeof Gitlab>;
+export type ProjectSlug = string;
 
-export type GitlabIssuesRequestAttributes = {
-  state?: 'opened' | 'closed';
+export type IssueStatus = 'opened' | 'closed';
+
+export type IssuesCountOptions = {
+  since: Date;
+};
+
+export type MergeRequestStatus = 'opened' | 'closed' | 'merged';
+
+export type MRsRequestParams = {
+  state?: MergeRequestStatus;
   createdAfter?: string;
   updatedAfter?: string;
   page?: number;
@@ -28,101 +36,64 @@ export type GitlabIssuesRequestAttributes = {
   showExpanded?: boolean;
 };
 
-export type GitlabMergeRequestsRequestAttributes = {
-  state?: 'opened' | 'closed' | 'merged';
-  createdAfter?: string;
-  updatedAfter?: string;
-  page?: number;
-  perPage?: number;
-  maxPages?: number;
-  showExpanded?: boolean;
+export type MRsCountOptions = {
+  since: Date;
 };
 
-export type GitlabPipelinesRequestAttributes = {
-  status?: 'success' | 'failed';
-  updatedAfter?: string;
-  page?: number;
-  perPage?: number;
-  maxPages?: number;
-  showExpanded?: boolean;
-};
-
-export type TimestampedItem = Record<string, unknown>;
-
-export type ScanPagesOptions<TItem, TResult> = {
-  fetchPage: (page: number, perPage: number) => Promise<TItem[]>;
-  getValue: (item: TItem, result: TResult) => void;
-  initialResult: TResult;
-  context: string;
-  fetchItemsLimit?: number;
-  shouldContinue?: (items: TItem[], perPage: number) => boolean;
-};
-
-export type GitlabPipelineItem = {
-  started_at?: string | null;
-  finished_at?: string | null;
-  status?: string;
-};
-
-export type AllPipelinesResponse = {
-  data: GitlabPipelineItem[];
+export type MRsResponse = {
+  data: MRsResponseItem[];
   paginationInfo?: {
     total?: number;
   };
 };
 
-export type GitlabJobItem = {
+export type MRsResponseItem = {
+  closed_at?: string | null;
+  merged_at?: string | null;
+};
+
+export type MRsCountResult = {
+  count: number;
+};
+
+export type PipelinesStatus = 'SUCCESS' | 'FAILED';
+
+export type PipelinesCountRequestParams = {
+  since: Date;
+  status?: PipelinesStatus;
+};
+
+type JobScope = string[];
+
+export type JobsWindowStatsOptions = {
+  since: Date;
+  scope?: JobScope;
+  fetchItemsLimit?: number;
+};
+
+export type JobsRequestParams = {
+  scope?: JobScope;
+  page?: number;
+  perPage?: number;
+  maxPages?: number;
+};
+
+export type JobsResponse = {
+  data: JobsResponseItem[];
+  paginationInfo?: {
+    total?: number;
+  };
+};
+
+export type JobsResponseItem = {
   created_at: string;
   started_at?: string | null;
   finished_at?: string | null;
   status?: string;
 };
 
-export type GitlabJobsRequestAttributes = {
-  scope?: string[];
-  page?: number;
-  perPage?: number;
-  maxPages?: number;
-};
-
-export type FetchJobsWindowOptions = {
-  since: Date;
-  scope?: string[];
-  fetchItemsLimit?: number;
-};
-
-export type GitlabJobsWindowStats = {
+export type JobsWindowStatsResult = {
   started: number;
   successful: number;
   failed: number;
-};
-
-export type AllJobsResponse = {
-  data: GitlabJobItem[];
-  paginationInfo?: {
-    total?: number;
-  };
-};
-
-export type GitlabIssueItem = {
-  closed_at?: string | null;
-};
-
-export type AllIssuesResponse = {
-  data: GitlabIssueItem[];
-  paginationInfo?: {
-    total?: number;
-  };
-};
-
-export type GitlabMergeRequestItem = {
-  closed_at?: string | null;
-  merged_at?: string | null;
-};
-
-export type AllMergeRequestsResponse = {
-  data: GitlabMergeRequestItem[];
-  paginationInfo?: {
-    total?: number;
-  };
 };

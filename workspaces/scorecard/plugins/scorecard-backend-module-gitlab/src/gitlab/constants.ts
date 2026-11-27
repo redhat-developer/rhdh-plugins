@@ -14,4 +14,28 @@
  * limitations under the License.
  */
 
+import { IssueStatus, MergeRequestStatus, PipelinesStatus } from './types';
+
 export const GITLAB_PROJECT_ANNOTATION = 'gitlab.com/project-slug';
+
+export const GITLAB_MAX_PAGES = 10;
+
+export const GITLAB_PAGE_SIZE = 100;
+
+export const GITLAB_FETCH_ITEMS_LIMIT = 1000;
+
+export const PIPELINES_STATUSES = {
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+} as const satisfies Record<string, PipelinesStatus>;
+
+export const ISSUE_STATUSES = {
+  OPENED: 'opened',
+  CLOSED: 'closed',
+} as const satisfies Record<string, IssueStatus>;
+
+export const MERGE_REQUEST_STATUSES = {
+  OPENED: 'opened',
+  CLOSED: 'closed',
+  MERGED: 'merged',
+} as const satisfies Record<string, MergeRequestStatus>;

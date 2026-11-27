@@ -28,7 +28,9 @@ describe('parseMergeRequestsResponse', () => {
     expect(() =>
       parseMergeRequestsResponse({ unexpected: true }, logger),
     ).toThrow('Unexpected response from GitLab Merge Requests API');
-    expect(logger.error).toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      `Unexpected response from GitLab Merge Requests API: {"unexpected":true}`,
+    );
   });
 
   it('should throw when a merge request item is not an object', () => {

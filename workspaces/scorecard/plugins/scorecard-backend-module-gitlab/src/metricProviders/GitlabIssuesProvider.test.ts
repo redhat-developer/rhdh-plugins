@@ -140,12 +140,12 @@ describe('GitlabIssuesProvider', () => {
       expect(mockedClientInstance.getOpenedIssuesCount).toHaveBeenCalledWith(
         sourceUrl,
         projectSlug,
-        since7d,
+        { since: since7d },
       );
       expect(mockedClientInstance.getClosedIssuesCount).toHaveBeenCalledWith(
         sourceUrl,
         projectSlug,
-        since7d,
+        { since: since7d },
       );
     });
 

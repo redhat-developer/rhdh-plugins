@@ -23,7 +23,10 @@ import {
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
 import { getProjectSlugFromEntity } from '../utils/getProjectSlugFromEntity';
-import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
+import {
+  GITLAB_PROJECT_ANNOTATION,
+  PIPELINES_STATUSES,
+} from '../gitlab/constants';
 import {
   GITLAB_PIPELINES_METRIC_IDS,
   GITLAB_PERCENTAGE_THRESHOLDS,
@@ -120,31 +123,25 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
 
     const [started7d, successful7d, failed7d, successful24h, failed24h] =
       await Promise.all([
-        this.gitlabClient.getPipelinesCount(target, projectSlug, since7d),
-        this.gitlabClient.getPipelinesCount(
-          target,
-          projectSlug,
-          since7d,
-          'success',
-        ),
-        this.gitlabClient.getPipelinesCount(
-          target,
-          projectSlug,
-          since7d,
-          'failed',
-        ),
-        this.gitlabClient.getPipelinesCount(
-          target,
-          projectSlug,
-          since1d,
-          'success',
-        ),
-        this.gitlabClient.getPipelinesCount(
-          target,
-          projectSlug,
-          since1d,
-          'failed',
-        ),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, {
+          since: since7d,
+        }),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, {
+          since: since7d,
+          status: PIPELINES_STATUSES.SUCCESS,
+        }),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, {
+          since: since7d,
+          status: PIPELINES_STATUSES.FAILED,
+        }),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, {
+          since: since1d,
+          status: PIPELINES_STATUSES.SUCCESS,
+        }),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, {
+          since: since1d,
+          status: PIPELINES_STATUSES.FAILED,
+        }),
       ]);
 
     const results = new Map<string, number>([
