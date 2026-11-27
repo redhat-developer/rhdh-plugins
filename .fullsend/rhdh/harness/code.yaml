@@ -1,10 +1,10 @@
-# Pinned to agents@v0.45.0 (commit 93c69826f), matching the fullsend@v0.45.0
+# Pinned to agents@v0.57.1 (commit ea29de9b), matching the fullsend@v0.57.1
 # CLI our own .github/workflows/fullsend.yaml pins — these are companion
 # releases cut together, so this is the harness content the installed CLI
 # was actually built and tested against.
-base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/code.yaml#sha256=bd1d925cbfac3f95d785e3c7abe6edc9ac649818b921f85fa7168ef9b6b77583
+base: https://raw.githubusercontent.com/fullsend-ai/agents/ea29de9bb8b1729b04c0597b48a5c7aae62deb71/harness/code.yaml#sha256=cfa49d4677cc4d6544fcf878e05b0f95620bbb62907289dbc5a22681a7679976
 agent: rhdh/agents/code.md
-image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:0.57.1
 # policy: inherited from base (policies/base.yaml + openshell providers/
 # profiles for vertex-ai, package-registries, gitleaks and, via the github
 # forge overlay, github-code). Our former rhdh/policies/code.yaml fork
