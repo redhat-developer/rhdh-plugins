@@ -18,9 +18,13 @@ import {
   createExtensionInput,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
+import { RiSparkling2Fill } from '@remixicon/react';
+import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { filterDefinitionDataRef } from '../blueprints/AiCatalogFilterBlueprint';
 import { rootRouteRef } from '../routes';
+
+const AiCatalogIcon = () => <RiSparkling2Fill size="1em" />;
 
 export const aiCatalogPage = PageBlueprint.makeWithOverrides({
   name: 'ai-catalog',
@@ -46,11 +50,21 @@ export const aiCatalogPage = PageBlueprint.makeWithOverrides({
       path: '/ai-catalog',
       routeRef: rootRouteRef,
       title: 'AI Catalog',
+      icon: <AiCatalogIcon />,
       noHeader: true,
       loader: () =>
         import('../pages/AiCatalogPage').then(m => (
           <m.AiCatalogPage filters={filterDefs} />
         )),
     });
+  },
+});
+
+export const aiCatalogSidebarItem = SidebarItemBlueprint.make({
+  name: 'ai-catalog',
+  params: {
+    title: 'AI Catalog',
+    icon: AiCatalogIcon,
+    to: '/ai-catalog',
   },
 });

@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "AiResourceV1alpha1AgentRhdhChat",
+  "description": "An AI resource of type 'agent-rhdh-chat', representing an RHDH agentic chat agent with a focused configuration contract and optional LLM model settings.",
+  "examples": [
+    {
+      "apiVersion": "backstage.io/v1alpha1",
+      "kind": "AiResource",
+      "metadata": {
+        "name": "my-agent-rhdh-chat",
+        "description": "Minimal agent-rhdh-chat entity"
+      },
+      "spec": {
+        "type": "agent-rhdh-chat",
+        "owner": "ai-platform-team"
+      }
+    },
+    {
+      "apiVersion": "backstage.io/v1alpha1",
+      "kind": "AiResource",
+      "metadata": {
+        "name": "full-agent-rhdh-chat",
+        "description": "Fully configured agent-rhdh-chat entity"
+      },
+      "spec": {
+        "type": "agent-rhdh-chat",
+        "owner": "ai-platform-team",
+        "instructions": "You are a support router agent.",
+        "inferenceProvider": {
+          "name": "openai",
+          "model": "gpt-4o",
+          "modelConfig": {
+            "temperature": 0.7,
+            "maxTokens": 4096
+          }
+        },
+        "tools": ["tool-x", "tool-y"],
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "executionMode": "sandbox"
+      }
+    }
+  ],
+  "allOf": [
+    {
+      "$ref": "Entity"
+    },
+    {
+      "type": "object",
+      "required": ["spec"],
+      "properties": {
+        "apiVersion": {
+          "enum": ["backstage.io/v1alpha1"]
+        },
+        "kind": {
+          "enum": ["AiResource"]
+        },
+        "spec": {
+          "type": "object",
+          "required": ["type", "owner"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["agent-rhdh-chat"],
+              "description": "The type of AI resource."
+            },
+            "owner": {
+              "type": "string",
+              "description": "An entity reference to the owner of the AI resource.",
+              "examples": ["ai-platform-team", "user:john.johnson"],
+              "minLength": 1
+            },
+            "instructions": {
+              "type": "string",
+              "description": "The agent's instructions (system prompt). Optional — omit when the agent image/runtime already provides a default prompt."
+            },
+            "inferenceProvider": {
+              "type": "object",
+              "description": "The inference provider for this agent. Optional; when set, both name and model are required.",
+              "required": ["name", "model"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The inference provider identifier.",
+                  "minLength": 1
+                },
+                "model": {
+                  "type": "string",
+                  "description": "The model identifier.",
+                  "minLength": 1
+                },
+                "modelConfig": {
+                  "type": "object",
+                  "description": "Optional model configuration settings.",
+                  "properties": {
+                    "temperature": {
+                      "type": "number",
+                      "description": "Sampling temperature.",
+                      "minimum": 0
+                    },
+                    "maxTokens": {
+                      "type": "integer",
+                      "description": "Maximum number of tokens to generate.",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "tools": {
+              "type": "array",
+              "description": "Opaque string references to tools available to this agent.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "outputSchema": {
+              "description": "JSON Schema object or simple type name describing the agent's output format.",
+              "oneOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            },
+            "executionMode": {
+              "type": "string",
+              "enum": ["in-process", "subprocess", "sandbox"],
+              "description": "Execution mode — declares how this agent is executed by LCore: 'in-process' runs inside the LCore process (no isolation), 'subprocess' runs in a child process managed by LCore, 'sandbox' runs in an administrator-predefined sandbox profile."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -4,6 +4,16 @@
 
 Cursor-based incremental sync framework built on Backstage's `applyMutation({ type: 'delta' })` API, enabling entity providers to report only changes since the last sync.
 
+> **Scope (RHIDP-18761):** The baseline documents the existing mutation and
+> cursor helper. Consuming providers own fetching, scheduling, first/full
+> refresh, cursor rejection handling, and method selection. The helper does
+> not perform refresh orchestration or detect optional provider methods.
+> The SDK ships `InMemoryCursorStore` for development/testing and a pluggable
+> `CursorStore` interface. Durable-store implementation and automated
+> refresh/recovery orchestration remain deferred to
+> [RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840), together with
+> Backstage incremental-provider integration.
+
 ## ADDED Requirements
 
 ### Requirement: Cursor/ETag-Based Delta Sync
@@ -24,8 +34,8 @@ The SDK MUST provide a delta sync framework accepting connector-reported additio
 
 #### Scenario: Connector reports deletions (RHIDP-15262)
 
-- **WHEN** the connector reports `removed: ['component:default/agent-foo']`
-- **THEN** the entity ref `component:default/agent-foo` is included in the `removed` array passed to `applyMutation`
+- **WHEN** the connector reports `removed: ['airesource:default/agent-foo']`
+- **THEN** the entity ref `airesource:default/agent-foo` is included in the `removed` array passed to `applyMutation`
 - **AND** the entity is deleted from the catalog
 
 ### Requirement: Sync Cursor Persistence
@@ -44,35 +54,35 @@ Sync cursors MUST be persisted across polling cycles so providers can resume inc
 - **THEN** it calls `deltaSyncManager.getCursor()` which returns the last persisted cursor for the manager's `locationKey`
 - **AND** the provider passes the cursor to the connector (e.g., `If-None-Match: etag-abc123` header or `?cursor=etag-abc123` query param)
 
-### Requirement: Fallback to Full Refresh
+### Requirement: Cursor Reset for Consumer-Owned Refresh
 
-When a sync cursor is invalid or missing, the framework MUST fall back to full refresh.
+The helper MUST expose cursor retrieval and reset operations. The consuming provider decides when a cursor is unusable and owns the full refresh. The helper does not fetch source data, invoke provider methods, or submit a full mutation itself.
 
-#### Scenario: Invalid cursor triggers full refresh (RHIDP-15262)
+#### Scenario: Consumer clears a rejected cursor (RHIDP-15262)
 
-- **WHEN** the connector rejects the cursor (e.g., 412 Precondition Failed or 404 Not Found)
-- **THEN** the provider falls back to full refresh: calls `provider.entities()` instead of `provider.delta(cursor)`
-- **AND** the next sync establishes a new cursor
+- **WHEN** consuming provider code calls `deltaSyncManager.clearCursor()` after its connector rejects a cursor
+- **THEN** the helper deletes the stored cursor state for its construction-time `locationKey`
+- **AND** the next `deltaSyncManager.getCursor()` returns `undefined`
+- **AND** clearing the cursor does not submit a catalog mutation
 
 #### Scenario: Missing cursor on first sync (RHIDP-15262)
 
-- **WHEN** a provider runs for the first time and no cursor exists
-- **THEN** it performs a full refresh
-- **AND** the response includes `nextCursor` which is persisted for subsequent incremental syncs
+- **WHEN** consuming provider code calls `deltaSyncManager.getCursor()` and no cursor is stored
+- **THEN** the helper returns `undefined`
+- **AND** retrieving the cursor does not submit a catalog mutation
+
+The consumer treats a missing cursor as a signal to perform its own full refresh and establish a new baseline. Designing a shared fallback orchestrator is deferred; the scenarios above verify the existing helper boundary only.
 
 ### Requirement: Backward Compatibility with Full-Refresh Providers
 
-Existing full-refresh providers MUST work without modification.
+Existing full-refresh providers MUST retain their own scheduling and mutation submission. Using the delta helper MUST NOT register a new provider mode with the Catalog engine or initiate a full refresh automatically.
 
 #### Scenario: Full-refresh provider continues working (RHIDP-15262)
 
-- **WHEN** a provider implements only `entities()` (no `delta()` method)
-- **THEN** the catalog engine calls `entities()` on every poll (full refresh)
-- **AND** the provider does NOT receive delta sync calls
-- **AND** the catalog behavior is unchanged from before delta sync support was added
+- **WHEN** consuming provider code submits a full mutation through its existing `EntityProviderConnection`
+- **THEN** that mutation contains its full source entity set
+- **AND** `DeltaSyncManager` does not submit an additional mutation unless the consumer calls `applyDelta()`
 
-#### Scenario: Provider can opt into delta sync later (RHIDP-15262)
+#### ~~Scenario: Catalog engine automatically detects delta support~~ DEFERRED
 
-- **WHEN** a full-refresh provider adds the optional `delta(cursor?: string)` method
-- **THEN** the catalog engine detects the method and switches to delta sync mode
-- **AND** the first call to `delta()` has `cursor = undefined` (full refresh to establish baseline)
+The earlier automatic method-detection claim is withdrawn. A consuming provider must explicitly call its source methods and submit mutations. RHIDP-18840 owns the future incremental-ingestion adapter and orchestration contract; no automatic mode switch is promised by this baseline.

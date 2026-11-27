@@ -51,7 +51,6 @@ export const AIAssetCategorySchema = z.enum([
   'agent',
   'skill',
   'rule',
-  'skill-bundle',
   'mcp-server',
   'ai-model',
   'model-server',
@@ -69,7 +68,6 @@ export type AIAssetCategory =
   | 'agent'
   | 'skill'
   | 'rule'
-  | 'skill-bundle'
   | 'mcp-server'
   | 'ai-model'
   | 'model-server';

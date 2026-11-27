@@ -1,6 +1,18 @@
 ## Audit Report: mcp-registry-server-mapping
 
-**Last audited:** 2026-09-15T19:51:11Z
+**Last audited:** 2026-11-10T14:44:19Z (limited task-status reconciliation review)
+
+**Previous full artifact audit:** 2026-09-15T19:51:11Z. Its findings and counts
+below remain historical; this follow-up does not clear them.
+
+### Task-status reconciliation follow-up (RHIDP-18761)
+
+Compared the task checklist with the PR base and reviewed the 2026-11-09 journal
+entries. Only completion checkboxes changed; task wording, acceptance criteria,
+and design/specification contracts are unchanged. Task 4.2 remains open pending
+explicit upstream schema-validator evidence for every mapped entity. This review
+records the status-only reconciliation, not a new full artifact or implementation
+audit. No tests were run for this follow-up.
 
 ### Summary
 

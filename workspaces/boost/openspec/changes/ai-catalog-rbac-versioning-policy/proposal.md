@@ -21,7 +21,10 @@ RHDHPLAN-1508's written acceptance criteria overlap with Backstage Catalog permi
 - `ai-catalog-management-permission`: Global AI Catalog management authorization and compatibility behavior.
 - `asset-version-policy`: Direct per-entity policy and the explicit deferral of inheritance pending RHDHPLAN-1507 and a follow-up design.
 - `ai-catalog-audit-events`: RBAC and ingestion-event audit requirements.
-- `skill-bundle-authorization`: Canonical Catalog authorization and read-time filtering for bundle members returned through Catalog or nested APIs.
+
+### Deferred Capability
+
+- `skill-bundle-authorization`: **DEFERRED**, outside the accepted baseline. Implementation and canonical promotion require an approved bundle representation/serving contract and explicit scope approval. The retained draft does not establish a current delivery obligation.
 
 ### Modified Capabilities
 
@@ -39,7 +42,8 @@ None.
 ## Canonical Touchpoints
 
 - PRDs/ADRs under `specifications/`: None currently exist in this repository.
-- Planned long-lived specs: `openspec/specs/catalog-entity-visibility/spec.md`, `conditional-asset-access/spec.md`, `ai-catalog-management-permission/spec.md`, `asset-version-policy/spec.md`, `ai-catalog-audit-events/spec.md`, and `skill-bundle-authorization/spec.md`.
+- Planned long-lived specs after acceptance: `openspec/specs/catalog-entity-visibility/spec.md`, `conditional-asset-access/spec.md`, `ai-catalog-management-permission/spec.md`, `asset-version-policy/spec.md`, and `ai-catalog-audit-events/spec.md`.
+- `openspec/specs/skill-bundle-authorization/spec.md`: **DEFERRED**. Do not promote the retained draft without the owning architecture contract and explicit bundle-serving scope approval.
 - Change type: feature-spec.
 
 ## Impact

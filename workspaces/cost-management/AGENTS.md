@@ -40,7 +40,9 @@ workspaces/cost-management/
 │   └── backend/                   # Full backend with RBAC
 ├── docs/
 │   ├── rbac.md                    # Full RBAC permission reference
-│   └── dynamic-plugin.md          # Dynamic plugin installation guide
+│   ├── installing-on-rhdh.md      # Customer install guide (RHDH 2.1 / 1.10)
+│   └── dev/
+│       └── packaging-and-rhdh-compatibility.md  # rhdh-cli / Scalprum vs NFS / image tags
 └── policy.local.csv               # Local RBAC policy for dev/testing
 ```
 

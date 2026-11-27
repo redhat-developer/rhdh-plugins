@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.2.3
+
+### Patch Changes
+
+- 0a9a9a1: Copy a registry-specific install command for imported npx skills using their discovery URL and index key.
+
+## 1.2.2
+
+### Patch Changes
+
+- 318ae51: Show Podman pull commands for OCI skills in the AI Catalog Usage card.
+
+## 1.2.1
+
+### Patch Changes
+
+- cdd3501: Add the AI Catalog page icon and a sidebar item whose priority can be configured by the host app.
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-common@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes

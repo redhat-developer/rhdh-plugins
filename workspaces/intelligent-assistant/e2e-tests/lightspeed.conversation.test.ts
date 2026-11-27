@@ -56,10 +56,10 @@ import {
   cancelChatDeletion,
   confirmChatDeletion,
   verifyChatDeleted,
-  openChatbotSettings,
   verifyChatbotSettingsVisible,
   verifyPinnedSectionVisible,
   verifyPinnedSectionHidden,
+  openPreferencesFromOptionsMenu,
   verifyDisablePinnedChatsOption,
   verifyEnablePinnedChatsOption,
   selectDisablePinnedChats,
@@ -289,7 +289,7 @@ test.describe('Intelligent assistant conversation', () => {
         await verifyPinnedSectionVisible(sharedPage, translations);
         await verifyEmptyPinnedChatsMessage(sharedPage, translations);
         await verifyChatbotSettingsVisible(sharedPage, translations);
-        await openChatbotSettings(sharedPage, translations);
+        await openPreferencesFromOptionsMenu(sharedPage, translations);
         await verifyDisablePinnedChatsOption(sharedPage, translations);
         await selectDisablePinnedChats(sharedPage, translations);
         await verifyPinnedSectionHidden(sharedPage, translations);
@@ -299,7 +299,7 @@ test.describe('Intelligent assistant conversation', () => {
       test('Verify enable pinned chats section via settings', async () => {
         await verifyPinnedSectionHidden(sharedPage, translations);
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
-        await openChatbotSettings(sharedPage, translations);
+        await openPreferencesFromOptionsMenu(sharedPage, translations);
         await verifyEnablePinnedChatsOption(sharedPage, translations);
         await selectEnablePinnedChats(sharedPage, translations);
         await verifyPinnedSectionVisible(sharedPage, translations);

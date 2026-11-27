@@ -40,7 +40,7 @@ import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
 
-import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
+import { RiHand } from '@remixicon/react';
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -52,6 +52,8 @@ import quickstartPlugin, {
 } from '../src';
 
 const QUICKSTART_DRAWER_ID = 'quickstart';
+
+const QuickstartSidebarIcon = () => <RiHand size={24} />;
 
 const appDevOverrides = createFrontendModule({
   pluginId: 'app',
@@ -73,7 +75,7 @@ function QuickstartSidebarItem() {
   return (
     <SidebarItem
       text="Quick start"
-      icon={WavingHandOutlinedIcon}
+      icon={QuickstartSidebarIcon}
       onClick={() => toggleDrawer(QUICKSTART_DRAWER_ID)}
     />
   );

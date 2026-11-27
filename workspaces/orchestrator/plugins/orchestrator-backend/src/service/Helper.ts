@@ -65,12 +65,22 @@ export function delay(time: number) {
   return new Promise(r => setTimeout(r, time));
 }
 
-export function groupByProcessIdAndVersion(instances: ProcessInstance[]) {
-  return instances.reduce<Record<string, ProcessInstance[]>>((acc, item) => {
-    acc[`${item.processId}-${item.version}`] ??= [];
-    acc[`${item.processId}-${item.version}`].push(item);
-    return acc;
-  }, {});
+export type WorkflowRunStatsInstance = Pick<
+  ProcessInstance,
+  'processId' | 'version' | 'state' | 'start' | 'end'
+>;
+
+export function groupByProcessIdAndVersion(
+  instances: WorkflowRunStatsInstance[],
+) {
+  return instances.reduce<Record<string, WorkflowRunStatsInstance[]>>(
+    (acc, item) => {
+      acc[`${item.processId}-${item.version}`] ??= [];
+      acc[`${item.processId}-${item.version}`].push(item);
+      return acc;
+    },
+    {},
+  );
 }
 
 export type WorkflowRunStatsResult = {
@@ -84,7 +94,7 @@ export type WorkflowRunStatsResult = {
 };
 
 export function getWorkflowRunStats(
-  groupedData: Record<string, ProcessInstance[]>,
+  groupedData: Record<string, WorkflowRunStatsInstance[]>,
 ): WorkflowRunStatsResult[] {
   return Object.entries(groupedData).map(([processIdVersion, items]) => {
     const averageTimeToComplete =

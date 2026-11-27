@@ -25,6 +25,7 @@ import {
   extractWorkflowFormat,
   Filter,
   fromWorkflowSource,
+  ProcessInstance,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
   WorkflowAvailabilityResponse,
@@ -40,6 +41,11 @@ import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 import { getWorkflowRunStats, groupByProcessIdAndVersion } from './Helper';
+
+export interface WorkflowOverviewsResult {
+  overviews: WorkflowOverview[];
+  serviceUrls: Record<string, string>;
+}
 
 export class SonataFlowService {
   private readonly orchestratorKafkaImpl?: Kafka;
@@ -108,7 +114,7 @@ export class SonataFlowService {
     pagination?: Pagination;
     filter?: Filter;
     targetEntity?: string;
-  }): Promise<WorkflowOverview[] | undefined> {
+  }): Promise<WorkflowOverviewsResult | undefined> {
     const { definitionIds, pagination, filter, targetEntity } = args;
     const workflowInfos = await this.dataIndexService.fetchWorkflowInfos({
       definitionIds,
@@ -116,7 +122,7 @@ export class SonataFlowService {
       filter,
     });
     if (!workflowInfos?.length) {
-      return [];
+      return { overviews: [], serviceUrls: {} };
     }
 
     const statsDefinitionIds = workflowInfos.map(info => info.id);
@@ -134,7 +140,7 @@ export class SonataFlowService {
     // Fetch instances by workflow definition id. Do not reuse the overview
     // filter here: entity overview passes `id IN [workflowIds]`, which applies
     // to definitions but would match instance ids when querying instances.
-    const instances = await this.dataIndexService.fetchInstances({
+    const instances = await this.dataIndexService.fetchStatsInstances({
       definitionIds: statsDefinitionIds,
       filter: instancesFilter,
     });
@@ -178,15 +184,25 @@ export class SonataFlowService {
      */
     const worflowInstanceStats = getWorkflowRunStats(groupedData);
 
-    const items = await Promise.all(
-      workflowInfos
-        .filter(info => info.source)
-        .map(info =>
-          this.fetchWorkflowOverviewBySource(info.source!, targetEntity),
+    const workflowInfosWithSource = workflowInfos.filter(info => info.source);
+    const latestInstancesByDefinitionId =
+      await this.dataIndexService.fetchLatestInstancesByDefinitionIds({
+        definitionIds: workflowInfosWithSource.map(
+          info => fromWorkflowSource(info.source!).id,
         ),
+        targetEntity,
+      });
+    const items = await Promise.all(
+      workflowInfosWithSource.map(info =>
+        this.fetchWorkflowOverviewBySource(
+          info.source!,
+          targetEntity,
+          latestInstancesByDefinitionId,
+        ),
+      ),
     );
 
-    return items
+    const overviews = items
       .filter((item): item is WorkflowOverview => !!item)
       .map(overview => {
         const stats = worflowInstanceStats.find(
@@ -206,6 +222,14 @@ export class SonataFlowService {
         }
         return overview;
       });
+    const serviceUrls: Record<string, string> = {};
+    workflowInfos.forEach(info => {
+      if (info.serviceUrl) {
+        serviceUrls[info.id] = info.serviceUrl;
+      }
+    });
+
+    return { overviews, serviceUrls };
   }
 
   public async executeWorkflowAsCloudEvent(args: {
@@ -446,7 +470,7 @@ export class SonataFlowService {
     }
 
     // Can reuse the instances to get the stats
-    const instances = await this.dataIndexService.fetchInstances({
+    const instances = await this.dataIndexService.fetchStatsInstances({
       definitionIds: [definitionId],
     });
     const groupedData = groupByProcessIdAndVersion(instances);
@@ -475,21 +499,23 @@ export class SonataFlowService {
   private async fetchWorkflowOverviewBySource(
     source: string,
     targetEntity?: string,
+    latestInstancesByDefinitionId?: Map<string, ProcessInstance | undefined>,
   ): Promise<WorkflowOverview | undefined> {
     let lastTriggered: Date = new Date(0);
     let lastRunStatus: ProcessInstanceStateValues | undefined;
     let lastRunId: string | undefined;
     const definition = fromWorkflowSource(source);
 
-    const processInstances =
-      await this.dataIndexService.fetchInstancesByDefinitionId({
-        definitionId: definition.id,
-        limit: 1,
-        offset: 0,
-        targetEntity: targetEntity,
-      });
-
-    const pInstance = processInstances[0];
+    const pInstance = latestInstancesByDefinitionId
+      ? latestInstancesByDefinitionId.get(definition.id)
+      : (
+          await this.dataIndexService.fetchInstancesByDefinitionId({
+            definitionId: definition.id,
+            limit: 1,
+            offset: 0,
+            targetEntity: targetEntity,
+          })
+        )[0];
 
     if (pInstance?.start) {
       lastRunId = pInstance.id;

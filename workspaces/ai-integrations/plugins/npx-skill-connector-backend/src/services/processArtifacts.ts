@@ -87,7 +87,7 @@ export function parseMarkdownFrontmatter(
  *
  * @returns `true` when the computed digest matches the expected value.
  */
-function verifyDigest(data: Buffer, expected: string): boolean {
+export function verifyDigest(data: Buffer, expected: string): boolean {
   const hex = createHash('sha256').update(data).digest('hex');
   return `sha256:${hex}` === expected;
 }

@@ -312,7 +312,7 @@ export class SavedPromptsPage {
       .getByRole('button', { name: this.t['aria.options.label'] })
       .click();
     await this.page
-      .getByRole('menuitem', { name: this.t['settings.mcp.label'] })
+      .getByRole('menuitem', { name: this.t['settings.menu.label'] })
       .click();
     await this.page
       .getByRole('button', {

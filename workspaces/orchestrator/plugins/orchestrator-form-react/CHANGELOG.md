@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.14.0
+
+### Minor Changes
+
+- cc65d5f: Allow forward navigation in the multi-step orchestrator form stepper to previously reached steps, with validation on the current step before moving forward.
+- 07ae50f: Backstage version bump to v1.56.4
+
+### Patch Changes
+
+- b319862: Updated dependency `prettier` to `3.10.1`.
+- d25a6bd: Updated dependency `prettier` to `3.10.0`.
+- Updated dependencies [8dfbd19]
+- Updated dependencies [b319862]
+- Updated dependencies [6a72d20]
+- Updated dependencies [d25a6bd]
+- Updated dependencies [07ae50f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.13.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.13.0
+
+## 2.13.2
+
+### Patch Changes
+
+- Updated dependencies [2c22798]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.2
+
 ## 2.13.1
 
 ### Patch Changes

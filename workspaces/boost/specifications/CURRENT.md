@@ -10,8 +10,8 @@ PRDs and Jira analysis are background, not current truth.
 - `plugins/ai-catalog` — AI Catalog frontend
 - `plugins/ogx-entity-provider`
 
-The `boost-backend` plugin and Kagenti packages are development scaffolding;
-they are not released for RHDH 2.1. Browse and entity cards use
+The `boost-backend` plugin is development scaffolding;
+it is not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
 The unreleased backend and the current Usage card still contain project-specific
@@ -119,17 +119,17 @@ listed below.
 | Change                               | Status and scope                                                                                                                  |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `ai-catalog-entity-model`            | Follow-on entity-model and SDK planning; the archived `ogx-entity-provider` spec remains the current OGX release source of truth. |
-| `agent-creation-discovery`           | Follow-on agent, MCP, and catalog-entity capabilities; not current-release behavior.                                              |
-| `ai-chat-interaction-experience`     | Follow-on chat and interaction capabilities; not current-release behavior.                                                        |
-| `pluggable-ai-platform-architecture` | Follow-on provider/backend architecture; not current-release behavior.                                                            |
-| `platform-operations-deployment`     | Follow-on backend, configuration, deployment, and administration work; not current-release behavior.                              |
+| `agent-creation-discovery`           | Removed (#5548) — obsolete application-oriented area; entity taxonomy governed by `ai-catalog-entity-model`.                      |
+| `ai-chat-interaction-experience`     | Removed (#5548) — obsolete chat/interaction area; not current planning.                                                           |
+| `pluggable-ai-platform-architecture` | Removed (#5548) — obsolete provider/backend architecture area; not current planning.                                              |
+| `platform-operations-deployment`     | Moved (#5548) to `RHDHPLAN-1513-potential-openspecs/` as historical reference for potential RHDHPLAN-1513 reuse.                  |
 | `connector-shared-infrastructure`    | Follow-on shared connector infrastructure; not current-release behavior.                                                          |
 | `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
 | `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |
 | `ingestion-health-dashboard`         | Follow-on backend/admin health dashboard work; not current-release behavior.                                                      |
-| `neo4j-knowledge-graph`              | Follow-on graph synchronization work; not current-release behavior.                                                               |
-| `oci-skill-connector`                | Follow-on OCI connector implementation; not current-release behavior.                                                             |
-| `oci-skill-registry`                 | Follow-on OCI registry ingestion framework; not current-release behavior.                                                         |
+| `neo4j-knowledge-graph`              | Archived (RHIDP-18761) — see `archive/2026-11-06-neo4j-knowledge-graph/`.                                                         |
+| `oci-skill-connector`                | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-connector/`.                                                           |
+| `oci-skill-registry`                 | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-registry/`.                                                            |
 | `mcp-registry-connector`             | Follow-on MCP Registry productization; not current-release behavior.                                                              |
 | `rhoai-connector`                    | Follow-on RHOAI MCP connector; not current-release behavior.                                                                      |
 | `upstream-schema-alignment`          | Follow-on upstream-kind alignment and migration-readiness work; not current-release behavior.                                     |

@@ -18,9 +18,7 @@ import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
 
-// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+const startCommand = 'yarn start';
 
 // Config paths (absolute to work from any cwd)
 const baseConfig = `${__dirname}/app-config.yaml`;
@@ -52,9 +50,7 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [
-    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
-  ],
+  reporter: [['html', { open: 'never', outputFolder: `e2e-test-report` }]],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -62,7 +58,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+  outputDir: `node_modules/.cache/e2e-test-results`,
 
   testDir: 'e2e-tests',
 

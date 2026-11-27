@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
 
+## 1.2.1
+
 ## 1.2.0
 
 ## 1.1.0

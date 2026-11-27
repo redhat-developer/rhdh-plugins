@@ -43,13 +43,13 @@ Bump-critical frontend coverage focuses on plugin API wiring (`bulkImportApiRef`
 | Need                                                 | Use                                                                       |
 | ---------------------------------------------------- | ------------------------------------------------------------------------- |
 | Component/hook unit tests, API client, plugin wiring | Scoped `yarn workspace … test` + plugin `dev/`                            |
-| Full app navigation with real auth providers         | Workspace `yarn start` or `yarn start:legacy`                             |
-| Automated UI e2e in this workspace                   | `yarn test:e2e:legacy` / `yarn test:e2e:nfs` / `yarn test:e2e:all`        |
+| Full app navigation with real auth providers         | Workspace `yarn start`                                                    |
+| Automated UI e2e in this workspace                   | `yarn test:e2e`                                                           |
 | Real multi-user OAuth on-behalf-of flows             | Overlays or consumer RHDH — **not** an epic deliverable for CI bump trust |
 
 **Important:** Workspace Playwright intentionally **mocks OAuth**. Passing e2e here does **not** prove live SCM token flows. Treat overlays / consumer deployments as the place for credential-backed multi-user coverage.
 
-**Evaluation (RHIDP-14104):** Existing `packages/app` (NFS) and `packages/app-legacy` are justified for OAuth and cross-plugin integration. Bump-trust default remains plugin `dev/` + scoped CI. Do not add another `packages/app`.
+**Evaluation (RHIDP-14104):** Existing `packages/app` (NFS) is justified for OAuth and cross-plugin integration. Bump-trust default remains plugin `dev/` + scoped CI. Do not add another `packages/app`.
 
 ## Related packages
 

@@ -37,6 +37,7 @@ jest.mock('node-fetch', () => ({
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),
   promises: {
+    realpath: jest.fn(),
     mkdtemp: jest.fn(),
     writeFile: jest.fn(),
   },
@@ -410,6 +411,8 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
     it('should create temp dir, write mkdocs.yml and docs files', async () => {
       const tmp = require('tmp');
       const tmpobj = tmp.fileSync();
+      const physicalDir = '/physical/workdir';
+      (fs.promises.realpath as jest.Mock).mockResolvedValue(physicalDir);
       (fs.promises.mkdtemp as jest.Mock).mockResolvedValue(tmpobj.name);
 
       const response = new ModelCatalogBridgeUrlReaderServiceReadTreeResponse(
@@ -422,7 +425,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       const resultDir = await response.dir();
 
       expect(fs.promises.mkdtemp).toHaveBeenCalledWith(
-        path.join(workDir, 'backstage-'),
+        path.join(physicalDir, 'backstage-'),
       );
       // mkdocs.yml should be written at the root
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
@@ -557,7 +560,7 @@ describe('readSkillSourceConfigs', () => {
     ]);
   });
 
-  it('should skip npx sources', () => {
+  it('should register both OCI and npx connector destinations', () => {
     const config = new ConfigReader({
       catalog: {
         providers: {
@@ -583,8 +586,10 @@ describe('readSkillSourceConfigs', () => {
       },
     });
     const result = readSkillSourceConfigs(config);
-    expect(result).toHaveLength(1);
-    expect(result[0].sourceId).toBe('quay-public');
+    expect(result).toEqual([
+      { connectorPluginId: 'skill-image-connector', sourceId: 'quay-public' },
+      { connectorPluginId: 'npx-skill-connector', sourceId: 'rhess-index' },
+    ]);
   });
 
   it('should skip blank source IDs', () => {

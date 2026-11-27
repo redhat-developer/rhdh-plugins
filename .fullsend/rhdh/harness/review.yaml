@@ -1,9 +1,15 @@
-# Pinned to agents@v0.45.0 (commit 93c69826f), matching the fullsend@v0.45.0
+# Pinned to agents@v0.57.1 (commit ea29de9b), matching the fullsend@v0.57.1
 # CLI our own .github/workflows/fullsend.yaml pins — these are companion
 # releases cut together, so this is the harness content the installed CLI
 # was actually built and tested against.
-base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/review.yaml#sha256=3e9302d8143fcfd93df8e4542162776e98893c8ef367450679e2ffa89e5b0c53
-image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+base: https://raw.githubusercontent.com/fullsend-ai/agents/ea29de9bb8b1729b04c0597b48a5c7aae62deb71/harness/review.yaml#sha256=c31ab2ff59b288ad1b8e3755751549c00c1606649cdb239bbbe5df58ba6f3112
+model: claude-opus-4-6
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:0.57.1
+# The upstream review subagents request the `opus` alias in their frontmatter.
+# Pin that alias in Claude Code as well as the review orchestrator above.
+env:
+  sandbox:
+    ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-4-6
 # policy: inherited from base (policies/base.yaml + openshell providers/
 # profiles for vertex-ai and, via the github forge overlay, github-ro).
 # Our former rhdh/policies/review.yaml fork existed only to allowlist the

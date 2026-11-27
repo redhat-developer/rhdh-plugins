@@ -30,7 +30,7 @@ import type { NpxSourceConfig } from './services/types';
  *
  * Registers public Agent Skills v0.2 index sources, discovers entries,
  * retrieves and verifies artifacts, normalizes metadata, and serves
- * snapshots via GET /skills/:sourceId.
+ * authenticated snapshots via GET /skills/:sourceId.
  *
  * It does not create AiResource entities or mutate the catalog.
  * Public sources only; no npx execution, Git crawling, or
@@ -59,7 +59,7 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
           );
         }
 
-        httpRouter.use(createRouter(snapshots));
+        httpRouter.use(createRouter(snapshots, sources));
 
         // Schedule periodic refresh for each source
         for (const source of sources) {
@@ -73,6 +73,11 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
               await refreshSource(source, snapshots, childLogger, abortSignal);
             },
           });
+          logger.debug(
+            `Source '${source.id}': schedule=${JSON.stringify(
+              source.schedule,
+            )}`,
+          );
         }
 
         logger.info(

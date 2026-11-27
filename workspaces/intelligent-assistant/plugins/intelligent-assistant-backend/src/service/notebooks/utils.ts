@@ -23,7 +23,7 @@ import {
 
 import { Response } from 'express';
 
-import { NotebookSession } from './types/notebooksTypes';
+import { NotebookSession, SessionMetadata } from './types/notebooksTypes';
 
 /**
  * Handle error and return appropriate HTTP status code and error message
@@ -74,6 +74,20 @@ export const handleError = (
 };
 
 /**
+ * Copy metadata without fields already assigned by the session.
+ * This prevents metadata from overriding those session values.
+ */
+function cleanSessionMetadata(metadata?: SessionMetadata): SessionMetadata {
+  const cleanedMetadata = { ...metadata };
+  delete cleanedMetadata.user_id;
+  delete cleanedMetadata.name;
+  delete cleanedMetadata.description;
+  delete cleanedMetadata.created_at;
+  delete cleanedMetadata.updated_at;
+  return cleanedMetadata;
+}
+
+/**
  * Build VectorStore metadata object from session data
  * @param session - Notebook session
  * @returns Metadata object for vector store
@@ -87,7 +101,7 @@ export const buildVectorStoreMetadata = (
     description: session.description,
     created_at: session.created_at,
     updated_at: session.updated_at,
-    ...(session.metadata || {}),
+    ...cleanSessionMetadata(session.metadata),
   };
 };
 

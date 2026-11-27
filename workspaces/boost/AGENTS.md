@@ -18,10 +18,8 @@ workspaces/boost/
 │       ├── specifications/        # Product requirements (RHDH 2.1)
 │       │   ├── boost-context.md   # Project rationale, 12 design principles
 │       │   └── prd/               # Product Requirements Documents
-│       ├── agent-creation-discovery/
-│       ├── ai-chat-interaction-experience/
-│       ├── pluggable-ai-platform-architecture/
-│       └── platform-operations-deployment/
+│       └── RHDHPLAN-1513-potential-openspecs/  # Historical reference (#5548)
+│           └── platform-operations-deployment/
 ├── openspec/                      # Implementation specifications (RHDH 2.2)
 │   ├── specs/                     # Implemented behavior and release source of truth
 │   └── changes/                   # One directory per capability area (RHDH 2.2 cycle)
@@ -53,7 +51,7 @@ Each bullet in a scenario (GIVEN/WHEN/THEN/AND) must be a testable assertion —
 #### Scenario: Source annotation format
 - WHEN an entity provider emits an entity
 - THEN the entity has the annotation in format: connector-name/registry-instance-id
-- AND connector-name is one of: kagenti, ogx
+- AND connector-name is one of: ogx
 - AND additional connector names may be added; the SDK only requires a non-empty string   <-- not testable
 - AND registry-instance-id is the app-config provider instance ID
 ```
@@ -67,7 +65,7 @@ only requires a non-empty string and MUST NOT enum-validate connector-name.
 #### Scenario: Source annotation format
 - WHEN an entity provider emits an entity
 - THEN the entity has the annotation in format: connector-name/registry-instance-id
-- AND connector-name is one of: kagenti, ogx
+- AND connector-name is one of: ogx
 - AND registry-instance-id is the app-config provider instance ID
 ```
 
@@ -123,7 +121,7 @@ Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, `catalogAp
 
 ### Provider isolation
 
-Each AI provider (`boost-backend-module-ogx`, `boost-backend-module-kagenti`) is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
+Each AI provider module is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
 
 ### Capability checks, not identity checks
 
@@ -131,7 +129,7 @@ Frontend rendering decisions use capability-based interface checks. Never use `p
 
 ### Permissions as sole authorization
 
-All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) with fine-grained permissions (`boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`). No custom route-level authorization logic.
+All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) with fine-grained permissions (`boost.agent.*`, `boost.tool.*`). No custom route-level authorization logic.
 
 ### Schema-driven validation
 
@@ -215,10 +213,8 @@ Connector schema migrations (`migrateConnectorSchemas` in
 | `ai-catalog-connector-utils`     | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation                                                                              |
 | `boost-backend`                  | Core routes, services, middleware, ProviderManager                                                                                                                         |
 | `boost-backend-module-ogx`       | OGX provider module                                                                                                                                                        |
-| `boost-backend-module-kagenti`   | Kagenti provider module                                                                                                                                                    |
 | `ai-catalog-entity-provider-sdk` | Shared entity-provider SDK (`node-library` role) — annotation constants, version normalization, entity-provider interfaces, validation utilities, and delta sync framework |
 | `ogx-entity-provider`            | Independently deployable catalog entity provider                                                                                                                           |
-| `kagenti-entity-provider`        | Independently deployable catalog entity provider                                                                                                                           |
 | `boost-migration-readiness`      | Migration-readiness CLI tool (`node-library` role with custom CLI build)                                                                                                   |
 
 ### CLI binary packages
@@ -310,7 +306,7 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
 - Permission names — two namespaces by design:
-  - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
+  - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.access`, `boost.admin`
   - Catalog entity visibility uses Backstage Catalog's built-in `catalog.entity.read` permission and the deployed RHDH conditional-policy support. The current Usage tab's `ai-catalog.asset.access.usage-docs` check is an existing implementation detail; do not introduce new or duplicate `ai-catalog.*` entity permissions without a concrete API or entity-model requirement.
 - Config: deployment permission policy and RHDH conditional policies are the default catalog authorization configuration. Do not add `ai-catalog.rbac.*` keys without a documented gap.
 - Resource types: `boost-agent`, `boost-tool`; catalog entities use the standard Catalog permission model

@@ -2,7 +2,9 @@
 
 > **Status: Consolidated into RHIDP-15258 (Entity-Provider SDK)** — Annotation scheme is now part of the SDK epic. Single story RHIDP-15255 covers all 3 annotations (category, version, source). Stories RHIDP-15256 and RHIDP-15257 have been closed.
 
-Standardized annotation scheme for classifying AI assets (agents, skills, MCP servers, models, model servers) in the Backstage catalog, with documented normalization rules for versioning and provenance tracking.
+Standardized annotation scheme for the five minimum feature categories (agents, skills, MCP servers, models, model servers), with existing rule compatibility retained separately.
+
+Requirements cover: `rhdh.io/ai-asset-category` (five minimum categories plus the existing `rule` compatibility value), `rhdh.io/ai-asset-version` (4 normalization rules), `rhdh.io/ai-asset-source` (provenance), and migration-readiness mapping. RHIDP-18762 reconciled the SDK category schema, public type/list, and validation diagnostics to the six retained values, excluding `skill-bundle`. This reconciliation does not activate provider adoption or settle deferred metadata and incremental-sync design.
 
 ## ADDED Requirements
 
@@ -10,18 +12,23 @@ Standardized annotation scheme for classifying AI assets (agents, skills, MCP se
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with one of the allowed values.
 
-The vocabulary includes `rule` and `skill-bundle` in addition to the original five values. `rule` covers AI decision rules — these are AIResource entities (same kind as skills) that need their own category value so the CatalogProcessor validator can validate them and the frontend can filter them in browse views. `skill-bundle` covers curated collections of related skills (e.g., "security-toolkit"); without a dedicated category value, SkillBundle entities would either fail the validator (unrecognized category) or require special-casing outside the annotation scheme. Both values ensure the annotation enum is the single source of truth for all AI entity types that pass through validation and frontend browse filtering.
+The five minimum categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` values remain accepted for compatibility. This does not require new rule discovery, providers, or frontend functionality. The kind/spec.type mappings are separate from this category vocabulary.
 
-#### Scenario: Valid category annotation values
+#### Scenario: Valid minimum category annotation values
 
-- **WHEN** an entity provider emits an AI asset entity
-- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
+- **WHEN** an entity provider emits an asset in one of the five minimum feature categories
+- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
 - **AND** the CatalogProcessor validator accepts the entity
+
+#### Scenario: Existing rule category remains compatible
+
+- **WHEN** an otherwise valid AI asset entity has `rhdh.io/ai-asset-category: rule`
+- **THEN** the CatalogProcessor validator accepts that category
 
 #### Scenario: Missing category annotation rejected (AI entities only)
 
 - **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has no `rhdh.io/ai-asset-category` value
-- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, mcp-server, ai-model, model-server`
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
 - **AND** entities without any `rhdh.io/ai-asset-*` annotation are NOT affected by this validator
@@ -29,7 +36,7 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 #### Scenario: Invalid category annotation rejected with value shown (AI entities only)
 
 - **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation and has an invalid `rhdh.io/ai-asset-category` value (e.g. `invalid-type`)
-- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid rhdh.io/ai-asset-category value 'invalid-type'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid rhdh.io/ai-asset-category value 'invalid-type'. Allowed: agent, skill, rule, mcp-server, ai-model, model-server`
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
 
@@ -41,12 +48,10 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
-- **WHEN** the Kagenti entity provider emits an agent entity
-- **THEN** the entity has `rhdh.io/ai-asset-category: agent`
-- **AND** **WHEN** the OGX entity provider emits a model entity
+- **WHEN** the OGX entity provider emits a model entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: ai-model`
-- **AND** **WHEN** the OCI skill registry provider emits a skill entity
-- **THEN** the entity has `rhdh.io/ai-asset-category: skill`
+- **AND** **WHEN** the MCP registry provider emits an MCP server entity
+- **THEN** the entity has `rhdh.io/ai-asset-category: mcp-server`
 
 ### Requirement: rhdh.io/ai-asset-version Annotation with Normalization
 
@@ -79,7 +84,7 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 #### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15255)
 
-- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
+- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`
 - **THEN** it is a function accepting `sourceVersion: string` and returning normalized semver string
 - **AND** it implements all four normalization rules (semver pass-through, date-based, commit hash, fallback)
 - **AND** unit tests cover all normalization rules
@@ -94,18 +99,8 @@ Additional connector names may be added when new connectors ship. The CatalogPro
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
-- **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`, `mcp-registry`, `rhoai`
-- **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
-
-#### Scenario: Kagenti provider source annotation (RHIDP-15255)
-
-- **WHEN** the Kagenti provider with instance ID `prod-kagenti` emits an entity
-- **THEN** the entity has `rhdh.io/ai-asset-source: kagenti/prod-kagenti`
-
-#### Scenario: OCI skill registry provider source annotation (RHIDP-15255)
-
-- **WHEN** the OCI skill registry provider with instance ID `default` emits an entity
-- **THEN** the entity has `rhdh.io/ai-asset-source: oci-skill-registry/default`
+- **AND** `connector-name` is one of: `ogx`, `mcp-registry`, `rhoai`
+- **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `dev-skills`)
 
 #### Scenario: MCP Registry provider source annotation (RHIDP-15255)
 
@@ -121,7 +116,6 @@ Additional connector names may be added when new connectors ship. The CatalogPro
 
 - **WHEN** an AI asset entity is queried from the catalog
 - **THEN** the `rhdh.io/ai-asset-source` annotation provides audit trail: which connector and which registry instance produced this entity
-- **AND** this enables troubleshooting (e.g., "all entities from kagenti/prod-kagenti failing validation")
 
 ### Requirement: Migration-Readiness Mapping to Upstream Kinds
 

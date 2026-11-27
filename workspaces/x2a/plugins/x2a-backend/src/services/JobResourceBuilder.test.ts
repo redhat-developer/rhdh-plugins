@@ -68,6 +68,93 @@ describe('JobResourceBuilder', () => {
         });
       });
 
+      it('should stringify non-string LLM values from app-config', () => {
+        // An unquoted YAML scalar such as `MAX_TOKENS: 32000` reaches the
+        // builder as a number. Kubernetes rejects the whole Secret if a
+        // stringData value is not a string.
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          MAX_TOKENS: 32000,
+          ZERO_TOKENS: 0,
+          TEMPERATURE: 0.5,
+          STREAMING: false,
+          EMPTY: '',
+        } as unknown as Record<string, string>;
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData).toMatchObject({
+          LLM_MODEL: 'anthropic.claude-v2',
+          MAX_TOKENS: '32000',
+          ZERO_TOKENS: '0',
+          TEMPERATURE: '0.5',
+          STREAMING: 'false',
+          EMPTY: '',
+        });
+        for (const value of Object.values(secret.stringData!)) {
+          expect(typeof value).toBe('string');
+        }
+      });
+
+      it('should drop LLM values that are null or undefined', () => {
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          UNRESOLVED: undefined,
+          EMPTIED: null,
+        } as unknown as Record<string, string>;
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData!.LLM_MODEL).toBe('anthropic.claude-v2');
+        expect(secret.stringData).not.toHaveProperty('UNRESOLVED');
+        expect(secret.stringData).not.toHaveProperty('EMPTIED');
+      });
+
+      it.each([
+        {
+          label: 'a nested map',
+          extra: { NESTED: { model: 'x' } },
+          message: 'Secret value "NESTED" must be a string, number, or boolean',
+        },
+        {
+          label: 'a list',
+          extra: { NESTED: ['a', 'b'] },
+          message: 'Secret value "NESTED" must be a string, number, or boolean',
+        },
+        {
+          label: 'an integer too large to represent exactly',
+          extra: { MAX_TOKENS: Number.MAX_SAFE_INTEGER + 1 },
+          message:
+            'Secret value "MAX_TOKENS" is an integer outside the safe range. Quote it in app-config so the digits are preserved.',
+        },
+        {
+          label: 'a non-finite number',
+          extra: { TEMPERATURE: Number.POSITIVE_INFINITY },
+          message: 'Secret value "TEMPERATURE" must be a finite number',
+        },
+      ])('should reject an LLM value that is $label', ({ extra, message }) => {
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          ...extra,
+        } as unknown as Record<string, string>;
+
+        expect(() =>
+          JobResourceBuilder.buildProjectSecret(
+            projectId,
+            undefined,
+            mockConfig,
+          ),
+        ).toThrow(message);
+      });
+
       it('should support alternative LLM credential formats', () => {
         mockConfig.credentials.llm = {
           LLM_MODEL: 'anthropic.claude-v2',
@@ -427,6 +514,62 @@ describe('JobResourceBuilder', () => {
       });
     });
 
+    it('should stringify non-string git credential values', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        phase,
+        {
+          sourceRepo: {
+            url: 'https://github.com/org/source',
+            token: 12345,
+            branch: 'main',
+          },
+          targetRepo: {
+            url: 'https://github.com/org/target',
+            token: 'target-token', // NOSONAR
+            branch: 42,
+          },
+        } as unknown as typeof gitCredentials,
+        ownerReference,
+      );
+
+      expect(secret.stringData).toMatchObject({
+        SOURCE_REPO_TOKEN: '12345',
+        TARGET_REPO_BRANCH: '42',
+      });
+      for (const value of Object.values(secret.stringData!)) {
+        expect(typeof value).toBe('string');
+      }
+    });
+
+    it('should drop git credential values that are null or undefined', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        phase,
+        {
+          sourceRepo: {
+            url: 'https://github.com/org/source',
+            token: undefined,
+            branch: 'main',
+          },
+          targetRepo: {
+            url: 'https://github.com/org/target',
+            token: null,
+            branch: 'main',
+          },
+        } as unknown as typeof gitCredentials,
+        ownerReference,
+      );
+
+      expect(secret.stringData!.SOURCE_REPO_URL).toBe(
+        'https://github.com/org/source',
+      );
+      expect(secret.stringData).not.toHaveProperty('SOURCE_REPO_TOKEN');
+      expect(secret.stringData).not.toHaveProperty('TARGET_REPO_TOKEN');
+    });
+
     it('should include target repository credentials', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
@@ -554,6 +697,241 @@ describe('JobResourceBuilder', () => {
         branch: 'main',
       },
     };
+
+    describe('deploymentPatch across phases', () => {
+      it('rejects a null deployment patch', () => {
+        mockConfig.kubernetes.deploymentPatch =
+          null as unknown as X2AConfig['kubernetes']['deploymentPatch'];
+
+        expect(() =>
+          JobResourceBuilder.buildJobSpec(baseParams, mockConfig),
+        ).toThrow('deploymentPatch must be a plain object');
+      });
+
+      it.each([
+        'init',
+        'analyze',
+        'migrate',
+        'publish',
+        'adversarial-analyze',
+        'adversarial-migrate',
+      ] as const)('applies the configured patch to %s Jobs', phase => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          { ...baseParams, phase },
+          mockConfig,
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.env).toEqual(
+          expect.arrayContaining([
+            { name: 'PHASE', value: phase },
+            { name: 'PATCH_TEST', value: 'present' },
+          ]),
+        );
+      });
+
+      it('preserves rule mounts and volumes while applying the patch', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            acceptedRules: [
+              { id: 'rule-1', title: 'Test rule', description: 'Rule body' },
+            ],
+          },
+          mockConfig,
+        );
+        const podSpec = job.spec?.template.spec;
+        const container = podSpec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ name: 'rules' })]),
+        );
+        expect(podSpec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'rules',
+              configMap: { name: 'x2a-rules-init-job-123' },
+            }),
+          ]),
+        );
+        expect(container?.env).toEqual(
+          expect.arrayContaining([{ name: 'PATCH_TEST', value: 'present' }]),
+        );
+      });
+
+      it('preserves adversarial-agent mounts and volumes while applying the patch', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            phase: 'adversarial-analyze',
+            adversarialAgents: [
+              {
+                id: 'agent-1',
+                name: 'Test agent',
+                prompt: 'Test prompt',
+                phases: ['analyze'],
+                critical: false,
+              },
+            ],
+          },
+          mockConfig,
+          'x2a-adversarial-agents-job-123',
+        );
+        const podSpec = job.spec?.template.spec;
+        const container = podSpec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ name: 'adversarial-agents-config' }),
+          ]),
+        );
+        expect(podSpec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'adversarial-agents-config',
+              configMap: { name: 'x2a-adversarial-agents-job-123' },
+            }),
+          ]),
+        );
+      });
+
+      it('overrides a phase-specific rules mount at the same path', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    volumeMounts: [
+                      { name: 'rules', mountPath: '/rules', readOnly: true },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            acceptedRules: [
+              { id: 'rule-1', title: 'Test rule', description: 'Rule body' },
+            ],
+          },
+          mockConfig,
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'rules',
+              mountPath: '/rules',
+              readOnly: true,
+            }),
+          ]),
+        );
+      });
+
+      it('overrides a phase-specific adversarial-agent mount at the same path', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    volumeMounts: [
+                      {
+                        name: 'adversarial-agents-config',
+                        mountPath: '/etc/x2a/adversarial-agents',
+                        readOnly: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            phase: 'adversarial-analyze',
+            adversarialAgents: [
+              {
+                id: 'agent-1',
+                name: 'Test agent',
+                prompt: 'Test prompt',
+                phases: ['analyze'],
+                critical: false,
+              },
+            ],
+          },
+          mockConfig,
+          'x2a-adversarial-agents-job-123',
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'adversarial-agents-config',
+              mountPath: '/etc/x2a/adversarial-agents',
+              readOnly: true,
+            }),
+          ]),
+        );
+      });
+    });
 
     describe('Job metadata', () => {
       it('should generate unique job name with phase', () => {

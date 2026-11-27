@@ -350,10 +350,19 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.displayMode.fullscreen': 'Schermo intero',
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',
-    'settings.mcp.badge': 'Nuovo',
     'settings.panel.title': 'Impostazioni',
-    'settings.mcp.label': 'Impostazioni MCP',
-    'settings.prompt.label': 'Impostazioni Prompt',
+    'settings.menu.label': 'Impostazioni',
+    'settings.menu.badge': 'Nuovo',
+    'settings.preferences.tab.title': 'Preferenze',
+    'settings.preferences.pinnedChats.label': 'Chat fissate',
+    'settings.preferences.pinnedChats.description':
+      'Mostra le chat fissate nel pannello della cronologia delle conversazioni.',
+    'settings.preferences.savedPrompts.label': 'Prompt salvati',
+    'settings.preferences.savedPrompts.description':
+      'Mostra i prompt salvati nel pannello della cronologia delle conversazioni.',
+    'settings.preferences.screenContext.label': 'Contesto dello schermo',
+    'settings.preferences.screenContext.description':
+      "Condividi lo schermo corrente con l'assistente quando invii messaggi. Disattivato per impostazione predefinita.",
     'settings.pinned.disable': 'Disabilita le chat fissate',
     'settings.pinned.disabled.description':
       'Le chat fissate sono attualmente disabilitate',
