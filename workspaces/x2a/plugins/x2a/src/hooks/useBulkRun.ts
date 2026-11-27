@@ -20,12 +20,11 @@ import {
   MAX_CONCURRENT_BULK_RUN,
   Module,
   Project,
-  resolveScmProvider,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useClientService } from '../ClientService';
 import { useScmHostMap } from './useScmHostMap';
-import { useRepoAuthentication } from '../repoAuth';
+import { repoTokenRequest, useRepoAuthentication } from '../repoAuth';
 import {
   canRunNextPhase,
   extractResponseError,
@@ -50,28 +49,17 @@ export const useBulkRun = () => {
     async (
       project: Project,
     ): Promise<{ sourceToken: string; targetToken: string }> => {
-      const targetToken = (
-        await repoAuth.authenticate([
-          resolveScmProvider(
-            project.targetRepoUrl,
-            hostMap,
-          ).getAuthTokenDescriptor(false),
-        ])
-      )[0].token;
+      // One batch, so a refused host fails before any sign-in starts. The
+      // target token is reused when source and target are the same repo.
+      const sameRepo = project.sourceRepoUrl === project.targetRepoUrl;
+      const [target, source = target] = await repoAuth.authenticate([
+        repoTokenRequest(project.targetRepoUrl, hostMap, false),
+        ...(sameRepo
+          ? []
+          : [repoTokenRequest(project.sourceRepoUrl, hostMap, true)]),
+      ]);
 
-      let sourceToken = targetToken;
-      if (project.sourceRepoUrl !== project.targetRepoUrl) {
-        sourceToken = (
-          await repoAuth.authenticate([
-            resolveScmProvider(
-              project.sourceRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(true),
-          ])
-        )[0].token;
-      }
-
-      return { sourceToken, targetToken };
+      return { sourceToken: source.token, targetToken: target.token };
     },
     [repoAuth, hostMap],
   );

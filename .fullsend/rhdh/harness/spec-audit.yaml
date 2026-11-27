@@ -3,11 +3,11 @@
 # The review base supplies the read-only sandbox and token. Custom scripts
 # prepare the PR head and publish an audit comment without changing reviews.
 
-base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/review.yaml#sha256=3e9302d8143fcfd93df8e4542162776e98893c8ef367450679e2ffa89e5b0c53
+base: https://raw.githubusercontent.com/fullsend-ai/agents/ea29de9bb8b1729b04c0597b48a5c7aae62deb71/harness/review.yaml#sha256=c31ab2ff59b288ad1b8e3755751549c00c1606649cdb239bbbe5df58ba6f3112
 
 agent: rhdh/agents/spec-audit.md
 model: claude-opus-4-6
-image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:0.57.1
 
 pre_script: rhdh/scripts/pre-spec-audit.sh
 post_script: rhdh/scripts/post-spec-audit.sh

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
 import type {
   NavContentNavItem,
@@ -87,6 +88,60 @@ describe('AppSidebar', () => {
     expect(links.map(l => l.textContent)).toEqual(['High', 'Low']);
     expect(links[0]).toHaveAttribute('href', '/high');
     expect(screen.getByTestId('home-icon')).toBeInTheDocument();
+  });
+
+  it('shows a hover tooltip only when the sidebar label is truncated', async () => {
+    const user = userEvent.setup();
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'insights',
+            title: 'Adoption Insights',
+            to: '/adoption-insights',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: 'Adoption Insights' });
+    // Focusable merges onto this Box wrapper (tabindex=-1) — that is the trigger.
+    const wrapper = link.parentElement ?? link;
+    const label = wrapper.querySelector(
+      'span[class*="MuiTypography-subtitle2"]',
+    ) as HTMLElement;
+    expect(label).toBeTruthy();
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    Object.defineProperty(label, 'clientWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=true
+    });
+    await user.hover(wrapper);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    await user.unhover(wrapper);
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 200,
+    });
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=false
+    });
+    await user.unhover(wrapper);
+    await user.hover(wrapper);
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Adoption Insights',
+      );
+    });
   });
 
   it('renders onClick items as buttons and invokes the handler', async () => {

@@ -23,7 +23,10 @@ jobs:
   update:
     if: github.repository == 'redhat-developer/rhdh-plugins'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    # Packages are already published; a follow-up problem must not fail the release.
+    continue-on-error: true
+    # Up to 10 minutes waiting for npm, then up to 30 minutes for the overlays PR.
+    timeout-minutes: 50
     steps:
       - name: Checkout released commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
