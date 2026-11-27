@@ -116,7 +116,7 @@
     "react-router-dom": "^6.30.6"
   },
   "resolutions": {
-    "@yarnpkg/core": "4.9.2",
+    "@yarnpkg/core": "4.9.3",
     "@adobe/react-spectrum": "3.47.7",
     "react-aria": "3.53.1",
     "react-stately": "3.51.0",
