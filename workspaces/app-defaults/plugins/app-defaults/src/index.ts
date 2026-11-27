@@ -56,6 +56,8 @@ export { learningPathsModule } from './learning-paths';
 
 export { localizedPageLayoutExtension } from './pageLayout/pageLayoutExtension';
 
+export { notFoundExtension } from './not-found/notFoundExtension';
+
 export { catalogModule } from './catalog/catalogModule';
 
 export {
