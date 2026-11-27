@@ -26,6 +26,9 @@ app:
   # (see plugins/app-defaults/README.md). `Community` is a top-level link,
   # `Plugin catalog` joins the Administration group of app-defaults.
   sidebar:
+    # Org default pin state for users with no saved preference (localStorage).
+    # Unset → pinned (product fallback). Saved user preferences are never overwritten.
+    # defaultPinned: false
     items:
       - title: Community
         icon: group
