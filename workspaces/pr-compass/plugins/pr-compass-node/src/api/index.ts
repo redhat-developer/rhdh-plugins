@@ -15,3 +15,4 @@
  */
 
 export * from './PullRequestProvider';
+export * from './PullRequestProviderError';

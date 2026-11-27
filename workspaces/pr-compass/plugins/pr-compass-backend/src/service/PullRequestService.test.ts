@@ -21,7 +21,10 @@ import {
   SourceErrorCodes,
   type PullRequest,
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import { PullRequestProvider } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import {
+  PullRequestProviderError,
+  type PullRequestProvider,
+} from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 import { pr } from '../../__fixtures__';
 import { createMockPullRequestProvider } from '../../__fixtures__/mockPullRequestProvider';
 import { PullRequestProvidersRegistry } from '../providers/PullRequestProvidersRegistry';
@@ -286,7 +289,10 @@ describe('PullRequestService', () => {
     expect(result.sources).toEqual(
       expect.arrayContaining([
         { sourceId: 'github:github.com', truncated: false },
-        { sourceId: 'gitlab:gitlab.com', error: SourceErrorCodes.FETCH_FAILED },
+        {
+          sourceId: 'gitlab:gitlab.com',
+          error: SourceErrorCodes.FETCH_FAILED,
+        },
       ]),
     );
     expect(github.listPullRequests).toHaveBeenCalledWith(
@@ -296,8 +302,58 @@ describe('PullRequestService', () => {
       }),
     );
     expect(logger.error).toHaveBeenCalledTimes(1);
-    expect(logger.error).toHaveBeenCalledWith(
-      `Failed to list pull requests from source 'gitlab:gitlab.com': ${error}`,
+    expect(logger.error).toHaveBeenCalledWith('Failed to list pull requests', {
+      source: 'gitlab:gitlab.com',
+      code: SourceErrorCodes.FETCH_FAILED,
+    });
+  });
+
+  it.each([
+    SourceErrorCodes.UNAUTHORISED,
+    SourceErrorCodes.FORBIDDEN,
+    SourceErrorCodes.RATE_LIMITED,
+    SourceErrorCodes.FETCH_FAILED,
+  ])('reports provider error %s without its message', async code => {
+    github.listPullRequests.mockRejectedValue(
+      new PullRequestProviderError(code, 'upstream details: github-token'),
     );
+
+    const result = await service.list({
+      ...options,
+      scmTokens: { 'github:github.com': 'github-token' },
+    });
+
+    expect(result.sources).toContainEqual({
+      sourceId: 'github:github.com',
+      error: code,
+    });
+    expect(logger.error).toHaveBeenCalledWith('Failed to list pull requests', {
+      source: 'github:github.com',
+      code,
+    });
+    expect(JSON.stringify(logger.error.mock.calls)).not.toContain(
+      'github-token',
+    );
+    expect(JSON.stringify(result)).not.toContain('github-token');
+  });
+
+  it('maps an unrecognized provider error code to FETCH_FAILED', async () => {
+    github.listPullRequests.mockRejectedValue(
+      new PullRequestProviderError('github-token' as never),
+    );
+
+    const result = await service.list({
+      ...options,
+      scmTokens: { 'github:github.com': 'github-token' },
+    });
+
+    expect(result.sources).toContainEqual({
+      sourceId: 'github:github.com',
+      error: SourceErrorCodes.FETCH_FAILED,
+    });
+    expect(logger.error).toHaveBeenCalledWith('Failed to list pull requests', {
+      source: 'github:github.com',
+      code: SourceErrorCodes.FETCH_FAILED,
+    });
   });
 });

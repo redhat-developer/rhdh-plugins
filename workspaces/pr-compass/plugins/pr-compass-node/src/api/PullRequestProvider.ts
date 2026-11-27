@@ -64,7 +64,11 @@ export interface PullRequestProvider {
    */
   readonly type: string;
 
-  /** Retrieves unique pull requests for the authenticated user from the given SCM host. */
+  /**
+   * Retrieves unique pull requests for the authenticated user from the given SCM host.
+   *
+   * @throws {@link PullRequestProviderError} to report a specific source error.
+   */
   listPullRequests(
     options: ListPullRequestsOptions,
   ): Promise<ListPullRequestsResult>;

@@ -79,7 +79,7 @@ The header value must not exceed 4,096 bytes.
 | `total`            | Total number of gathered pull requests after filtering.               |
 | `sources`          | Per-source outcome, including truncation or an error when applicable. |
 
-A source without a token is reported with `SCM_SESSION_REQUIRED`, and a provider failure is reported with `FETCH_FAILED`. Tokens for unknown sources are ignored. When no providers are registered, the response contains no source statuses. Other error codes are reserved for more specific failures.
+A source without a token is reported with `SCM_SESSION_REQUIRED`. Providers can report `UNAUTHORISED`, `FORBIDDEN`, `RATE_LIMITED`, or `FETCH_FAILED` using `PullRequestProviderError`. Other failures are reported with `FETCH_FAILED` as well. Tokens for unknown sources are ignored. When no providers are registered, the response contains no source statuses.
 
 ### `GET /sources`
 

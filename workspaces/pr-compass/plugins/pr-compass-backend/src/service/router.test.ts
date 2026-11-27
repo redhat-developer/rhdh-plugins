@@ -22,7 +22,10 @@ import {
   SourceErrorCodes,
   type PullRequest,
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import type { PullRequestProvider } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import {
+  PullRequestProviderError,
+  type PullRequestProvider,
+} from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 import express from 'express';
 import request from 'supertest';
 import { createMockPullRequestProvider } from '../../__fixtures__/mockPullRequestProvider';
@@ -169,8 +172,30 @@ describe('createRouter', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.sources).toEqual([
-        { sourceId: 'github:github.com', error: SourceErrorCodes.FETCH_FAILED },
+        {
+          sourceId: 'github:github.com',
+          error: SourceErrorCodes.FETCH_FAILED,
+        },
       ]);
+    });
+
+    it('reports a source error when a provider fails with PullRequestProviderError', async () => {
+      provider.listPullRequests.mockRejectedValue(
+        new PullRequestProviderError(
+          SourceErrorCodes.RATE_LIMITED,
+          'upstream request included dummy_token',
+        ),
+      );
+
+      const res = await request(app)
+        .get('/pull-requests')
+        .set(SCM_TOKENS_HEADER, GITHUB_TOKENS);
+
+      expect(res.status).toBe(200);
+      expect(res.body.sources).toEqual([
+        { sourceId: 'github:github.com', error: SourceErrorCodes.RATE_LIMITED },
+      ]);
+      expect(JSON.stringify(res.body)).not.toContain('dummy_token');
     });
 
     it('reports truncation per source', async () => {

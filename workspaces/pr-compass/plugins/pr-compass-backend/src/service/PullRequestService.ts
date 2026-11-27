@@ -21,7 +21,10 @@ import {
   type ListPullRequestsResponse,
   type SourceStatus,
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import type { PullRequestFilters } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import {
+  PullRequestProviderError,
+  type PullRequestFilters,
+} from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
 import { sortPullRequests } from '../utils';
 import { validatePullRequests } from '../validation';
 import type { SourceResolver } from './SourceResolver';
@@ -93,10 +96,14 @@ export class PullRequestService {
             gatheredPRs.push(...valid);
             return { sourceId, truncated: result.truncated };
           } catch (error) {
-            this.logger.error(
-              `Failed to list pull requests from source '${sourceId}': ${error}`,
-            );
-            return { sourceId, error: SourceErrorCodes.FETCH_FAILED };
+            const code = PullRequestProviderError.is(error)
+              ? error.code
+              : SourceErrorCodes.FETCH_FAILED;
+            this.logger.error('Failed to list pull requests', {
+              source: sourceId,
+              code,
+            });
+            return { sourceId, error: code };
           }
         }),
     );
