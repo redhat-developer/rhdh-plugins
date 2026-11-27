@@ -24,14 +24,10 @@ export function createFixturePullRequestProvider(
 ): PullRequestProvider {
   return {
     type,
-    async listPullRequests({ filters, limit }) {
-      const matching = filters.badge
-        ? prs.filter(item => item.badge === filters.badge)
-        : prs;
-
+    async listPullRequests({ limit }) {
       return {
-        items: matching.slice(0, limit),
-        truncated: matching.length > limit,
+        items: prs.slice(0, limit),
+        truncated: prs.length > limit,
       };
     },
   };

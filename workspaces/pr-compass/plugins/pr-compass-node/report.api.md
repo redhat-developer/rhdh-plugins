@@ -6,12 +6,10 @@
 import { CustomErrorBase } from '@backstage/errors';
 import { ExtensionPoint } from '@backstage/backend-plugin-api';
 import type { PullRequest } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import type { PullRequestBadge } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
 import { SourceErrorCode } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
 
 // @public (undocumented)
 export interface ListPullRequestsOptions {
-  filters: PullRequestFilters;
   host: string;
   limit: number;
   token: string;
@@ -31,12 +29,6 @@ export interface PrCompassProvidersExtensionPoint {
 
 // @public
 export const prCompassProvidersExtensionPoint: ExtensionPoint<PrCompassProvidersExtensionPoint>;
-
-// @public (undocumented)
-export interface PullRequestFilters {
-  // (undocumented)
-  badge?: PullRequestBadge;
-}
 
 // @public
 export interface PullRequestProvider {

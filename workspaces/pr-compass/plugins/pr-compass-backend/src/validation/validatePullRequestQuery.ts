@@ -17,7 +17,7 @@
 import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import { PullRequestBadges } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import type { PullRequestFilters } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import type { PullRequestFilters } from '../types';
 import { MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from './constants';
 
 export function validatePullRequestQuery(query: unknown): {

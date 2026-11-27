@@ -112,6 +112,56 @@ describe('PullRequestService', () => {
     });
   });
 
+  it('filters pull requests by badge', async () => {
+    github.listPullRequests.mockResolvedValue({
+      items: [
+        pr({
+          number: 1,
+          badge: PullRequestBadges.NeedsReview,
+          updatedAt: '2026-01-02T00:00:00Z',
+        }),
+        pr({ number: 2, badge: PullRequestBadges.MergeReady }),
+      ],
+      truncated: false,
+    });
+    gitlab.listPullRequests.mockResolvedValue({
+      items: [
+        pr({
+          number: 3,
+          provider: 'gitlab',
+          badge: PullRequestBadges.NeedsReview,
+          updatedAt: '2026-01-01T00:00:00Z',
+        }),
+        pr({
+          number: 4,
+          provider: 'gitlab',
+          badge: PullRequestBadges.InProgress,
+        }),
+      ],
+      truncated: false,
+    });
+
+    const result = await service.list({
+      ...options,
+      filters: { badge: PullRequestBadges.NeedsReview },
+      scmTokens: {
+        'github:github.com': 'github-token',
+        'gitlab:gitlab.com': 'gitlab-token',
+      },
+    });
+
+    expect(result.items.map(item => item.id)).toEqual([
+      'github.com/acme/repo#1',
+      'gitlab.com/acme/repo#3',
+    ]);
+    expect(result.total).toBe(2);
+    expect(github.listPullRequests).toHaveBeenCalledWith({
+      host: 'github.com',
+      token: 'github-token',
+      limit: 100,
+    });
+  });
+
   it.each([
     [1, 2, ['github.com/acme/repo#1', 'github.com/acme/repo#2']],
     [2, 2, ['github.com/acme/repo#3', 'github.com/acme/repo#4']],

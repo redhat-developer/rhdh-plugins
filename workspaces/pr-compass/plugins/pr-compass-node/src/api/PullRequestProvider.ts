@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  PullRequest,
-  PullRequestBadge,
-} from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-
-/**
- * @public
- */
-export interface PullRequestFilters {
-  badge?: PullRequestBadge;
-}
+import type { PullRequest } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
 
 /**
  * @public
@@ -34,8 +24,6 @@ export interface ListPullRequestsOptions {
   host: string;
   /** Access token for the authenticated user. */
   token: string;
-  /** Optional dilters to apply when retrieving pull requests. */
-  filters: PullRequestFilters;
   /** Maximum number of pull requests to return. */
   limit: number;
 }
@@ -44,7 +32,7 @@ export interface ListPullRequestsOptions {
  * @public
  */
 export interface ListPullRequestsResult {
-  /** Unique pull requests matching the requested filters. */
+  /** Unique pull requests for the authenticated user. */
   items: PullRequest[];
   /** Whether the result was truncated because of the requested limit {@link ListPullRequestsOptions.limit} was reached. */
   truncated: boolean;

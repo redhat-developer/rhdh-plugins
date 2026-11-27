@@ -112,21 +112,30 @@ describe('createRouter', () => {
       });
     });
 
-    it('passes the token and filters to the provider', async () => {
-      await request(app)
+    it('filters by badge', async () => {
+      provider.listPullRequests.mockResolvedValue({
+        items: [
+          pr({ number: 3, badge: PullRequestBadges.MergeReady }),
+          pr({ number: 1, badge: PullRequestBadges.NeedsReview }),
+          pr({ number: 2, badge: PullRequestBadges.InProgress }),
+        ],
+        truncated: false,
+      });
+
+      const res = await request(app)
         .get('/pull-requests?badge=NeedsReview')
         .set(SCM_TOKENS_HEADER, GITHUB_TOKENS);
 
-      expect(provider.listPullRequests.mock.calls).toEqual([
-        [
-          expect.objectContaining({
-            host: 'github.com',
-            token: 'dummy_token',
-            filters: { badge: PullRequestBadges.NeedsReview },
-            limit: 100,
-          }),
-        ],
+      expect(res.status).toBe(200);
+      expect(res.body.items.map((p: PullRequest) => p.id)).toEqual([
+        'github.com/acme/repo#1',
       ]);
+      expect(res.body.total).toBe(1);
+      expect(provider.listPullRequests).toHaveBeenCalledWith({
+        host: 'github.com',
+        token: 'dummy_token',
+        limit: 100,
+      });
     });
 
     it('reports a missing SCM session', async () => {

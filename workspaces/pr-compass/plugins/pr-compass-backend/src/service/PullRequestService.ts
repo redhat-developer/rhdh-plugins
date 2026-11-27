@@ -21,10 +21,8 @@ import {
   type ListPullRequestsResponse,
   type SourceStatus,
 } from '@red-hat-developer-hub/backstage-plugin-pr-compass-common';
-import {
-  PullRequestProviderError,
-  type PullRequestFilters,
-} from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import { PullRequestProviderError } from '@red-hat-developer-hub/backstage-plugin-pr-compass-node';
+import type { PullRequestFilters } from '../types';
 import { sortPullRequests } from '../utils';
 import { validatePullRequests } from '../validation';
 import type { SourceResolver } from './SourceResolver';
@@ -84,7 +82,6 @@ export class PullRequestService {
             const result = await provider.listPullRequests({
               host: source.host,
               token,
-              filters,
               limit: this.maxPullRequests,
             });
             const { valid, invalidCount } = validatePullRequests(result.items);
@@ -108,7 +105,10 @@ export class PullRequestService {
         }),
     );
 
-    const sortedPRs = sortPullRequests(gatheredPRs);
+    const filteredPRs = filters.badge
+      ? gatheredPRs.filter(pr => pr.badge === filters.badge)
+      : gatheredPRs;
+    const sortedPRs = sortPullRequests(filteredPRs);
     const start = (page - 1) * pageSize;
 
     return {
