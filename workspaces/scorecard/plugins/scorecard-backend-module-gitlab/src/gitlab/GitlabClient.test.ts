@@ -189,27 +189,41 @@ describe('GitlabClient', () => {
   describe('getClosedMergeRequestsCount', () => {
     it('should sum GraphQL closedAfter and mergedAfter counts', async () => {
       const since = new Date('2024-01-01T00:00:00Z');
+      const now = new Date('2024-01-08T12:00:00Z');
+      jest.useFakeTimers({ now });
+
       mockedGraphql.projectMergeRequestCount
         .mockResolvedValueOnce(1)
         .mockResolvedValueOnce(2);
 
-      const result = await gitlabClient.getClosedMergeRequestsCount(
-        url,
-        projectSlug,
-        { since },
-      );
+      try {
+        const result = await gitlabClient.getClosedMergeRequestsCount(
+          url,
+          projectSlug,
+          { since },
+        );
 
-      expect(result).toBe(3);
-      expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledTimes(2);
-      expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledWith(url, {
-        projectPath: projectSlug,
-        closedAfter: since.toISOString(),
-      });
-      expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledWith(url, {
-        projectPath: projectSlug,
-        mergedAfter: since.toISOString(),
-      });
-      expect(mockedRest.mergeRequests).not.toHaveBeenCalled();
+        expect(result).toBe(3);
+        expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledTimes(2);
+        expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledWith(
+          url,
+          {
+            projectPath: projectSlug,
+            closedAfter: since.toISOString(),
+            closedBefore: now.toISOString(),
+          },
+        );
+        expect(mockedGraphql.projectMergeRequestCount).toHaveBeenCalledWith(
+          url,
+          {
+            projectPath: projectSlug,
+            mergedAfter: since.toISOString(),
+          },
+        );
+        expect(mockedRest.mergeRequests).not.toHaveBeenCalled();
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('should fall back to REST when closedAfter is unsupported', async () => {
