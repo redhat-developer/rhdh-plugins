@@ -54,6 +54,10 @@ workspace/orchestrator:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/orchestrator/**']
 
+workspace/pr-compass:
+  - changed-files:
+      - any-glob-to-any-file: ['workspaces/pr-compass/**']
+
 workspace/quickstart:
   - changed-files:
       - any-glob-to-any-file: ['workspaces/quickstart/**']

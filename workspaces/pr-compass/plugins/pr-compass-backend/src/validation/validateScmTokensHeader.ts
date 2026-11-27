@@ -1,0 +1,52 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { InputError } from '@backstage/errors';
+import { z } from 'zod';
+import { SCM_TOKENS_MAX_BYTES, SCM_TOKENS_HEADER } from './constants';
+
+/** Parses the `x-scm-tokens` header into a source id to token map. */
+export function validateScmTokensHeader(
+  rawTokenHeader: string,
+): Record<string, string> {
+  if (rawTokenHeader.length > SCM_TOKENS_MAX_BYTES) {
+    throw new InputError(
+      `Invalid '${SCM_TOKENS_HEADER}' header: must not exceed ${SCM_TOKENS_MAX_BYTES} bytes`,
+    );
+  }
+
+  const schema = z.record(
+    z.string().min(1, 'tokens must be non-empty strings'),
+  );
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawTokenHeader);
+  } catch {
+    throw new InputError(
+      `Invalid '${SCM_TOKENS_HEADER}' header: must be a JSON object`,
+    );
+  }
+
+  const result = schema.safeParse(parsed);
+  if (!result.success) {
+    throw new InputError(
+      `Invalid '${SCM_TOKENS_HEADER}' header: must be an object mapping source IDs to non-empty token strings`,
+    );
+  }
+
+  return result.data;
+}

@@ -1,0 +1,64 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-pr-compass-backend",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "The PR Compass backend plugin for Backstage",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "pluginId": "pr-compass",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-pr-compass-backend",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-pr-compass-backend",
+      "@red-hat-developer-hub/backstage-plugin-pr-compass-common",
+      "@red-hat-developer-hub/backstage-plugin-pr-compass-node"
+    ]
+  },
+  "configSchema": "config.d.ts",
+  "scripts": {
+    "start": "backstage-cli package start --config app-config.yaml",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "files": [
+    "config.d.ts",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
+    "directory": "workspaces/pr-compass/plugins/pr-compass-backend"
+  },
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.11.0",
+    "@backstage/errors": "^1.3.2",
+    "@backstage/integration": "^2.1.3",
+    "@backstage/plugin-permission-common": "^0.9.12",
+    "@red-hat-developer-hub/backstage-plugin-pr-compass-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-pr-compass-node": "workspace:^",
+    "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@backstage/backend-defaults": "^0.18.1",
+    "@backstage/backend-test-utils": "^1.11.8",
+    "@backstage/cli": "^0.36.7",
+    "@backstage/config": "^1.3.10",
+    "@types/express": "^4.17.6",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.2.4"
+  }
+}

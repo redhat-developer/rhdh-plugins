@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.cjs.js",
+  "types": "src/index.ts",
+  "backstage": {
+    "role": "backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/pr-compass/packages/backend"
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean"
+  },
+  "dependencies": {
+    "@backstage-community/plugin-rbac-backend": "^8.1.4",
+    "@backstage/backend-defaults": "^0.18.1",
+    "@backstage/plugin-app-backend": "^0.5.19",
+    "@backstage/plugin-auth-backend": "^0.30.2",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.24",
+    "@backstage/plugin-catalog-backend": "^4.0.4",
+    "@backstage/plugin-permission-backend": "^0.7.17",
+    "@red-hat-developer-hub/backstage-plugin-pr-compass-backend": "workspace:^",
+    "app": "link:../app",
+    "better-sqlite3": "^12.0.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.7"
+  }
+}

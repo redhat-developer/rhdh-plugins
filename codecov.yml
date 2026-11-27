@@ -223,6 +223,9 @@ flag_management:
     - name: orchestrator
       paths:
         - workspaces/orchestrator/
+    - name: pr-compass
+      paths:
+        - workspaces/pr-compass/
     - name: quickstart
       paths:
         - workspaces/quickstart/
