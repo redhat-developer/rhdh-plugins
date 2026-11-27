@@ -193,6 +193,7 @@ x2a:
     authHosts:
       github: github.com
       gitlab: gitlab.com
+      bitbucket: bitbucket.org
   kubernetes:
     # Kubernetes namespace where jobs will be created
     namespace: ${X2A_KUBERNETES_NAMESPACE:-default}

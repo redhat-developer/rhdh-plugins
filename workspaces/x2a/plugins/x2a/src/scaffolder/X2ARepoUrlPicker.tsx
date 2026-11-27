@@ -74,7 +74,8 @@ export type X2ARepoUrlPickerProps = FieldExtensionComponentProps<
  *    and GitLab hosts under `integrations:` plus `bitbucket.org`; Azure,
  *    Gerrit, Gitea and Bitbucket Server are left out because x2a does not
  *    support them. When credentials are requested, only the host each OAuth
- *    provider is registered against (`x2a.scm.authHosts`) is offered. An
+ *    provider is registered against (`x2a.scm.authHosts.<github|gitlab|bitbucket>`)
+ *    is offered; Bitbucket is hidden silently when its key is unset. An
  *    explicit `allowedHosts` in the template still wins.
  *
  * 2. **Credentials.** The stock picker still handles

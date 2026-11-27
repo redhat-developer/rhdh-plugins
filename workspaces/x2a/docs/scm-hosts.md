@@ -39,13 +39,17 @@ When the template does not set `allowedHosts`, the field fills it in from the
 app config:
 
 - Every GitHub and GitLab host listed under `integrations.github` and
-  `integrations.gitlab` is offered, in that order, followed by `bitbucket.org`.
-  The `integrations:` section is required for self-hosted instances.
-- `bitbucket.org` is **always** offered: Backstage injects it by default and
-  the frontend cannot see whether Bitbucket Cloud is configured (its config is
-  stripped from the frontend config). Set `allowedHosts` explicitly in the
-  template to hide it. Likewise, github.com and gitlab.com are offered only
-  when they are listed explicitly.
+  `integrations.gitlab` is offered, in that order. The `integrations:` section
+  is required for self-hosted instances; github.com and gitlab.com are offered
+  only when they are listed explicitly.
+- `bitbucket.org` is offered from Backstage's integration API. Backstage always
+  injects that host, even when `integrations.bitbucketCloud` is not configured,
+  and the frontend cannot see whether it is configured (its config is stripped
+  from the frontend config). When credentials are requested,
+  `bitbucket.org` is therefore offered only when `x2a.scm.authHosts.bitbucket`
+  matches it; otherwise it is hidden silently. Without
+  `requestUserCredentials` it is offered like the other integration hosts.
+  See [Why Bitbucket needs an explicit key](#why-bitbucket-needs-an-explicit-key).
 - Bitbucket Cloud works end to end: the picker asks for workspace, project and
   repository.
 - Azure, Gerrit, Gitea and **Bitbucket Server** hosts are **not** offered. x2a
@@ -55,11 +59,25 @@ app config:
   OAuth provider is registered against is offered, see
   [`x2a.scm.authHosts`](#configuring-a-custom-scm-host). A GitHub or GitLab host
   that is in `integrations:` but not in `x2a.scm.authHosts` does not appear; a
-  note under the field lists the hosts left out and the key to set.
+  note under the field lists the hosts left out and the key to set. GitHub and
+  GitLab get that note; Bitbucket is hidden silently.
+- If all `x2a.scm.authHosts` keys are unset and credentials are requested, no
+  host is offered at all; the host dropdown is empty.
 - An explicit `allowedHosts` in the template still wins, so a deployment that
   wants to expose only some of its integrations can still say so. The note
   about left-out hosts is not shown then. The token rule below still applies
   to those hosts.
+
+#### Why Bitbucket needs an explicit key
+
+GitHub and GitLab hosts are listed in the frontend-visible `integrations:`
+config, so the picker can tell when they are missing. Bitbucket Cloud has no
+such signal: `integrations.bitbucketCloud` is stripped from the frontend config
+(every field is secret or unannotated), and Backstage's integration factory
+injects a default `bitbucket.org` entry even when the deployment configured
+nothing. `x2a.scm.authHosts.bitbucket` is therefore the only declaration the
+frontend can see. Set it to `bitbucket.org` to offer and authenticate
+Bitbucket; there is no default.
 
 ### Credentials
 
@@ -89,7 +107,7 @@ obtains SCM tokens: running phases and bulk runs on a project, and the CSV bulk
 import. For any other host the app's `scmAuthApi` is not called, no OAuth flow
 is started and no token is stored. The picker shows a message without a Retry
 button, since only a configuration change helps. When the key is not set, no
-GitHub or GitLab host can be authenticated.
+host of that provider can be authenticated, including Bitbucket Cloud.
 
 The secret is also cleared as soon as another host is selected, and a failed
 token request leaves it empty, so the conversion fails with
@@ -145,18 +163,21 @@ x2a:
       # for GitHub Enterprise its `enterpriseInstanceUrl`.
       gitlab: gitlab.example.com
       # github: ghe.example.com
+      # bitbucket: bitbucket.org
 ```
 
-`x2a.scm.authHosts.<github|gitlab>` is a single host, compared
+`x2a.scm.authHosts.<github|gitlab|bitbucket>` is a single host, compared
 case-insensitively. It may also be written as a URL
 (`https://gitlab.example.com`), so the GitLab `audience` can be copied as is;
 only the host is used and a default port (`:443`) is dropped. Include the port
-when the host has a non-default one (`gitlab.example.com:8443`). Bitbucket Cloud is always
-`bitbucket.org` and needs no entry.
+when the host has a non-default one (`gitlab.example.com:8443`). Bitbucket Cloud
+has a single valid host, `bitbucket.org`; declare it the same way. Any other
+Bitbucket value does not match `bitbucket.org`, so Bitbucket stays hidden and
+its tokens are refused.
 
-**There is no default.** Set both keys for the providers you use, including for
-`github.com` and `gitlab.com`; an unset key means no host of that type can be
-authenticated, and the error names the missing key. The frontend cannot read
+**There is no default.** Set the key for each provider you use, including for
+`github.com`, `gitlab.com` and `bitbucket.org`; an unset key means no host of
+that type can be authenticated, and the error names the missing key. The frontend cannot read
 the auth provider's `audience`, so **keeping `x2a.scm.authHosts` in sync with
 the auth provider configuration is up to the operator**: a mismatch means the
 OAuth token is issued for a different host than the one it is sent to.
@@ -221,8 +242,10 @@ dynamicPlugins:
 - **One instance per provider type.** Because Backstage auth providers are
   configured per provider type, only one GitHub, one GitLab and one Bitbucket
   Cloud host can be authenticated at a time: the one named in
-  `x2a.scm.authHosts`. Repositories on any other host of the same type cannot
-  be used for conversions, even if they are listed in `integrations:`.
+  `x2a.scm.authHosts`. Bitbucket Cloud has only `bitbucket.org`; it is offered
+  and authenticated only when `x2a.scm.authHosts.bitbucket` is set.
+  Repositories on any other host of the same type cannot be used for
+  conversions, even if they are listed in `integrations:`.
 - **`x2a.scm.authHosts` is not verified against the auth provider.** The
   frontend cannot read the auth provider configuration, so the two have to be
   kept in sync by hand.
