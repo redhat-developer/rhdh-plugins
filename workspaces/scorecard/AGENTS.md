@@ -13,9 +13,9 @@
 
 All metric IDs use `lowerCamelCase` with a `<provider>.<metricName>` format:
 
-- Provider prefix is lowercase: `github`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`, `dora`
+- Provider prefix is lowercase: `github`, `gitlab`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`, `dora`
 - Metric name is lowerCamelCase: `openPRs`, `qualityGate`, `ciiBestPractices`
-- Full ID examples: `github.openPRs`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`, `dora.deploymentFrequency`
+- Full ID examples: `github.openPRs`, `gitlab.openIssues`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`, `dora.deploymentFrequency`
 
 Never use snake_case for metric IDs. SonarQube API keys (e.g.,
 `security_rating`, `code_smells`) are external API field names and remain
@@ -28,6 +28,27 @@ snake_case in the API layer only -- they are not metric IDs.
 | Metric ID        | Type   | Source                     |
 | ---------------- | ------ | -------------------------- |
 | `github.openPRs` | number | `GithubOpenPRsProvider.ts` |
+
+### GitLab (16 metrics)
+
+| Metric ID                        | Type   | Unit | Source                              |
+| -------------------------------- | ------ | ---- | ----------------------------------- |
+| `gitlab.openIssues`              | number |      | `GitlabIssuesProvider.ts`           |
+| `gitlab.openedIssues7d`          | number |      | `GitlabIssuesProvider.ts`           |
+| `gitlab.closedIssues7d`          | number |      | `GitlabIssuesProvider.ts`           |
+| `gitlab.openMergeRequests`       | number |      | `GitlabMergeRequestsProvider.ts`    |
+| `gitlab.openedMergeRequests7d`   | number |      | `GitlabMergeRequestsProvider.ts`    |
+| `gitlab.closedMergeRequests7d`   | number |      | `GitlabMergeRequestsProvider.ts`    |
+| `gitlab.startedPipelines7d`      | number |      | `GitlabPipelinesProvider.ts`        |
+| `gitlab.successfulPipelines7d`   | number |      | `GitlabPipelinesProvider.ts`        |
+| `gitlab.failedPipelines7d`       | number |      | `GitlabPipelinesProvider.ts`        |
+| `gitlab.pipelineSuccessRatio7d`  | number | `%`  | `GitlabPipelinesProvider.ts`        |
+| `gitlab.pipelineSuccessRatio24h` | number | `%`  | `GitlabPipelinesProvider.ts`        |
+| `gitlab.startedJobs7d`           | number |      | `GitlabJobsProvider.ts`             |
+| `gitlab.successfulJobs7d`        | number |      | `GitlabJobsProvider.ts`             |
+| `gitlab.failedJobs7d`            | number |      | `GitlabJobsProvider.ts`             |
+| `gitlab.jobSuccessRatio7d`       | number | `%`  | `GitlabJobsProvider.ts`             |
+| `gitlab.jobSuccessRatio24h`      | number | `%`  | `GitlabJobsProvider.ts`             |
 
 ### Jira (1 metric)
 
