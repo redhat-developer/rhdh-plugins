@@ -19,11 +19,35 @@ import {
   useTranslationRef,
 } from '@backstage/core-plugin-api/alpha';
 
-import { bulkImportTranslationRef } from '../translations';
+import { bulkImportTranslationRef, type Messages } from '../translations';
 
 /**
  * @alpha
  */
+type BulkImportT = TranslationFunction<typeof bulkImportTranslationRef.T>;
+type TranslationKey = keyof Messages;
+
+/** Interpolated messages; Backstage typings do not infer `{{placeholders}}` from ref strings. */
+const translateWithParams = (
+  t: BulkImportT,
+  key: TranslationKey,
+  params: Record<string, string | number>,
+): string =>
+  (t as unknown as (k: string, p: Record<string, string | number>) => string)(
+    String(key),
+    params,
+  );
+
 export const useTranslation = (): {
-  t: TranslationFunction<typeof bulkImportTranslationRef.T>;
-} => useTranslationRef(bulkImportTranslationRef);
+  t: BulkImportT;
+  tParams: (
+    key: TranslationKey,
+    params: Record<string, string | number>,
+  ) => string;
+} => {
+  const { t } = useTranslationRef(bulkImportTranslationRef);
+  return {
+    t,
+    tParams: (key, params) => translateWithParams(t, key, params),
+  };
+};

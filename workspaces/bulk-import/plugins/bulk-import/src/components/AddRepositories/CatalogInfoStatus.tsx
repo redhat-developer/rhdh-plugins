@@ -17,8 +17,8 @@
 import { useEffect } from 'react';
 
 import { StatusRunning } from '@backstage/core-components';
+import { Text } from '@backstage/ui';
 
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
@@ -34,6 +34,10 @@ import {
   areAllRowsSelected,
   getImportStatus,
 } from '../../utils/repository-utils';
+import {
+  bulkImportTypographyBody2,
+  bulkImportTypographySecondary,
+} from '../bulkImportTypography';
 import { PreviewFile } from '../PreviewFile/PreviewFile';
 
 export const CatalogInfoStatus = ({
@@ -99,19 +103,19 @@ export const CatalogInfoStatus = ({
   if (!isDrawer && isLoading) {
     return (
       <StatusRunning>
-        <Typography
-          component="span"
-          style={{ fontWeight: '400', fontSize: '0.875rem', color: '#181818' }}
+        <Text
+          as="span"
+          style={{ ...bulkImportTypographyBody2, color: '#181818' }}
         >
           {t('catalogInfo.status.generating')}
-        </Typography>
+        </Text>
       </StatusRunning>
     );
   }
 
   if (importStatus) {
     return (
-      <Typography component="span">
+      <Text as="span" style={bulkImportTypographyBody2}>
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
@@ -119,7 +123,7 @@ export const CatalogInfoStatus = ({
           prUrl,
           taskOrWorkflowId,
         )}
-      </Typography>
+      </Text>
     );
   }
 
@@ -128,8 +132,8 @@ export const CatalogInfoStatus = ({
   }
 
   return (
-    <Typography component="span" style={{ color: '#6A6E73' }}>
+    <Text as="span" style={bulkImportTypographySecondary}>
       {t('status.readyToImport')}
-    </Typography>
+    </Text>
   );
 };

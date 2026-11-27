@@ -15,6 +15,7 @@
  */
 
 import { SidebarItem } from '@backstage/core-components';
+import { appThemeApiRef, configApiRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import { render, screen } from '@testing-library/react';
@@ -35,7 +36,16 @@ const configMock = {
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: jest.fn(() => {
+  useApi: jest.fn((apiRef: unknown) => {
+    if (apiRef === configApiRef) {
+      return configMock;
+    }
+    if (apiRef === appThemeApiRef) {
+      return {
+        getActiveThemeId: () => 'light',
+        getInstalledThemes: () => [],
+      };
+    }
     return configMock;
   }),
 }));

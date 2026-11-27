@@ -20,12 +20,8 @@ import { useAsync } from 'react-use';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
+import { ButtonIcon, Tooltip, TooltipTrigger } from '@backstage/ui';
 
-import EditIcon from '@mui/icons-material/Edit';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -38,6 +34,10 @@ import {
   ImportJobStatus,
   RepositoryStatus,
 } from '../../types';
+import {
+  BulkImportEditIcon,
+  BulkImportExternalLinkIcon,
+} from '../bulkImportIcons';
 import { useDrawer } from '../DrawerContext';
 
 const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
@@ -119,20 +119,18 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoUrl, defaultBranch, value?.status, values?.repositories, loading]);
 
-  const catalogIcon = () => {
+  const catalogAction = () => {
     if (hasPermissionToEdit) {
       return {
         tooltip: t('repositories.editCatalogInfoTooltip'),
-        icon: (
-          <IconButton
-            color="inherit"
+        control: (
+          <ButtonIcon
+            icon={<BulkImportEditIcon size={14} />}
             aria-label={t('common.update')}
             data-testid="update"
-            onClick={() => handleOpenDrawer(value as ImportJobStatus)}
-            size="large"
-          >
-            <EditIcon />
-          </IconButton>
+            variant="tertiary"
+            onPress={() => handleOpenDrawer(value as ImportJobStatus)}
+          />
         ),
         dataTestId: 'edit-catalog-info',
       };
@@ -140,16 +138,19 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     if (canView) {
       return {
         tooltip: t('repositories.viewCatalogInfoTooltip'),
-        icon: (
-          <IconButton
-            target="_blank"
+        control: (
+          <a
             href={canView}
-            color="inherit"
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label={t('common.view')}
-            size="large"
           >
-            <OpenInNewIcon />
-          </IconButton>
+            <ButtonIcon
+              icon={<BulkImportExternalLinkIcon size={14} />}
+              aria-label={t('common.view')}
+              variant="tertiary"
+            />
+          </a>
         ),
         dataTestId: 'view-catalog-info',
       };
@@ -157,12 +158,13 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     return null;
   };
 
-  return catalogIcon()?.tooltip ? (
-    <Tooltip title={catalogIcon()?.tooltip || ''}>
-      <Typography component="span" data-testid={catalogIcon()?.dataTestId}>
-        {catalogIcon()?.icon}
-      </Typography>
-    </Tooltip>
+  const action = catalogAction();
+
+  return action?.tooltip ? (
+    <TooltipTrigger>
+      <span data-testid={action.dataTestId}>{action.control}</span>
+      <Tooltip placement="top">{action.tooltip}</Tooltip>
+    </TooltipTrigger>
   ) : null;
 };
 

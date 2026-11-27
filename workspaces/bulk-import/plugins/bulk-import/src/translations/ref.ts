@@ -243,6 +243,7 @@ export const bulkImportMessages = {
         'Select an owner from the list or enter a reference to a Group or a User',
       loadingText: 'Loading groups and users',
       previewEntities: 'Preview entities',
+      previewCardSubheader: 'Create a new Pull Request',
       annotations: 'Annotations',
       labels: 'Labels',
       spec: 'Spec',

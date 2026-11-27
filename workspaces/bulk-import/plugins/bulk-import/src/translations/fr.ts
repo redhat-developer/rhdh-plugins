@@ -145,6 +145,8 @@ const bulkImportTranslationFr = createTranslationMessages({
       'Chargement des groupes et des utilisateurs',
     'previewFile.pullRequest.mergeRequest': 'Demande de fusion',
     'previewFile.pullRequest.previewEntities': 'Entités de prévisualisation',
+    'previewFile.pullRequest.previewCardSubheader':
+      'Créer une nouvelle demande d’extraction',
     'previewFile.pullRequest.serviceNowTicket': 'Ticket ServiceNow',
     'previewFile.pullRequest.spec': 'Spéc.',
     'previewFile.pullRequest.title': 'Demande d’extraction',

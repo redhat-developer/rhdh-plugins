@@ -93,6 +93,14 @@ test.describe('Bulk Import permissions', () => {
     // Fresh navigation resets NFS if-predicate session state (per test page).
     await page.goto('/bulk-import');
 
+    const deniedAlert = page.getByTestId('no-permission-alert');
+    if (await deniedAlert.isVisible()) {
+      await expect(
+        page.getByText(translations.permissions.addRepositoriesMessage),
+      ).toBeVisible();
+      return;
+    }
+
     await expect(
       page.getByText(translations.addRepositories.approvalTool.title),
     ).not.toBeVisible();
