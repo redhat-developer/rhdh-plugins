@@ -15,7 +15,6 @@
  */
 
 import {
-  ChangeEvent,
   lazy,
   MouseEvent,
   Ref,
@@ -49,7 +48,6 @@ import {
   ChatbotHeaderNewChatButton,
   ChatbotHeaderTitle,
   FileDropZone,
-  MessageBar,
   MessageProps,
   Settings,
 } from '@patternfly/chatbot';
@@ -151,6 +149,7 @@ import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 import { ScreenContextChip } from './ScreenContextChip';
 import { SettingsPanel } from './SettingsPanel';
+import { SkillsMessageBar } from './SkillsMessageBar';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
 // Monaco + CodeModal stay off the chat sync chunk until a file is opened.
@@ -2150,11 +2149,6 @@ export const LightspeedChat = ({
     setUploadError({ message: null });
   };
 
-  const handleDraftMessage = (
-    _e: ChangeEvent<HTMLTextAreaElement>,
-    value: string | number,
-  ) => setDraftMessage(value as any);
-
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {
       const hasInvalidTypeError = attachment.errors.some(
@@ -2203,7 +2197,7 @@ export const LightspeedChat = ({
         isPrimary={!useFloatingSecondaryChrome}
       >
         <FilePreview />
-        <MessageBar
+        <SkillsMessageBar
           key={messageBarKey}
           isPrimary={!useFloatingSecondaryChrome}
           onSendMessage={sendMessage}
@@ -2213,7 +2207,7 @@ export const LightspeedChat = ({
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}
-          onChange={handleDraftMessage}
+          onChange={setDraftMessage}
           hasStopButton={streamingUiMatchesView}
           handleStopButton={
             streamingUiMatchesView ? handleStopButton : undefined

@@ -78,6 +78,16 @@ export interface LCSModel {
    */
   supportsVision?: boolean;
 }
+
+/**
+ * @public
+ * Skill available in the Intelligent Assistant catalog
+ */
+export type Skill = {
+  name: string;
+  description: string;
+};
+
 export interface LCSConversation {
   provider: string;
   model: string;

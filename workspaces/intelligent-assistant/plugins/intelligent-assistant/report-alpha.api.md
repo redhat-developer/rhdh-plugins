@@ -147,6 +147,12 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'chatbox.welcome.greeting': string;
     readonly 'chatbox.welcome.description': string;
     readonly 'chatbox.message.placeholder': string;
+    readonly 'skills.title': string;
+    readonly 'skills.loading': string;
+    readonly 'skills.noMatch': string;
+    readonly 'skills.empty': string;
+    readonly 'skills.error': string;
+    readonly 'skills.permissionDenied': string;
     readonly 'chatbox.fileUpload.failed': string;
     readonly 'chatbox.fileUpload.infoText': string;
     readonly 'modelSelector.disabledTooltip': string;

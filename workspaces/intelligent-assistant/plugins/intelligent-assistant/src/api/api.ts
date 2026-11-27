@@ -29,6 +29,7 @@ import {
   CaptureFeedback,
   ConversationList,
   LCSModel,
+  Skill,
 } from '../types';
 
 /**
@@ -38,6 +39,7 @@ import {
 
 export type LightspeedAPI = {
   getAllModels: () => Promise<LCSModel[]>;
+  getSkills: () => Promise<Skill[]>;
   getConversationMessages: (conversation_id: string) => Promise<BaseMessage[]>;
   createMessage: (
     prompt: string,

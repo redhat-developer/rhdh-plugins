@@ -222,6 +222,13 @@ export const intelligentAssistantMessages = {
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
   'chatbox.message.placeholder': 'Enter a prompt.',
+  'skills.title': 'Skills',
+  'skills.loading': 'Loading skills...',
+  'skills.noMatch': 'No matching skills found.',
+  'skills.empty': 'No skills are available.',
+  'skills.error': 'Unable to load skills. You can continue chatting.',
+  'skills.permissionDenied':
+    'You do not have permission to access skills. You can continue chatting.',
   'chatbox.fileUpload.failed': 'File upload failed',
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',

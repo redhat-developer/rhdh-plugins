@@ -97,6 +97,84 @@ describe('LightspeedApiClient', () => {
     });
   });
 
+  describe('getSkills', () => {
+    it('returns names and descriptions from the skills catalog', async () => {
+      const skills = [
+        {
+          name: 'rhdh-dynamic-plugins',
+          description: 'Guidance for RHDH dynamic plugin development',
+        },
+        {
+          name: 'coding-standards',
+          description: 'Organization coding standards and best practices',
+        },
+      ];
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ skills }),
+      } as unknown as Response);
+
+      await expect(client.getSkills()).resolves.toEqual(skills);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/skills',
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    });
+
+    it('returns an empty list when no skills are configured', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ skills: [] }),
+      } as unknown as Response);
+
+      await expect(client.getSkills()).resolves.toEqual([]);
+    });
+
+    it.each([
+      {},
+      { skills: null },
+      { skills: {} },
+      { skills: [null] },
+      { skills: [{ name: '', description: 'Empty name' }] },
+      { skills: [{ name: 'summarize' }] },
+      { skills: [{ name: 'summarize', description: 123 }] },
+    ])('rejects malformed catalog data: %j', async payload => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(payload),
+      } as unknown as Response);
+
+      await expect(client.getSkills()).rejects.toThrow(
+        'Invalid skills catalog response',
+      );
+    });
+
+    it.each([
+      [403, 'Forbidden'],
+      [500, 'Internal Server Error'],
+    ])(
+      'preserves HTTP status %i for catalog errors',
+      async (status, statusText) => {
+        mockFetchApi.fetch.mockResolvedValue({
+          ok: false,
+          status,
+          statusText,
+        } as unknown as Response);
+
+        await expect(client.getSkills()).rejects.toMatchObject({
+          message: `failed to get skills, status ${status}: ${statusText}`,
+          status,
+        });
+      },
+    );
+
+    it('propagates network failures', async () => {
+      mockFetchApi.fetch.mockRejectedValue(new Error('Network unavailable'));
+
+      await expect(client.getSkills()).rejects.toThrow('Network unavailable');
+    });
+  });
+
   describe('getConversations', () => {
     it('should return conversations when API call succeeds', async () => {
       const mockConversations = [

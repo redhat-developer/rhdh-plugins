@@ -395,7 +395,7 @@ export async function verifyMcpSettingsPanel(
 
 /** Chat composer message field (matches sendMessage in testHelper). */
 export function chatMessageTextbox(page: Page, t: LightspeedMessages): Locator {
-  return page.getByRole('textbox', { name: t['chatbox.message.placeholder'] });
+  return page.getByRole('combobox', { name: t['chatbox.message.placeholder'] });
 }
 
 export function chatSendButton(page: Page): Locator {
