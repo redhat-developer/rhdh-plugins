@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 1.2.0
+
+### Minor Changes
+
+- 3c7f5cc: Store each signed-in user's time-saved notification frequency in a new `notification_preferences` table. Add GET and PUT `/api/adoption-insights/notification-preference` routes and export the frequency values, default, and preference types from adoption-insights-common.
+- 206ff3f: Backstage version bump to v1.56.4
+
 ## 1.1.1
 
 ## 1.1.0
