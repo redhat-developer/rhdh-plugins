@@ -97,7 +97,7 @@ export const sendMessage = async (
   translations: LightspeedMessages,
   waitForResponse = true,
 ) => {
-  const inputLocator = page.getByRole('textbox', {
+  const inputLocator = page.getByRole('combobox', {
     name: translations['chatbox.message.placeholder'],
   });
   await inputLocator.fill(message);

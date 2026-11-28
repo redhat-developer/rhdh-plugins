@@ -481,7 +481,7 @@ test.describe('Intelligent assistant conversation', () => {
           sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
         ).toBeVisible();
 
-        const input = sharedPage.getByRole('textbox', {
+        const input = sharedPage.getByRole('combobox', {
           name: translations['chatbox.message.placeholder'],
         });
         await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);
@@ -502,7 +502,7 @@ test.describe('Intelligent assistant conversation', () => {
           sharedPage.getByRole('menuitem', { name: 'mock-model-1' }),
         ).toBeVisible();
 
-        const input = sharedPage.getByRole('textbox', {
+        const input = sharedPage.getByRole('combobox', {
           name: translations['chatbox.message.placeholder'],
         });
         await input.fill(LIGHTSPEED_E2E_DEFAULT_BOT_QUERY);

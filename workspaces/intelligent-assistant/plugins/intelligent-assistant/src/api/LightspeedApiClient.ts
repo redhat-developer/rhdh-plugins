@@ -27,7 +27,7 @@ import {
   TEMP_CONVERSATION_ID,
   VALID_TOPIC_RESTRICTION_PROVIDER_IDS,
 } from '../const';
-import { Attachment, CaptureFeedback } from '../types';
+import { Attachment, CaptureFeedback, Skill } from '../types';
 import { LightspeedAPI } from './api';
 
 /**
@@ -157,6 +157,43 @@ export class LightspeedApiClient implements LightspeedAPI {
     const response = await result.json();
 
     return response?.models ? response?.models : [];
+  }
+
+  async getSkills(): Promise<Skill[]> {
+    const baseUrl = await this.getBaseUrl();
+    const result = await this.fetchApi.fetch(`${baseUrl}/v1/skills`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!result.ok) {
+      throw Object.assign(
+        new Error(
+          `failed to get skills, status ${result.status}: ${result.statusText}`,
+        ),
+        { status: result.status },
+      );
+    }
+
+    const response = await result.json();
+    if (
+      !Array.isArray(response?.skills) ||
+      !response.skills.every(
+        (skill: unknown) =>
+          typeof skill === 'object' &&
+          skill !== null &&
+          'name' in skill &&
+          typeof skill.name === 'string' &&
+          skill.name.trim().length > 0 &&
+          'description' in skill &&
+          typeof skill.description === 'string',
+      )
+    ) {
+      throw new Error('Invalid skills catalog response');
+    }
+
+    return response.skills;
   }
 
   async getConversationMessages(conversation_id: string) {
